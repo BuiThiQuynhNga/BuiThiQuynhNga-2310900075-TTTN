@@ -1,0 +1,221 @@
+﻿@model IEnumerable<ElectronicsShop.Models.DiscountCode>
+
+@{
+    ViewData["Title"] = "Mã giảm giá";
+}
+<style>
+    .vc-page {
+        --hd-primary: #2F5D62;
+        --hd-primary-dark: #22454A;
+        --hd-accent: #C97B4A;
+        --hd-bg: #F7F7F5;
+        --hd-card: #FFFFFF;
+        --hd-text: #24262B;
+        --hd-muted: #6B7076;
+        --hd-border: #E7E5E1;
+        padding: 40px 0 60px;
+    }
+
+    .vc-header {
+        margin-bottom: 28px;
+    }
+
+        .vc-header .vc-eyebrow {
+            font-size: 0.78rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--hd-muted);
+            font-weight: 600;
+        }
+
+        .vc-header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: 1.6rem;
+            color: var(--hd-text);
+            margin: 4px 0 0;
+        }
+
+    .vc-empty {
+        background: var(--hd-card);
+        border: 1px dashed var(--hd-border);
+        border-radius: 16px;
+        padding: 48px 24px;
+        text-align: center;
+        color: var(--hd-muted);
+    }
+
+    .vc-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .vc-ticket {
+        position: relative;
+        display: flex;
+        background: var(--hd-card);
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(34, 69, 74, 0.08);
+        overflow: hidden;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+        .vc-ticket:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 26px rgba(34, 69, 74, 0.14);
+        }
+
+        .vc-ticket.is-expired {
+            filter: grayscale(0.6);
+            opacity: 0.65;
+        }
+
+    .vc-main {
+        flex: 1;
+        padding: 20px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .vc-percent {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 800;
+        font-size: 1.9rem;
+        color: var(--hd-accent);
+        line-height: 1;
+    }
+
+        .vc-percent span {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--hd-muted);
+            margin-left: 4px;
+        }
+
+    .vc-name {
+        font-weight: 700;
+        color: var(--hd-text);
+        font-size: 1rem;
+        margin-top: 2px;
+    }
+
+    .vc-meta {
+        font-size: 0.82rem;
+        color: var(--hd-muted);
+        margin-top: auto;
+    }
+
+    .vc-divider {
+        position: relative;
+        width: 0;
+        border-left: 2px dashed var(--hd-border);
+        margin: 14px 0;
+    }
+
+        .vc-divider::before,
+        .vc-divider::after {
+            content: "";
+            position: absolute;
+            left: -9px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--hd-bg);
+        }
+
+        .vc-divider::before {
+            top: -14px;
+        }
+
+        .vc-divider::after {
+            bottom: -14px;
+        }
+
+    .vc-stub {
+        width: 84px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 6px;
+    }
+
+    .vc-status {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 10px 4px;
+        border-radius: 20px;
+        text-align: center;
+    }
+
+        .vc-status.active {
+            color: var(--hd-primary-dark);
+            background: #E7F0EF;
+        }
+
+        .vc-status.expired {
+            color: var(--hd-muted);
+            background: #EFEFEC;
+        }
+
+    @@media (max-width: 480px) {
+        .vc-stub {
+            width: 64px;
+        }
+
+        .vc-percent {
+            font-size: 1.6rem;
+        }
+    }
+</style>
+<div class="container vc-page">
+    <div class="vc-header">
+        <div class="vc-eyebrow">Ưu đãi</div>
+        <h1>Mã giảm giá đang áp dụng</h1>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="vc-empty">Hiện chưa có mã giảm giá nào. Quay lại sau nhé.</div>
+    }
+    else
+    {
+        <div class="vc-grid">
+            @foreach (var v in Model)
+            {
+                bool conLuot = v.IsActive && v.TotalQuantity > v.UsedQuantity && v.ExpiryDate >= DateTime.Now;
+
+                <div class="vc-ticket @(conLuot ? "" : "is-expired")">
+                    <div class="vc-main">
+                        <div class="vc-percent">@v.DiscountPercent<span>%</span></div>
+                        <div class="vc-name">@v.CodeName</div>
+                        @if (v.MaxDiscountAmount.HasValue)
+                        {
+                            <p class="vc-meta mb-0">Tối đa @v.MaxDiscountAmount.Value.ToString("N0") đ</p>
+                        }
+                        <p class="vc-meta mb-0">Hết hạn: @v.ExpiryDate.ToString("dd/MM/yyyy")</p>
+                    </div>
+
+                    <div class="vc-divider"></div>
+
+                    <div class="vc-stub">
+                        @if (conLuot)
+                        {
+                            <span class="vc-status active">Còn lượt</span>
+                        }
+                        else
+                        {
+                            <span class="vc-status expired">Hết lượt</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

@@ -1,0 +1,325 @@
+﻿@model IEnumerable<ElectronicsShop.Models.DiscountCode>
+
+@{
+    ViewData["Title"] = "Quản lý mã giảm giá";
+}
+
+<style>
+    .mgg-page {
+        --hd-primary: #2F5D62;
+        --hd-primary-dark: #22454A;
+        --hd-accent: #C97B4A;
+        --hd-bg: #F7F7F5;
+        --hd-card: #FFFFFF;
+        --hd-text: #24262B;
+        --hd-muted: #6B7076;
+        --hd-border: #E7E5E1;
+        padding: 40px 0 60px;
+    }
+
+    .mgg-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+        .mgg-header .mgg-eyebrow {
+            font-size: 0.78rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--hd-muted);
+            font-weight: 600;
+        }
+
+        .mgg-header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--hd-text);
+            margin: 4px 0 0;
+        }
+
+    .mgg-btn-add {
+        background: var(--hd-primary);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 18px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: background .15s ease;
+    }
+
+        .mgg-btn-add:hover {
+            background: var(--hd-primary-dark);
+            color: #fff;
+        }
+
+    .mgg-alert {
+        background: #E7F0EF;
+        color: var(--hd-primary-dark);
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 16px;
+    }
+
+        .mgg-alert.err {
+            background: #F7E9E7;
+            color: #9A3E33;
+        }
+
+    .mgg-table-wrap {
+        background: var(--hd-card);
+        border: 1px solid var(--hd-border);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .mgg-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+        .mgg-table thead {
+            background: #F1F0EE;
+        }
+
+            .mgg-table thead th {
+                text-align: left;
+                font-weight: 700;
+                color: var(--hd-text);
+                padding: 14px 16px;
+                font-size: 0.8rem;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                border-bottom: 1px solid var(--hd-border);
+                white-space: nowrap;
+            }
+
+        .mgg-table tbody td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--hd-border);
+            color: var(--hd-text);
+            vertical-align: middle;
+        }
+
+        .mgg-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .mgg-table tbody tr {
+            transition: background .15s ease;
+        }
+
+            .mgg-table tbody tr:hover {
+                background: #FAFAF8;
+            }
+
+    .mgg-code {
+        font-weight: 700;
+        color: var(--hd-primary);
+    }
+
+    .mgg-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+        .mgg-badge.het {
+            background: #F1F0EE;
+            color: var(--hd-muted);
+        }
+
+        .mgg-badge.con {
+            background: #E7F0EF;
+            color: var(--hd-primary-dark);
+        }
+
+        .mgg-badge.hethan {
+            background: #F1F0EE;
+            color: var(--hd-muted);
+            margin-left: 6px;
+        }
+
+        .mgg-badge.active {
+            background: #E7F0EF;
+            color: var(--hd-primary-dark);
+        }
+
+        .mgg-badge.inactive {
+            background: #F7E9E7;
+            color: #9A3E33;
+        }
+
+    .mgg-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .mgg-btn {
+        border: none;
+        border-radius: 8px;
+        padding: 7px 12px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+
+        .mgg-btn.edit {
+            background: transparent;
+            border: 1.5px solid var(--hd-primary);
+            color: var(--hd-primary);
+        }
+
+            .mgg-btn.edit:hover {
+                background: var(--hd-primary);
+                color: #fff;
+            }
+
+        .mgg-btn.toggle {
+            background: transparent;
+            border: 1.5px solid var(--hd-border);
+            color: var(--hd-text);
+        }
+
+            .mgg-btn.toggle:hover {
+                border-color: var(--hd-primary);
+                color: var(--hd-primary);
+            }
+
+        .mgg-btn.del {
+            background: transparent;
+            border: 1.5px solid #C0524A;
+            color: #C0524A;
+        }
+
+            .mgg-btn.del:hover {
+                background: #C0524A;
+                color: #fff;
+            }
+
+    @@media (max-width: 1050px) {
+        .mgg-table-wrap {
+            overflow-x: auto;
+        }
+
+        .mgg-table {
+            min-width: 900px;
+        }
+    }
+</style>
+
+<div class="container mgg-page">
+    <div class="mgg-header">
+        <div>
+            <div class="mgg-eyebrow">Vận hành</div>
+            <h1>Quản lý mã giảm giá</h1>
+        </div>
+        <a asp-action="Create" class="mgg-btn-add">+ Tạo mã mới</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="mgg-alert">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="mgg-alert err">@TempData["ErrorMessage"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div style="background:var(--hd-card);border:1px dashed var(--hd-border);border-radius:16px;padding:48px 24px;text-align:center;color:var(--hd-muted);">
+            Chưa có mã giảm giá nào.
+        </div>
+    }
+    else
+    {
+        <div class="mgg-table-wrap">
+            <table class="mgg-table">
+                <thead>
+                    <tr>
+                        <th>Mã voucher</th>
+                        <th>% Giảm</th>
+                        <th>Giảm tối đa</th>
+                        <th>Số lượng</th>
+                        <th>Đã dùng</th>
+                        <th>Còn lại</th>
+                        <th>Ngày hết hạn</th>
+                        <th>Trạng thái</th>
+                        <th style="width: 260px">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var v in Model)
+                    {
+                        bool hetHan = v.ExpiryDate < DateTime.Now;
+                        int conLai = v.TotalQuantity - v.UsedQuantity;
+                        <tr>
+                            <td class="mgg-code">@v.CodeName</td>
+                            <td>@v.DiscountPercent%</td>
+                            <td>@(v.MaxDiscountAmount.HasValue ? v.MaxDiscountAmount.Value.ToString("N0") + " đ" : "Không giới hạn")</td>
+                            <td>@v.TotalQuantity</td>
+                            <td>@v.UsedQuantity</td>
+                            <td>
+                                @if (conLai <= 0)
+                                {
+                                    <span class="mgg-badge het">Hết</span>
+                                }
+                                else
+                                {
+                                    <span class="mgg-badge con">@conLai</span>
+                                }
+                            </td>
+                            <td>
+                                @v.ExpiryDate.ToString("dd/MM/yyyy")
+                                @if (hetHan)
+                                {
+                                    <span class="mgg-badge hethan">Hết hạn</span>
+                                }
+                            </td>
+                            <td>
+                                @if (v.IsActive)
+                                {
+                                    <span class="mgg-badge active">Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="mgg-badge inactive">Ngừng</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="mgg-actions">
+                                    <a asp-action="Sua" asp-route-id="@v.DiscountCodeID" class="mgg-btn edit">Sửa</a>
+                                    <form asp-action="ToggleTrangThai" asp-route-id="@v.DiscountCodeID" method="post" class="d-inline">
+                                        <button type="submit" class="mgg-btn toggle">@(v.IsActive ? "Tắt" : "Bật")</button>
+                                    </form>
+                                    <form asp-action="Delete" asp-route-id="@v.DiscountCodeID" method="post" class="d-inline"
+                                          onsubmit="return confirm('Xóa mã \'@v.CodeName\'?');">
+                                        <button type="submit" class="mgg-btn del">Xóa</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

@@ -1,0 +1,342 @@
+﻿@model IEnumerable<ElectronicsShop.Models.Product>
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+}
+<style>
+    .sp-page {
+        --ga-primary: #007bff;
+        --ga-primary-dark: #0056b3;
+        --ga-accent: #28a745;
+        --ga-accent-dark: #218838;
+        --ga-bg: #f4f6f9;
+        --ga-card: #FFFFFF;
+        --ga-text: #333333;
+        --ga-muted: #666666;
+        --ga-border: #dee2e6;
+        --ga-success: #28a745;
+        --ga-warning: #ffc107;
+        --ga-danger: #dc3545;
+        --ga-danger-dark: #c82333;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 35px 0 60px;
+        background: var(--ga-bg);
+        min-height: calc(100vh - 100px);
+    }
+    .sp-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    .sp-header-left {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .sp-eyebrow {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
+        color: var(--ga-primary);
+    }
+    .sp-header h1 {
+        margin: 0;
+        color: var(--ga-text);
+        font-size: 28px;
+        font-weight: 800;
+        line-height: 1.25;
+    }
+    .sp-header-desc {
+        margin: 4px 0 0;
+        color: var(--ga-muted);
+        font-size: 14px;
+    }
+    .sp-btn-add {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 42px;
+        padding: 0 20px;
+        border-radius: 5px;
+        background: var(--ga-accent);
+        color: #fff;
+        border: none;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all .2s ease;
+    }
+    .sp-btn-add:hover {
+        background: var(--ga-accent-dark);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+    .sp-alert {
+        margin-bottom: 18px;
+        padding: 13px 17px;
+        border-radius: 5px;
+        border: 1px solid #c3e6cb;
+        background: #d4edda;
+        color: #155724;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .sp-alert.err {
+        border-color: #f5c6cb;
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .sp-table-wrap {
+        background: var(--ga-card);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+    }
+    .sp-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+    .sp-table thead {
+        background: #f8f9fa;
+    }
+    .sp-table thead th {
+        padding: 15px 16px;
+        color: #555;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .7px;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--ga-border);
+        white-space: nowrap;
+    }
+    .sp-table tbody td {
+        padding: 14px 16px;
+        color: var(--ga-text);
+        border-bottom: 1px solid var(--ga-border);
+        vertical-align: middle;
+    }
+    .sp-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    .sp-table tbody tr {
+        transition: background .15s ease;
+    }
+    .sp-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+    .sp-id {
+        color: #8A8A8A;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .sp-thumb {
+        width: 58px;
+        height: 58px;
+        display: block;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid var(--ga-border);
+        background: #FAFAF8;
+    }
+    .sp-name {
+        color: var(--ga-text);
+        font-weight: 700;
+        line-height: 1.4;
+        min-width: 180px;
+    }
+    .sp-color {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 11px;
+        border-radius: 20px;
+        background: #eef1f4;
+        color: #686868;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .sp-price {
+        color: var(--ga-accent);
+        font-size: 15px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+    .sp-stock {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 11px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .sp-stock.cao {
+        background: #d4edda;
+        color: #155724;
+    }
+    .sp-stock.vua {
+        background: #fff3cd;
+        color: #856404;
+    }
+    .sp-stock.thap {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .sp-actions {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        flex-wrap: wrap;
+    }
+    .sp-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 52px;
+        height: 32px;
+        padding: 0 12px;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        transition: all .18s ease;
+    }
+    .sp-btn.edit {
+        color: #fff;
+        background: var(--ga-primary);
+    }
+    .sp-btn.edit:hover {
+        background: var(--ga-primary-dark);
+    }
+    .sp-btn.del {
+        color: #fff;
+        background: var(--ga-danger);
+    }
+    .sp-btn.del:hover {
+        background: var(--ga-danger-dark);
+    }
+    .sp-empty {
+        background: var(--ga-card);
+        border: 1px dashed var(--ga-border);
+        border-radius: 8px;
+        padding: 55px 25px;
+        text-align: center;
+        color: var(--ga-muted);
+        font-size: 14px;
+    }
+    .sp-empty::before {
+        content: "◌";
+        display: block;
+        margin-bottom: 10px;
+        color: #ced4da;
+        font-size: 28px;
+    }
+    @@media (max-width: 1000px) {
+        .sp-table-wrap {
+            overflow-x: auto;
+        }
+        .sp-table {
+            min-width: 950px;
+        }
+    }
+    @@media (max-width: 576px) {
+        .sp-page {
+            padding-top: 25px;
+        }
+        .sp-header h1 {
+            font-size: 24px;
+        }
+        .sp-btn-add {
+            width: 100%;
+        }
+    }
+</style>
+<div class="container sp-page">
+    <div class="sp-header">
+        <div class="sp-header-left">
+            <div class="sp-eyebrow">Global Aspire</div>
+            <h1>Quản lý sản phẩm</h1>
+            <div class="sp-header-desc">Quản lý danh sách sản phẩm, giá bán và tình trạng tồn kho</div>
+        </div>
+        <a asp-action="Them" class="sp-btn-add">+ Thêm sản phẩm</a>
+    </div>
+    @if (TempData["ThongBao"] != null)
+    {
+        <div class="sp-alert">@TempData["ThongBao"]</div>
+    }
+    @if (TempData["LoiXoa"] != null)
+    {
+        <div class="sp-alert err">@TempData["LoiXoa"]</div>
+    }
+    @if (!Model.Any())
+    {
+        <div class="sp-empty">Chưa có sản phẩm nào.</div>
+    }
+    else
+    {
+        <div class="sp-table-wrap">
+            <table class="sp-table">
+                <thead>
+                    <tr>
+                        <th>Mã SP</th>
+                        <th>Ảnh</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th>Mã màu</th>
+                        <th>Giá bán</th>
+                        <th>Tồn kho</th>
+                        <th style="width: 180px">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="sp-id">#@item.ProductID</td>
+                            <td>
+                                <img src="~/images/@(string.IsNullOrEmpty(item.ImageURL) ? "no-image.png" : item.ImageURL)" class="sp-thumb" onerror="this.src='/images/no-image.png'" />
+                            </td>
+                            <td class="sp-name">@item.ProductName</td>
+                            <td>@item.Category?.CategoryName</td>
+                            <td>
+                                <span class="sp-color">@item.ColorVariant</span>
+                            </td>
+                            <td class="sp-price">@item.Price.ToString("N0") đ</td>
+                            <td>
+                                @if (item.Stock > 100)
+                                {
+                                    <span class="sp-stock cao">Còn @item.Stock</span>
+                                }
+                                else if (item.Stock > 20)
+                                {
+                                    <span class="sp-stock vua">Còn @item.Stock</span>
+                                }
+                                else
+                                {
+                                    <span class="sp-stock thap">Sắp hết (@item.Stock)</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="sp-actions">
+                                    <a asp-action="Sua" asp-route-id="@item.ProductID" class="sp-btn edit">Sửa</a>
+                                    <form asp-action="Xoa" asp-route-id="@item.ProductID" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này?');">
+                                        <button type="submit" class="sp-btn del">Xóa</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

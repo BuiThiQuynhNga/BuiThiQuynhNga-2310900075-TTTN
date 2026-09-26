@@ -1,0 +1,442 @@
+﻿@model ElectronicsShop.Models.Order
+
+@{
+    ViewData["Title"] = "Giỏ hàng";
+    decimal tongTruocGiam = Model.OrderDetails.Sum(ct => ct.Quantity * ct.UnitPrice);
+    decimal soTienGiam = tongTruocGiam - (Model.TotalAmount - Model.ShippingFee);
+}
+
+<style>
+    .gh-page {
+        --hd-primary: #2F5D62;
+        --hd-primary-dark: #22454A;
+        --hd-accent: #C97B4A;
+        --hd-bg: #F7F7F5;
+        --hd-card: #FFFFFF;
+        --hd-text: #24262B;
+        --hd-muted: #6B7076;
+        --hd-border: #E7E5E1;
+        padding: 40px 0 60px;
+    }
+
+    .gh-header .gh-eyebrow {
+        font-size: 0.78rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--hd-muted);
+        font-weight: 600;
+    }
+
+    .gh-header h1 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: var(--hd-text);
+        margin: 4px 0 24px;
+    }
+
+    .gh-alert {
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+
+        .gh-alert.ok {
+            background: #E7F0EF;
+            color: var(--hd-primary-dark);
+        }
+
+        .gh-alert.err {
+            background: #FBEAE8;
+            color: #B3261E;
+        }
+
+    .gh-empty {
+        background: var(--hd-card);
+        border: 1px dashed var(--hd-border);
+        border-radius: 16px;
+        padding: 48px 24px;
+        text-align: center;
+        color: var(--hd-muted);
+    }
+
+        .gh-empty a {
+            color: var(--hd-primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+            .gh-empty a:hover {
+                text-decoration: underline;
+            }
+
+    .gh-layout {
+        display: grid;
+        grid-template-columns: 1.7fr 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+
+    /* ---- Bảng sản phẩm ---- */
+    .gh-table-wrap {
+        background: var(--hd-card);
+        border: 1px solid var(--hd-border);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .gh-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.92rem;
+    }
+
+        .gh-table thead {
+            background: #F1F0EE;
+        }
+
+            .gh-table thead th {
+                text-align: left;
+                font-weight: 700;
+                color: var(--hd-text);
+                padding: 14px 16px;
+                font-size: 0.78rem;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                border-bottom: 1px solid var(--hd-border);
+            }
+
+        .gh-table tbody td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--hd-border);
+            color: var(--hd-text);
+            vertical-align: middle;
+        }
+
+        .gh-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+    .gh-product {
+        font-weight: 600;
+    }
+
+    .gh-subtotal {
+        font-weight: 700;
+        color: var(--hd-primary);
+    }
+
+    .gh-qty-form {
+        display: flex;
+        gap: 6px;
+    }
+
+    .gh-qty-input {
+        width: 64px;
+        border: 1.5px solid var(--hd-border);
+        border-radius: 8px;
+        padding: 6px 8px;
+        font-size: 0.88rem;
+        color: var(--hd-text);
+    }
+
+        .gh-qty-input:focus {
+            outline: none;
+            border-color: var(--hd-primary);
+            box-shadow: 0 0 0 3px rgba(47, 93, 98, 0.12);
+        }
+
+    .gh-btn {
+        border: none;
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+
+        .gh-btn.update {
+            background: transparent;
+            border: 1.5px solid var(--hd-primary);
+            color: var(--hd-primary);
+        }
+
+            .gh-btn.update:hover {
+                background: var(--hd-primary);
+                color: #fff;
+            }
+
+        .gh-btn.remove {
+            background: transparent;
+            border: 1.5px solid #C0524A;
+            color: #C0524A;
+        }
+
+            .gh-btn.remove:hover {
+                background: #C0524A;
+                color: #fff;
+            }
+
+    /* ---- Panel bên phải ---- */
+    .gh-box {
+        background: var(--hd-card);
+        border: 1px solid var(--hd-border);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    /* Voucher đã áp dụng */
+    .gh-voucher-applied {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .gh-voucher-name {
+        font-weight: 700;
+        color: var(--hd-primary);
+        font-size: 0.95rem;
+    }
+
+    .gh-voucher-sub {
+        font-size: 0.8rem;
+        color: var(--hd-muted);
+        margin-top: 2px;
+    }
+
+    .gh-voucher-form {
+        display: flex;
+        gap: 8px;
+    }
+
+    .gh-voucher-input {
+        flex: 1;
+        border: 1.5px solid var(--hd-border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 0.9rem;
+        color: var(--hd-text);
+    }
+
+        .gh-voucher-input:focus {
+            outline: none;
+            border-color: var(--hd-primary);
+            box-shadow: 0 0 0 3px rgba(47, 93, 98, 0.12);
+        }
+
+    .gh-btn.apply {
+        background: var(--hd-accent);
+        color: #fff;
+        padding: 10px 16px;
+        white-space: nowrap;
+    }
+
+        .gh-btn.apply:hover {
+            background: #B36A3D;
+        }
+
+    /* Tổng kết */
+    .gh-summary-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.92rem;
+        color: var(--hd-text);
+        margin-bottom: 10px;
+    }
+
+        .gh-summary-row.discount {
+            color: var(--hd-primary-dark);
+        }
+
+        .gh-summary-row.free {
+            color: var(--hd-primary-dark);
+            font-weight: 600;
+        }
+
+    .gh-divider {
+        border: none;
+        border-top: 1px solid var(--hd-border);
+        margin: 12px 0;
+    }
+
+    .gh-total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 16px;
+    }
+
+        .gh-total-row span {
+            font-weight: 700;
+            color: var(--hd-text);
+        }
+
+        .gh-total-row strong {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--hd-accent);
+        }
+
+    .gh-checkout {
+        display: block;
+        text-align: center;
+        width: 100%;
+        border: none;
+        border-radius: 10px;
+        padding: 14px;
+        font-weight: 700;
+        font-size: 1rem;
+        color: #fff;
+        background: var(--hd-primary);
+        text-decoration: none;
+        transition: background .15s ease, transform .15s ease;
+    }
+
+        .gh-checkout:hover {
+            background: var(--hd-primary-dark);
+            transform: translateY(-1px);
+            color: #fff;
+        }
+
+    @@media (max-width: 860px) {
+        .gh-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .gh-table-wrap {
+            overflow-x: auto;
+        }
+
+        .gh-table {
+            min-width: 640px;
+        }
+    }
+</style>
+
+<div class="container gh-page">
+    <div class="gh-header">
+        <div class="gh-eyebrow">Đơn hàng</div>
+        <h1>Giỏ hàng của bạn</h1>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="gh-alert ok">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="gh-alert err">@TempData["ErrorMessage"]</div>
+    }
+
+    @if (!Model.OrderDetails.Any())
+    {
+        <div class="gh-empty">
+            Giỏ hàng đang trống. <a asp-controller="SanPham" asp-action="Index">Tiếp tục mua sắm</a>
+        </div>
+    }
+    else
+    {
+        <div class="gh-layout">
+            <div class="gh-table-wrap">
+                <table class="gh-table">
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Đơn giá</th>
+                            <th>Số lượng</th>
+                            <th>Thành tiền</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ct in Model.OrderDetails)
+                        {
+                            <tr>
+                                <td class="gh-product">@ct.Product.ProductName</td>
+                                <td>@ct.UnitPrice.ToString("N0") đ</td>
+                                <td>
+                                    <form asp-action="CapNhatSoLuong" method="post" class="gh-qty-form">
+                                        <input type="hidden" name="maChiTiet" value="@ct.OrderDetailID" />
+                                        <input type="number" name="soLuong" value="@ct.Quantity" min="1" class="gh-qty-input" />
+                                        <button type="submit" class="gh-btn update">Cập nhật</button>
+                                    </form>
+                                </td>
+                                <td class="gh-subtotal">@((ct.UnitPrice * ct.Quantity).ToString("N0")) đ</td>
+                                <td>
+                                    <form asp-action="XoaSanPham" method="post">
+                                        <input type="hidden" name="maChiTiet" value="@ct.OrderDetailID" />
+                                        <button type="submit" class="gh-btn remove">Xóa</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <div class="gh-box">
+                    @if (Model.DiscountCode != null)
+                    {
+                        <div class="gh-voucher-applied">
+                            <div>
+                                <div class="gh-voucher-name">@Model.DiscountCode.CodeName</div>
+                                <div class="gh-voucher-sub">Giảm @Model.DiscountCode.DiscountPercent%</div>
+                            </div>
+                            <form asp-action="GoMaGiamGia" method="post">
+                                <button type="submit" class="gh-btn remove">Gỡ mã</button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <form asp-action="ApDungMaGiamGia" method="post" class="gh-voucher-form">
+                            <input type="text" name="tenVoucher" class="gh-voucher-input" placeholder="Nhập mã giảm giá" />
+                            <button type="submit" class="gh-btn apply">Áp dụng</button>
+                        </form>
+                    }
+                </div>
+
+                <div class="gh-box">
+                    <div class="gh-summary-row">
+                        <span>Tạm tính</span>
+                        <span>@tongTruocGiam.ToString("N0") đ</span>
+                    </div>
+                    @if (soTienGiam > 0)
+                    {
+                        <div class="gh-summary-row discount">
+                            <span>Giảm giá</span>
+                            <span>-@soTienGiam.ToString("N0") đ</span>
+                        </div>
+                    }
+                    <div class="gh-summary-row">
+                        <span>Phí vận chuyển</span>
+                        @if (Model.ShippingFee > 0)
+                        {
+                            <span>@Model.ShippingFee.ToString("N0") đ</span>
+                        }
+                        else
+                        {
+                            <span class="text-nowrap gh-summary-row free" style="display:inline;margin:0;">Miễn phí</span>
+                        }
+                    </div>
+
+                    <hr class="gh-divider" />
+
+                    <div class="gh-total-row">
+                        <span>Tổng tiền</span>
+                        <strong>@Model.TotalAmount.ToString("N0") đ</strong>
+                    </div>
+
+                    <a asp-action="ThanhToan" class="gh-checkout">Tiến hành thanh toán</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

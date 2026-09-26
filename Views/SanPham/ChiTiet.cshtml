@@ -1,0 +1,337 @@
+﻿@* Views/SanPham/ChiTiet.cshtml *@
+@model ElectronicsShop.Models.Product
+
+@{
+    ViewData["Title"] = Model.ProductName;
+    var danhGiaList = ViewBag.DanhGiaList as List<ElectronicsShop.Models.Review>;
+}
+<style>
+    .spct-page {
+        --hd-primary: #2F5D62;
+        --hd-primary-dark: #22454A;
+        --hd-accent: #C97B4A;
+        --hd-bg: #F7F7F5;
+        --hd-card: #FFFFFF;
+        --hd-text: #24262B;
+        --hd-muted: #6B7076;
+        --hd-border: #E7E5E1;
+        padding: 32px 0 60px;
+    }
+
+    .spct-breadcrumb {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 0;
+        margin: 0 0 24px;
+        font-size: 0.85rem;
+        color: var(--hd-muted);
+    }
+
+        .spct-breadcrumb li:not(:last-child)::after {
+            content: "/";
+            margin-left: 6px;
+            color: var(--hd-border);
+        }
+
+        .spct-breadcrumb a {
+            color: var(--hd-muted);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+            .spct-breadcrumb a:hover {
+                color: var(--hd-primary);
+            }
+
+        .spct-breadcrumb .active {
+            color: var(--hd-text);
+            font-weight: 600;
+        }
+
+    .spct-alert {
+        background: #E7F0EF;
+        color: var(--hd-primary-dark);
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+
+    .spct-grid {
+        display: grid;
+        grid-template-columns: 380px 1fr;
+        gap: 40px;
+        align-items: flex-start;
+    }
+
+    .spct-media {
+        background: var(--hd-card);
+        border: 1px solid var(--hd-border);
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .spct-img {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 12px;
+        background: var(--hd-bg);
+        display: block;
+        margin-bottom: 16px;
+    }
+
+    .spct-cat {
+        display: inline-block;
+        background: #E7F0EF;
+        color: var(--hd-primary-dark);
+        font-weight: 700;
+        font-size: 0.8rem;
+        padding: 6px 14px;
+        border-radius: 20px;
+    }
+
+    .spct-name {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 800;
+        font-size: 1.7rem;
+        color: var(--hd-text);
+        margin: 0 0 8px;
+    }
+
+    .spct-desc {
+        color: var(--hd-muted);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    .spct-divider {
+        border: none;
+        border-top: 1px solid var(--hd-border);
+        margin: 20px 0;
+    }
+
+    .spct-price {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: var(--hd-accent);
+        margin: 0 0 18px;
+    }
+
+    .spct-info {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 24px;
+        font-size: 0.92rem;
+        color: var(--hd-text);
+    }
+
+        .spct-info strong {
+            font-weight: 700;
+            margin-right: 6px;
+        }
+
+    .spct-color-badge {
+        display: inline-block;
+        background: #F1F0EE;
+        color: var(--hd-muted);
+        font-weight: 600;
+        font-size: 0.8rem;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+
+    .spct-stock {
+        color: var(--hd-primary-dark);
+        font-weight: 600;
+    }
+
+    .spct-stock.out {
+        color: #9A3E33;
+    }
+
+    .spct-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .spct-btn {
+        border: none;
+        border-radius: 10px;
+        padding: 12px 26px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+
+        .spct-btn.add {
+            background: var(--hd-primary);
+            color: #fff;
+        }
+
+            .spct-btn.add:hover {
+                background: var(--hd-primary-dark);
+            }
+
+        .spct-btn.disabled {
+            background: #F1F0EE;
+            color: var(--hd-muted);
+            cursor: not-allowed;
+        }
+
+        .spct-btn.back {
+            background: transparent;
+            border: 1.5px solid var(--hd-border);
+            color: var(--hd-text);
+        }
+
+            .spct-btn.back:hover {
+                border-color: var(--hd-primary);
+                color: var(--hd-primary);
+            }
+
+    .spct-review-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 800;
+        font-size: 1.2rem;
+        color: var(--hd-text);
+        margin: 40px 0 16px;
+    }
+
+    .spct-review-card {
+        background: var(--hd-card);
+        border: 1px solid var(--hd-border);
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 14px;
+    }
+
+    .spct-review-name {
+        font-weight: 700;
+        color: var(--hd-primary);
+        margin: 0 0 6px;
+        font-size: 0.95rem;
+    }
+
+    .spct-review-stars {
+        color: var(--hd-accent);
+        font-weight: 600;
+        margin-left: 4px;
+    }
+
+    .spct-review-text {
+        color: var(--hd-text);
+        margin: 0 0 6px;
+        font-size: 0.92rem;
+    }
+
+    .spct-review-date {
+        color: var(--hd-muted);
+        font-size: 0.8rem;
+    }
+
+    .spct-review-empty {
+        color: var(--hd-muted);
+        background: var(--hd-card);
+        border: 1px dashed var(--hd-border);
+        border-radius: 14px;
+        padding: 24px;
+        text-align: center;
+    }
+
+    @@media (max-width: 800px) {
+        .spct-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+<div class="container spct-page">
+    <ul class="spct-breadcrumb">
+        <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+        <li><a asp-controller="SanPham" asp-action="Index">Sản phẩm</a></li>
+        <li class="active">@Model.ProductName</li>
+    </ul>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="spct-alert">@TempData["SuccessMessage"]</div>
+    }
+
+    <div class="spct-grid">
+        <div class="spct-media">
+            <img src="~/images/@(string.IsNullOrEmpty(Model.ImageURL) ? "no-image.png" : Model.ImageURL)"
+                 class="spct-img"
+                 onerror="this.src='/images/no-image.png'"
+                 alt="@Model.ProductName" />
+            <span class="spct-cat">@Model.Category?.CategoryName</span>
+        </div>
+        <div>
+            <h2 class="spct-name">@Model.ProductName</h2>
+            <p class="spct-desc">@Model.Description</p>
+            <hr class="spct-divider" />
+            <p class="spct-price">Giá bán: @Model.Price.ToString("N0") đ</p>
+
+            <div class="spct-info">
+                <div>
+                    <strong>Màu sắc:</strong>
+                    <span class="spct-color-badge">@(string.IsNullOrEmpty(Model.ColorVariant) ? "Không có" : Model.ColorVariant)</span>
+                </div>
+                <div>
+                    <strong>Tình trạng:</strong>
+                    @if (Model.Stock > 0)
+                    {
+                        <span class="spct-stock">Còn lại @Model.Stock sản phẩm</span>
+                    }
+                    else
+                    {
+                        <span class="spct-stock out">Hết hàng</span>
+                    }
+                </div>
+            </div>
+
+            <div class="spct-actions">
+                @if (Model.Stock > 0)
+                {
+                    <form asp-controller="GioHang" asp-action="ThemVaoGio" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@Model.ProductID" />
+                        <input type="hidden" name="soLuong" value="1" />
+                        <button type="submit" class="spct-btn add">Thêm vào giỏ hàng</button>
+                    </form>
+                }
+                else
+                {
+                    <button type="button" class="spct-btn disabled" disabled>Hết hàng</button>
+                }
+                <a asp-action="Index" class="spct-btn back">Quay lại danh sách</a>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="spct-review-title">Đánh giá từ khách hàng</h4>
+    @if (danhGiaList != null && danhGiaList.Any())
+    {
+        foreach (var dg in danhGiaList)
+        {
+            <div class="spct-review-card">
+                <p class="spct-review-name">@dg.User?.FullName <span class="spct-review-stars">(@dg.Rating ⭐)</span></p>
+                <p class="spct-review-text">@dg.Comment</p>
+                <span class="spct-review-date">Ngày đánh giá: @dg.ReviewDate.ToString("dd/MM/yyyy HH:mm")</span>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="spct-review-empty">Chưa có đánh giá nào cho sản phẩm này.</div>
+    }
+</div>

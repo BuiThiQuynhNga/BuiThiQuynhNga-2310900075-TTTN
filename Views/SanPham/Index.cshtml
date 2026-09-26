@@ -1,0 +1,72 @@
+﻿@* Views/SanPham/Index.cshtml (Giao diện khách hàng) *@
+@model IEnumerable<ElectronicsShop.Models.Product>
+
+@{
+    ViewData["Title"] = "Danh sách sản phẩm";
+}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center text-primary font-weight-bold">DANH SÁCH SẢN PHẨM</h2>
+
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <img src="~/images/@(string.IsNullOrEmpty(item.ImageURL) ? "no-image.png" : item.ImageURL)"
+                         class="card-img-top"
+                         style="height:220px; object-fit:cover;"
+                         onerror="this.src='/images/no-image.png'"
+                         alt="@item.ProductName" />
+                    <div class="card-body">
+                        <span class="badge bg-info text-dark mb-2">@item.Category?.CategoryName</span>
+                        <h5 class="card-title text-dark font-weight-bold">@item.ProductName</h5>
+                        <p class="card-text text-muted small">
+                            @if (!string.IsNullOrEmpty(item.Description))
+                            {
+                                @(item.Description.Length > 80 ? item.Description.Substring(0, 80) + "..." : item.Description)
+                            }
+                        </p>
+                        <ul class="list-unstyled mb-3">
+                            <li><strong>Màu sắc:</strong> <span class="text-danger">@(string.IsNullOrEmpty(item.ColorVariant) ? "N/A" : item.ColorVariant)</span></li>
+                            <li><strong>Giá bán:</strong> <span class="text-success font-weight-bold">@item.Price.ToString("N0") VNĐ</span></li>
+                            <li>
+                                <strong>Tồn kho:</strong>
+                                @if (item.Stock > 0)
+                                {
+                                    @: @item.Stock sản phẩm
+                                }
+                                else
+                                {
+                                    <span class="text-danger fw-bold">Hết hàng</span>
+                                }
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-footer bg-white border-top-0">
+                        <div class="d-grid gap-2">
+                            <a asp-action="ChiTiet" asp-route-id="@item.ProductID" class="btn btn-outline-primary btn-sm">
+                                Xem chi tiết
+                            </a>
+                            @if (item.Stock > 0)
+                            {
+                                <form asp-controller="GioHang" asp-action="ThemVaoGio" method="post">
+                                    <input type="hidden" name="id" value="@item.ProductID" />
+                                    <input type="hidden" name="soLuong" value="1" />
+                                    <button type="submit" class="btn btn-primary btn-sm w-100">
+                                        🛒 Thêm vào giỏ
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-secondary btn-sm w-100" disabled>
+                                    Hết hàng
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

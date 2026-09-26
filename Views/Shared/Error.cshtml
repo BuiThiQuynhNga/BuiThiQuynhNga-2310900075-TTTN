@@ -1,0 +1,116 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "Lỗi hệ thống";
+}
+<style>
+    .err-page {
+        --hd-primary: #2F5D62;
+        --hd-primary-dark: #22454A;
+        --hd-accent: #C97B4A;
+        --hd-bg: #F7F7F5;
+        --hd-card: #FFFFFF;
+        --hd-text: #24262B;
+        --hd-muted: #6B7076;
+        --hd-border: #E7E5E1;
+        padding: 60px 0;
+        text-align: center;
+    }
+
+    .err-card {
+        background: var(--hd-card);
+        border: 1px solid #F7E9E7; /* Viền hơi đỏ */
+        border-radius: 16px;
+        padding: 40px;
+        max-width: 650px;
+        margin: 0 auto;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .err-icon {
+        font-size: 4rem;
+        margin-bottom: 16px;
+        line-height: 1;
+    }
+
+    .err-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 800;
+        font-size: 2rem;
+        color: #C0524A;
+        margin-bottom: 10px;
+    }
+
+    .err-desc {
+        color: var(--hd-text);
+        margin-bottom: 24px;
+        font-size: 1.1rem;
+    }
+
+    .err-req {
+        background: #F1F0EE;
+        padding: 10px 20px;
+        border-radius: 8px;
+        display: inline-block;
+        margin-bottom: 24px;
+        color: var(--hd-muted);
+        font-size: 0.95rem;
+    }
+
+    .err-dev {
+        text-align: left;
+        background: #FAFAF8;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid var(--hd-border);
+        font-size: 0.9rem;
+        color: var(--hd-muted);
+        margin-bottom: 24px;
+    }
+
+    .err-btn {
+        display: inline-block;
+        background: var(--hd-primary);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 28px;
+        font-size: 1rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: background .15s ease, transform .15s ease;
+    }
+
+        .err-btn:hover {
+            background: var(--hd-primary-dark);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+</style>
+
+<div class="container err-page">
+    <div class="err-card">
+        <div class="err-icon">⚠️</div>
+        <h1 class="err-title">Đã xảy ra lỗi!</h1>
+        <p class="err-desc">Hệ thống gặp sự cố trong quá trình xử lý yêu cầu của bạn.</p>
+
+        @if (Model != null && Model.ShowRequestId)
+        {
+            <div class="err-req">
+                <strong>Mã lỗi (Request ID):</strong> <code>@Model.RequestId</code>
+            </div>
+        }
+
+        <div class="err-dev">
+            <h5 class="fw-bold mb-2" style="color: var(--hd-text);">Chế độ Phát triển (Development Mode)</h5>
+            <p class="mb-2">
+                Chuyển sang môi trường <strong>Development</strong> sẽ hiển thị thông tin chi tiết hơn về lỗi đã xảy ra.
+            </p>
+            <p class="mb-0">
+                <strong>Lưu ý: Môi trường Development không nên được bật cho các ứng dụng đã triển khai (Deploy).</strong>
+                Nó có thể dẫn đến việc rò rỉ thông tin nhạy cảm. Để gỡ lỗi cục bộ, hãy thiết lập biến môi trường <strong>ASPNETCORE_ENVIRONMENT</strong> thành <strong>Development</strong> và khởi động lại ứng dụng.
+            </p>
+        </div>
+
+        <a asp-controller="Home" asp-action="Index" class="err-btn">Trở về trang chủ</a>
+    </div>
+</div>

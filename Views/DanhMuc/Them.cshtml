@@ -1,0 +1,160 @@
+﻿@model ElectronicsShop.Models.Category
+
+@{
+    ViewData["Title"] = "Thêm danh mục";
+}
+<style>
+    .dmf-page {
+        --hd-primary: #2F5D62;
+        --hd-primary-dark: #22454A;
+        --hd-accent: #C97B4A;
+        --hd-bg: #F7F7F5;
+        --hd-card: #FFFFFF;
+        --hd-text: #24262B;
+        --hd-muted: #6B7076;
+        --hd-border: #E7E5E1;
+        padding: 40px 0 60px;
+    }
+
+    .dmf-eyebrow {
+        font-size: 0.78rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--hd-muted);
+        font-weight: 600;
+    }
+
+    .dmf-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: var(--hd-text);
+        margin: 4px 0 24px;
+    }
+
+    .dmf-card {
+        background: var(--hd-card);
+        border: 1px solid var(--hd-border);
+        border-radius: 16px;
+        padding: 32px;
+        max-width: 500px;
+    }
+
+    .dmf-group {
+        margin-bottom: 18px;
+    }
+
+    .dmf-label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--hd-text);
+        margin-bottom: 6px;
+    }
+
+    .dmf-input,
+    .dmf-textarea {
+        width: 100%;
+        border: 1px solid var(--hd-border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 0.92rem;
+        color: var(--hd-text);
+        background: #fff;
+        transition: border-color .15s ease;
+        font-family: inherit;
+    }
+
+        .dmf-input:focus,
+        .dmf-textarea:focus {
+            outline: none;
+            border-color: var(--hd-primary);
+        }
+
+    .dmf-textarea {
+        resize: vertical;
+    }
+
+    .dmf-err {
+        color: #C0524A;
+        font-size: 0.8rem;
+        margin-top: 4px;
+        display: block;
+    }
+
+    .dmf-summary {
+        color: #C0524A;
+        font-size: 0.85rem;
+        margin-bottom: 16px;
+    }
+
+    .dmf-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 24px;
+    }
+
+    .dmf-btn {
+        border: none;
+        border-radius: 8px;
+        padding: 10px 22px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+
+        .dmf-btn.save {
+            background: var(--hd-primary);
+            color: #fff;
+        }
+
+            .dmf-btn.save:hover {
+                background: var(--hd-primary-dark);
+            }
+
+        .dmf-btn.cancel {
+            background: transparent;
+            border: 1.5px solid var(--hd-border);
+            color: var(--hd-text);
+        }
+
+            .dmf-btn.cancel:hover {
+                border-color: var(--hd-primary);
+                color: var(--hd-primary);
+            }
+</style>
+<div class="container dmf-page">
+    <div class="dmf-eyebrow">Vận hành</div>
+    <h1 class="dmf-title">Thêm danh mục mới</h1>
+
+    <div class="dmf-card">
+        <form asp-action="Them" method="post">
+            <div asp-validation-summary="ModelOnly" class="dmf-summary"></div>
+
+            <div class="dmf-group">
+                <label asp-for="CategoryName" class="dmf-label">Tên danh mục</label>
+                <input asp-for="CategoryName" class="dmf-input" placeholder="Ví dụ: Điện thoại di động" />
+                <span asp-validation-for="CategoryName" class="dmf-err"></span>
+            </div>
+
+            <div class="dmf-group">
+                <label asp-for="Description" class="dmf-label">Mô tả</label>
+                <textarea asp-for="Description" class="dmf-textarea" rows="3"></textarea>
+            </div>
+
+            <div class="dmf-actions">
+                <button type="submit" class="dmf-btn save">Lưu</button>
+                <a asp-action="Index" class="dmf-btn cancel">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

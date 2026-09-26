@@ -1,0 +1,265 @@
+﻿@model IEnumerable<ElectronicsShop.Models.Category>
+
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+    bool laAdmin = User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Admin");
+}
+<style>
+    .dm-page {
+        --hd-primary: #2F5D62;
+        --hd-primary-dark: #22454A;
+        --hd-accent: #C97B4A;
+        --hd-bg: #F7F7F5;
+        --hd-card: #FFFFFF;
+        --hd-text: #24262B;
+        --hd-muted: #6B7076;
+        --hd-border: #E7E5E1;
+        padding: 40px 0 60px;
+    }
+
+    .dm-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+        .dm-header .dm-eyebrow {
+            font-size: 0.78rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--hd-muted);
+            font-weight: 600;
+        }
+
+        .dm-header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--hd-text);
+            margin: 4px 0 0;
+        }
+
+    .dm-btn-add {
+        background: var(--hd-primary);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 18px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: background .15s ease;
+    }
+
+        .dm-btn-add:hover {
+            background: var(--hd-primary-dark);
+            color: #fff;
+        }
+
+    .dm-alert {
+        background: #E7F0EF;
+        color: var(--hd-primary-dark);
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 16px;
+    }
+
+        .dm-alert.err {
+            background: #F7E9E7;
+            color: #9A3E33;
+        }
+
+    .dm-empty {
+        background: var(--hd-card);
+        border: 1px dashed var(--hd-border);
+        border-radius: 16px;
+        padding: 48px 24px;
+        text-align: center;
+        color: var(--hd-muted);
+    }
+
+    .dm-table-wrap {
+        background: var(--hd-card);
+        border: 1px solid var(--hd-border);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .dm-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.92rem;
+    }
+
+        .dm-table thead {
+            background: #F1F0EE;
+        }
+
+            .dm-table thead th {
+                text-align: left;
+                font-weight: 700;
+                color: var(--hd-text);
+                padding: 14px 16px;
+                font-size: 0.82rem;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                border-bottom: 1px solid var(--hd-border);
+            }
+
+        .dm-table tbody td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--hd-border);
+            color: var(--hd-text);
+            vertical-align: middle;
+        }
+
+        .dm-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .dm-table tbody tr {
+            transition: background .15s ease;
+        }
+
+            .dm-table tbody tr:hover {
+                background: #FAFAF8;
+            }
+
+    .dm-name {
+        font-weight: 700;
+        color: var(--hd-primary);
+    }
+
+    .dm-count {
+        display: inline-block;
+        background: #E4EEF6;
+        color: #2A5F8A;
+        font-weight: 700;
+        font-size: 0.8rem;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+
+    .dm-actions {
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .dm-btn {
+        border: none;
+        border-radius: 8px;
+        padding: 7px 12px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+
+        .dm-btn.edit {
+            background: transparent;
+            border: 1.5px solid var(--hd-primary);
+            color: var(--hd-primary);
+        }
+
+            .dm-btn.edit:hover {
+                background: var(--hd-primary);
+                color: #fff;
+            }
+
+        .dm-btn.del {
+            background: transparent;
+            border: 1.5px solid #C0524A;
+            color: #C0524A;
+        }
+
+            .dm-btn.del:hover {
+                background: #C0524A;
+                color: #fff;
+            }
+
+    @@media (max-width: 700px) {
+        .dm-table-wrap {
+            overflow-x: auto;
+        }
+
+        .dm-table {
+            min-width: 560px;
+        }
+    }
+</style>
+<div class="container dm-page">
+    <div class="dm-header">
+        <div>
+            <div class="dm-eyebrow">Vận hành</div>
+            <h1>Quản lý danh mục</h1>
+        </div>
+        @if (laAdmin)
+        {
+            <a asp-action="Them" class="dm-btn-add">+ Thêm danh mục</a>
+        }
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="dm-alert">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="dm-alert err">@TempData["ErrorMessage"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="dm-empty">Chưa có danh mục nào.</div>
+    }
+    else
+    {
+        <div class="dm-table-wrap">
+            <table class="dm-table">
+                <thead>
+                    <tr>
+                        <th>Tên danh mục</th>
+                        <th>Mô tả</th>
+                        <th>Số sản phẩm</th>
+                        @if (laAdmin)
+                        {
+                            <th style="text-align:right">Thao tác</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var dm in Model)
+                    {
+                        <tr>
+                            <td class="dm-name">@dm.CategoryName</td>
+                            <td>@dm.Description</td>
+                            <td><span class="dm-count">@(dm.Products?.Count ?? 0)</span></td>
+                            @if (laAdmin)
+                            {
+                                <td>
+                                    <div class="dm-actions">
+                                        <a asp-action="Sua" asp-route-id="@dm.CategoryID" class="dm-btn edit">Sửa</a>
+                                        <form asp-action="Xoa" asp-route-id="@dm.CategoryID" method="post" class="d-inline"
+                                              onsubmit="return confirm('Bạn có chắc muốn xóa danh mục này?');">
+                                            <button type="submit" class="dm-btn del">Xóa</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

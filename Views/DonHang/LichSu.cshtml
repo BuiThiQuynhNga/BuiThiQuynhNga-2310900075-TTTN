@@ -1,0 +1,188 @@
+﻿@model IEnumerable<ElectronicsShop.Models.Order>
+
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+}
+<style>
+    .dhc-page {
+        --hd-primary: #2F5D62;
+        --hd-primary-dark: #22454A;
+        --hd-accent: #C97B4A;
+        --hd-bg: #F7F7F5;
+        --hd-card: #FFFFFF;
+        --hd-text: #24262B;
+        --hd-muted: #6B7076;
+        --hd-border: #E7E5E1;
+        padding: 40px 0 60px;
+    }
+
+    .dhc-eyebrow {
+        font-size: 0.78rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--hd-muted);
+        font-weight: 600;
+    }
+
+    .dhc-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: var(--hd-text);
+        margin: 4px 0 24px;
+    }
+
+    .dhc-empty {
+        background: var(--hd-card);
+        border: 1px dashed var(--hd-border);
+        border-radius: 16px;
+        padding: 48px 24px;
+        text-align: center;
+        color: var(--hd-muted);
+    }
+
+        .dhc-empty a {
+            color: var(--hd-primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+            .dhc-empty a:hover {
+                text-decoration: underline;
+            }
+
+    .dhc-card {
+        background: var(--hd-card);
+        border: 1px solid var(--hd-border);
+        border-radius: 16px;
+        padding: 20px 24px;
+        margin-bottom: 16px;
+    }
+
+    .dhc-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .dhc-id {
+        font-weight: 700;
+        color: var(--hd-primary);
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .dhc-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+        .dhc-badge.cho {
+            background: #FBEFDD;
+            color: #9A6A1E;
+        }
+
+        .dhc-badge.giao {
+            background: #E4EEF6;
+            color: #2A5F8A;
+        }
+
+        .dhc-badge.hoan {
+            background: #E7F0EF;
+            color: var(--hd-primary-dark);
+        }
+
+        .dhc-badge.huy {
+            background: #F1F0EE;
+            color: var(--hd-muted);
+        }
+
+        .dhc-badge.khac {
+            background: #EFE8F5;
+            color: #6C4A93;
+        }
+
+    .dhc-date {
+        color: var(--hd-muted);
+        font-size: 0.85rem;
+        margin: 0 0 10px;
+    }
+
+    .dhc-items {
+        border-top: 1px solid var(--hd-border);
+        border-bottom: 1px solid var(--hd-border);
+        padding: 10px 0;
+        margin-bottom: 12px;
+    }
+
+    .dhc-item {
+        display: block;
+        color: var(--hd-text);
+        font-size: 0.9rem;
+        padding: 2px 0;
+    }
+
+    .dhc-total {
+        font-weight: 700;
+        color: var(--hd-accent);
+        font-size: 1rem;
+        margin: 0;
+        text-align: right;
+    }
+</style>
+<div class="container dhc-page">
+    <div class="dhc-eyebrow">Tài khoản</div>
+    <h1 class="dhc-title">Đơn hàng của tôi</h1>
+
+    @if (!Model.Any())
+    {
+        <div class="dhc-empty">
+            Bạn chưa có đơn hàng nào. <a asp-controller="SanPham" asp-action="Index">Mua sắm ngay</a>
+        </div>
+    }
+    else
+    {
+        @foreach (var dh in Model)
+        {
+            string lopBadge = dh.OrderStatus switch
+            {
+                "Pending" => "cho",
+                "Shipping" => "giao",
+                "Success" => "hoan",
+                "Cancelled" => "huy",
+                _ => "khac"
+            };
+
+            string tenTrangThai = dh.OrderStatus switch
+            {
+                "Pending" => "Chờ xác nhận",
+                "Shipping" => "Đang giao",
+                "Success" => "Đã giao",
+                "Cancelled" => "Đã hủy",
+                _ => dh.OrderStatus
+            };
+
+            <div class="dhc-card">
+                <div class="dhc-top">
+                    <h6 class="dhc-id">Đơn hàng #@dh.OrderID</h6>
+                    <span class="dhc-badge @lopBadge">@tenTrangThai</span>
+                </div>
+                <p class="dhc-date">Ngày đặt: @dh.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                <div class="dhc-items">
+                    @foreach (var ct in dh.OrderDetails)
+                    {
+                        <span class="dhc-item">@ct.Product.ProductName (x@(ct.Quantity))</span>
+                    }
+                </div>
+                <p class="dhc-total">Tổng: @dh.TotalAmount.ToString("N0") đ</p>
+            </div>
+        }
+    }
+</div>

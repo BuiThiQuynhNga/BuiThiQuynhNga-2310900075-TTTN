@@ -1,0 +1,185 @@
+﻿@model ElectronicsShop.Models.Product
+
+@{
+    ViewData["Title"] = "Thêm sản phẩm";
+    var danhMucList = ViewBag.DanhMucList as List<ElectronicsShop.Models.Category>;
+}
+<style>
+    .spf-page {
+        --hd-primary: #2F5D62;
+        --hd-primary-dark: #22454A;
+        --hd-accent: #C97B4A;
+        --hd-bg: #F7F7F5;
+        --hd-card: #FFFFFF;
+        --hd-text: #24262B;
+        --hd-muted: #6B7076;
+        --hd-border: #E7E5E1;
+        padding: 40px 0 60px;
+    }
+
+    .spf-eyebrow {
+        font-size: 0.78rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--hd-muted);
+        font-weight: 600;
+    }
+
+    .spf-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: var(--hd-text);
+        margin: 4px 0 24px;
+    }
+
+    .spf-card {
+        background: var(--hd-card);
+        border: 1px solid var(--hd-border);
+        border-radius: 16px;
+        padding: 32px;
+        max-width: 600px;
+    }
+
+    .spf-group {
+        margin-bottom: 18px;
+    }
+
+    .spf-label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--hd-text);
+        margin-bottom: 6px;
+    }
+
+    .spf-input,
+    .spf-select {
+        width: 100%;
+        border: 1px solid var(--hd-border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 0.92rem;
+        color: var(--hd-text);
+        background: #fff;
+        transition: border-color .15s ease;
+    }
+
+        .spf-input:focus,
+        .spf-select:focus {
+            outline: none;
+            border-color: var(--hd-primary);
+        }
+
+    .spf-err {
+        color: #C0524A;
+        font-size: 0.8rem;
+        margin-top: 4px;
+        display: block;
+    }
+
+    .spf-summary {
+        color: #C0524A;
+        font-size: 0.85rem;
+        margin-bottom: 16px;
+    }
+
+    .spf-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 24px;
+    }
+
+    .spf-btn {
+        border: none;
+        border-radius: 8px;
+        padding: 10px 22px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+
+        .spf-btn.save {
+            background: var(--hd-primary);
+            color: #fff;
+        }
+
+            .spf-btn.save:hover {
+                background: var(--hd-primary-dark);
+            }
+
+        .spf-btn.cancel {
+            background: transparent;
+            border: 1.5px solid var(--hd-border);
+            color: var(--hd-text);
+        }
+
+            .spf-btn.cancel:hover {
+                border-color: var(--hd-primary);
+                color: var(--hd-primary);
+            }
+</style>
+<div class="container spf-page">
+    <div class="spf-eyebrow">Vận hành</div>
+    <h1 class="spf-title">Thêm sản phẩm</h1>
+
+    <div class="spf-card">
+        <form asp-action="Them" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="spf-summary"></div>
+
+            <div class="spf-group">
+                <label asp-for="ProductName" class="spf-label">Tên sản phẩm</label>
+                <input asp-for="ProductName" class="spf-input" />
+                <span asp-validation-for="ProductName" class="spf-err"></span>
+            </div>
+
+            <div class="spf-group">
+                <label asp-for="CategoryID" class="spf-label">Danh mục</label>
+                <select asp-for="CategoryID" class="spf-select">
+                    <option value="">-- Chọn danh mục --</option>
+                    @foreach (var dm in danhMucList ?? new())
+                    {
+                        <option value="@dm.CategoryID">@dm.CategoryName</option>
+                    }
+                </select>
+                <span asp-validation-for="CategoryID" class="spf-err"></span>
+            </div>
+
+            <div class="spf-group">
+                <label asp-for="ColorVariant" class="spf-label">Mã màu</label>
+                <input asp-for="ColorVariant" class="spf-input" />
+            </div>
+
+            <div class="spf-group">
+                <label asp-for="Price" class="spf-label">Giá bán (VNĐ)</label>
+                <input asp-for="Price" class="spf-input" type="number" step="1000" />
+                <span asp-validation-for="Price" class="spf-err"></span>
+            </div>
+
+            <div class="spf-group">
+                <label asp-for="Stock" class="spf-label">Số lượng tồn</label>
+                <input asp-for="Stock" class="spf-input" type="number" />
+                <span asp-validation-for="Stock" class="spf-err"></span>
+            </div>
+
+            <div class="spf-group">
+                <label class="spf-label">Hình ảnh</label>
+                <input type="file" name="anhUpload" class="spf-input" accept="image/*" />
+            </div>
+
+            <div class="spf-actions">
+                <button type="submit" class="spf-btn save">Lưu</button>
+                <a asp-action="Index" class="spf-btn cancel">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
