@@ -1,14 +1,17 @@
-﻿@model ElectronicsShop.Models.User
 @{
-    ViewData["Title"] = "Thông tin tài khoản";
-    string tenVaiTro = Model.Role switch
+    ViewData["Title"] = "Đổi mật khẩu";
+    string hoTen = User.Identity?.Name ?? "";
+    string email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
+    string vaiTro = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+    string tenVaiTro = vaiTro switch
     {
         "Admin" => "Quản trị viên",
         "Staff" => "Nhân viên",
         "Customer" => "Khách hàng",
-        _ => Model.Role
+        _ => vaiTro
     };
 }
+
 <style>
     .tk-page {
         --es-blue: #1E4FBF;
@@ -27,8 +30,10 @@
     .tk-crumb b { color: var(--es-blue); }
     .tk-title { font-weight: 800; font-size: 1.6rem; color: var(--es-navy); margin: 0 0 4px; }
     .tk-subtitle { color: var(--es-muted); font-size: .92rem; margin: 0 0 22px; }
+
     .tk-layout { display: grid; grid-template-columns: 300px 1fr; gap: 22px; align-items: start; }
     .tk-side { display: flex; flex-direction: column; gap: 18px; }
+
     .tk-profile {
         background: #fff; border: 1px solid var(--es-border); border-radius: 14px; overflow: hidden;
         box-shadow: 0 3px 14px rgba(15,47,122,.06);
@@ -52,12 +57,8 @@
         padding: 5px 14px; border-radius: 20px;
     }
     .tk-role.admin { background: #FDECEC; color: var(--es-red); }
-    .tk-facts { list-style: none; padding: 0; margin: 18px 0 0; text-align: left; border-top: 1px solid var(--es-border); }
-    .tk-facts li { display: flex; gap: 10px; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid #EEF0F4; font-size: .85rem; color: var(--es-text); }
-    .tk-facts li:last-child { border-bottom: none; padding-bottom: 0; }
-    .tk-facts i { color: var(--es-blue); margin-top: 2px; }
-    .tk-facts small { display: block; color: var(--es-muted); font-size: .72rem; }
-    .tk-facts span { word-break: break-word; }
+    .tk-mail { color: var(--es-muted); font-size: .85rem; margin-top: 12px; word-break: break-word; }
+
     .tk-menu {
         background: #fff; border: 1px solid var(--es-border); border-radius: 14px; padding: 8px;
         box-shadow: 0 3px 14px rgba(15,47,122,.06);
@@ -76,6 +77,7 @@
     .tk-menu a.danger, .tk-menu a.danger i { color: var(--es-red); }
     .tk-menu a.danger:hover { background: #FDECEC; }
     .tk-menu hr { margin: 6px 8px; border: none; border-top: 1px solid var(--es-border); }
+
     .tk-main { display: flex; flex-direction: column; gap: 18px; }
     .tk-card {
         background: #fff; border: 1px solid var(--es-border); border-radius: 14px; overflow: hidden;
@@ -90,31 +92,43 @@
     .tk-card-head h5 { margin: 0; font-weight: 800; font-size: 1rem; }
     .tk-card-head small { display: block; color: rgba(255,255,255,.75); font-size: .78rem; font-weight: 400; }
     .tk-card-body { padding: 26px 24px; }
+
     .tk-alert {
         display: flex; align-items: center; gap: 10px;
         background: #E8F6EC; color: #166534; border: 1px solid #BBE5C8;
         border-radius: 10px; padding: 12px 16px; font-size: .9rem; font-weight: 600; margin-bottom: 20px;
     }
-    .tk-summary { color: #B3261E; font-size: .85rem; margin-bottom: 14px; }
+    .tk-summary {
+        color: #B3261E; font-size: .88rem; margin-bottom: 16px;
+        background: #FDECEC; border: 1px solid #F6C7C7; border-radius: 10px; padding: 10px 16px;
+    }
+    .tk-summary.validation-summary-valid { display: none; }
+    .tk-summary ul { margin: 0; padding-left: 18px; }
+
     .tk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 16px; }
     .tk-group.full { grid-column: 1 / -1; }
     .tk-label { display: block; font-size: .82rem; font-weight: 700; color: var(--es-text); margin-bottom: 6px; }
     .tk-label span { color: var(--es-red); }
     .tk-field {
-        display: flex; align-items: flex-start; gap: 10px;
+        display: flex; align-items: center; gap: 10px;
         background: #F3F5F9; border: 1.5px solid transparent; border-radius: 10px;
         padding: 0 14px; transition: all .15s ease;
     }
     .tk-field:focus-within { background: #fff; border-color: var(--es-blue); box-shadow: 0 0 0 3px rgba(30,79,191,.12); }
-    .tk-field > i { color: var(--es-muted); margin-top: 14px; }
-    .tk-input, .tk-textarea {
+    .tk-field > i { color: var(--es-muted); }
+    .tk-input {
         flex: 1; border: none; background: transparent; outline: none;
         padding: 13px 0; font-size: .95rem; color: var(--es-text); font-family: inherit; min-width: 0;
     }
-    .tk-textarea { resize: vertical; }
-    .tk-field.locked { background: #EEF0F4; }
-    .tk-field.locked .tk-input { color: var(--es-muted); cursor: not-allowed; }
+    .tk-eye { background: none; border: none; color: var(--es-muted); cursor: pointer; padding: 4px; line-height: 1; }
+    .tk-eye:hover { color: var(--es-blue); }
     .tk-hint { font-size: .76rem; color: var(--es-muted); margin-top: 5px; display: block; }
+
+    .tk-strength { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+    .tk-bar { flex: 1; height: 6px; border-radius: 6px; background: #E5E7EB; overflow: hidden; }
+    .tk-bar > div { height: 100%; width: 0; border-radius: 6px; transition: all .2s ease; background: var(--es-red); }
+    .tk-strength small { font-size: .76rem; color: var(--es-muted); min-width: 70px; text-align: right; }
+
     .tk-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--es-border); }
     .tk-btn {
         border: none; border-radius: 10px; padding: 12px 24px;
@@ -126,18 +140,11 @@
     .tk-btn.save:hover { background: var(--es-blue-dark); transform: translateY(-1px); }
     .tk-btn.pass { background: #fff; border: 1.5px solid var(--es-border); color: var(--es-text); }
     .tk-btn.pass:hover { border-color: var(--es-blue); color: var(--es-blue); }
-    .tk-sec { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-    .tk-sec-info { display: flex; gap: 14px; align-items: flex-start; }
-    .tk-sec-icon {
-        width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
-        background: #E8EFFC; color: var(--es-blue);
-        display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
-    }
-    .tk-sec-info strong { display: block; color: var(--es-navy); font-size: .95rem; }
-    .tk-sec-info small { color: var(--es-muted); font-size: .82rem; }
+
     .tk-tips { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .tk-tips li { display: flex; gap: 10px; font-size: .84rem; color: var(--es-text); line-height: 1.5; }
     .tk-tips i { color: var(--es-blue); margin-top: 2px; }
+
     @@media (max-width: 900px) {
         .tk-layout { grid-template-columns: 1fr; }
     }
@@ -146,49 +153,43 @@
         .tk-card-body { padding: 20px 16px; }
     }
 </style>
+
 <div class="container tk-page">
+
     <div class="tk-crumb">
         <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Trang chủ</a>
-        &nbsp;/&nbsp; <b>Thông tin tài khoản</b>
+        &nbsp;/&nbsp;
+        <a asp-controller="TaiKhoan" asp-action="ThongTin">Thông tin tài khoản</a>
+        &nbsp;/&nbsp; <b>Đổi mật khẩu</b>
     </div>
-    <h1 class="tk-title">Thông tin tài khoản</h1>
-    <p class="tk-subtitle">Quản lý thông tin cá nhân, địa chỉ nhận hàng và bảo mật tài khoản của bạn.</p>
+
+    <h1 class="tk-title">Đổi mật khẩu</h1>
+    <p class="tk-subtitle">Cập nhật mật khẩu định kỳ để bảo vệ tài khoản của bạn an toàn hơn.</p>
+
     <div class="tk-layout">
+
+        <!-- ===== CỘT TRÁI ===== -->
         <aside class="tk-side">
+
             <div class="tk-profile">
                 <div class="tk-cover"></div>
                 <div class="tk-profile-body">
-                    <div class="tk-avatar">@(string.IsNullOrEmpty(Model.FullName) ? "?" : Model.FullName.Trim().Substring(0, 1).ToUpper())</div>
-                    <h3 class="tk-name">@Model.FullName</h3>
-                    <span class="tk-role @(Model.Role == "Admin" ? "admin" : "")">
+                    <div class="tk-avatar">@(string.IsNullOrEmpty(hoTen) ? "?" : hoTen.Trim().Substring(0, 1).ToUpper())</div>
+                    <h3 class="tk-name">@hoTen</h3>
+                    <span class="tk-role @(vaiTro == "Admin" ? "admin" : "")">
                         <i class="bi bi-patch-check-fill"></i> @tenVaiTro
                     </span>
-                    <ul class="tk-facts">
-                        <li>
-                            <i class="bi bi-envelope"></i>
-                            <div><small>Email</small><span>@Model.Email</span></div>
-                        </li>
-                        <li>
-                            <i class="bi bi-telephone"></i>
-                            <div><small>Số điện thoại</small><span>@(string.IsNullOrWhiteSpace(Model.Phone) ? "Chưa cập nhật" : Model.Phone)</span></div>
-                        </li>
-                        <li>
-                            <i class="bi bi-geo-alt"></i>
-                            <div><small>Địa chỉ</small><span>@(string.IsNullOrWhiteSpace(Model.Address) ? "Chưa cập nhật" : Model.Address)</span></div>
-                        </li>
-                        <li>
-                            <i class="bi bi-calendar-check"></i>
-                            <div><small>Thành viên từ</small><span>@($"{Model.CreatedAt:dd/MM/yyyy}")</span></div>
-                        </li>
-                    </ul>
+                    <div class="tk-mail"><i class="bi bi-envelope"></i> @email</div>
                 </div>
             </div>
+
             <nav class="tk-menu">
                 <div class="tk-menu-title">Tài khoản của tôi</div>
-                <a asp-controller="TaiKhoan" asp-action="ThongTin" class="active"><i class="bi bi-person-vcard"></i> Hồ sơ cá nhân</a>
+                <a asp-controller="TaiKhoan" asp-action="ThongTin"><i class="bi bi-person-vcard"></i> Hồ sơ cá nhân</a>
                 <a asp-controller="DonHang" asp-action="LichSu"><i class="bi bi-receipt"></i> Đơn hàng của tôi</a>
                 <a asp-controller="GioHang" asp-action="Index"><i class="bi bi-cart3"></i> Giỏ hàng</a>
-                <a asp-controller="TaiKhoan" asp-action="DoiMatKhau"><i class="bi bi-key"></i> Đổi mật khẩu</a>
+                <a asp-controller="TaiKhoan" asp-action="DoiMatKhau" class="active"><i class="bi bi-key"></i> Đổi mật khẩu</a>
+
                 @if (User.IsInRole("Admin"))
                 {
                     <hr />
@@ -196,98 +197,163 @@
                     <a asp-controller="AdminSanPham" asp-action="Index"><i class="bi bi-box-seam"></i> Quản lý sản phẩm</a>
                     <a asp-controller="DonHang" asp-action="Index"><i class="bi bi-cart-check"></i> Quản lý đơn hàng</a>
                 }
+
                 <hr />
                 <a asp-controller="TaiKhoan" asp-action="DangXuat" class="danger"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a>
             </nav>
         </aside>
+
+        <!-- ===== CỘT PHẢI ===== -->
         <div class="tk-main">
+
             <div class="tk-card">
                 <div class="tk-card-head">
-                    <i class="bi bi-person-lines-fill"></i>
+                    <i class="bi bi-key-fill"></i>
                     <div>
-                        <h5>Thông tin cá nhân</h5>
-                        <small>Cập nhật họ tên, số điện thoại và địa chỉ nhận hàng</small>
+                        <h5>Đổi mật khẩu</h5>
+                        <small>Nhập mật khẩu hiện tại và mật khẩu mới</small>
                     </div>
                 </div>
                 <div class="tk-card-body">
+
                     @if (TempData["ThongBao"] != null)
                     {
                         <div class="tk-alert"><i class="bi bi-check-circle-fill"></i> @TempData["ThongBao"]</div>
                     }
-                    <form asp-action="CapNhatThongTin" method="post">
-                        <input type="hidden" name="maNguoiDung" value="@Model.UserID" />
+
+                    <form asp-action="DoiMatKhau" method="post" id="formDoiMatKhau">
                         <div asp-validation-summary="All" class="tk-summary"></div>
+
                         <div class="tk-grid">
+
                             <div class="tk-group full">
-                                <label class="tk-label">Email đăng nhập</label>
-                                <div class="tk-field locked">
-                                    <i class="bi bi-envelope"></i>
-                                    <input value="@Model.Email" class="tk-input" disabled />
+                                <label class="tk-label" for="matKhauCu">Mật khẩu hiện tại <span>*</span></label>
+                                <div class="tk-field">
+                                    <i class="bi bi-lock"></i>
+                                    <input type="password" name="matKhauCu" id="matKhauCu" class="tk-input"
+                                           placeholder="Nhập mật khẩu hiện tại" autocomplete="current-password" required />
+                                    <button type="button" class="tk-eye" data-target="matKhauCu" aria-label="Hiện/ẩn mật khẩu">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
                                 </div>
-                                <span class="tk-hint">Email dùng để đăng nhập nên không thể thay đổi.</span>
                             </div>
+
                             <div class="tk-group">
-                                <label class="tk-label" for="hoTen">Họ tên <span>*</span></label>
+                                <label class="tk-label" for="matKhauMoi">Mật khẩu mới <span>*</span></label>
                                 <div class="tk-field">
-                                    <i class="bi bi-person"></i>
-                                    <input name="hoTen" id="hoTen" value="@Model.FullName" class="tk-input" maxlength="100" placeholder="Nhập họ và tên" required />
+                                    <i class="bi bi-shield-lock"></i>
+                                    <input type="password" name="matKhauMoi" id="matKhauMoi" class="tk-input"
+                                           placeholder="Ít nhất 6 ký tự" minlength="6" autocomplete="new-password" required />
+                                    <button type="button" class="tk-eye" data-target="matKhauMoi" aria-label="Hiện/ẩn mật khẩu">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="tk-strength">
+                                    <div class="tk-bar"><div id="strengthBar"></div></div>
+                                    <small id="strengthText"></small>
                                 </div>
                             </div>
+
                             <div class="tk-group">
-                                <label class="tk-label" for="soDienThoai">Số điện thoại</label>
+                                <label class="tk-label" for="xacNhanMatKhauMoi">Xác nhận mật khẩu mới <span>*</span></label>
                                 <div class="tk-field">
-                                    <i class="bi bi-telephone"></i>
-                                    <input name="soDienThoai" id="soDienThoai" value="@Model.Phone" class="tk-input" maxlength="15" placeholder="Nhập số điện thoại" />
+                                    <i class="bi bi-shield-check"></i>
+                                    <input type="password" name="xacNhanMatKhauMoi" id="xacNhanMatKhauMoi" class="tk-input"
+                                           placeholder="Nhập lại mật khẩu mới" autocomplete="new-password" required />
+                                    <button type="button" class="tk-eye" data-target="xacNhanMatKhauMoi" aria-label="Hiện/ẩn mật khẩu">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
                                 </div>
-                            </div>
-                            <div class="tk-group full">
-                                <label class="tk-label" for="diaChi">Địa chỉ nhận hàng</label>
-                                <div class="tk-field">
-                                    <i class="bi bi-geo-alt"></i>
-                                    <textarea name="diaChi" id="diaChi" class="tk-textarea" rows="3" maxlength="255" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố">@Model.Address</textarea>
-                                </div>
+                                <span class="tk-hint" id="matchHint"></span>
                             </div>
                         </div>
+
                         <div class="tk-actions">
-                            <button type="submit" class="tk-btn save"><i class="bi bi-check2-circle"></i> Cập nhật thông tin</button>
-                            <a asp-controller="TaiKhoan" asp-action="DoiMatKhau" class="tk-btn pass"><i class="bi bi-key"></i> Đổi mật khẩu</a>
+                            <button type="submit" class="tk-btn save"><i class="bi bi-check2-circle"></i> Đổi mật khẩu</button>
+                            <a asp-controller="TaiKhoan" asp-action="ThongTin" class="tk-btn pass"><i class="bi bi-arrow-left"></i> Quay lại</a>
                         </div>
                     </form>
                 </div>
             </div>
+
             <div class="tk-card">
                 <div class="tk-card-head">
                     <i class="bi bi-shield-lock"></i>
                     <div>
-                        <h5>Bảo mật tài khoản</h5>
+                        <h5>Lưu ý khi đặt mật khẩu</h5>
                         <small>Giữ tài khoản của bạn luôn an toàn</small>
                     </div>
                 </div>
                 <div class="tk-card-body">
-                    <div class="tk-sec">
-                        <div class="tk-sec-info">
-                            <div class="tk-sec-icon"><i class="bi bi-key-fill"></i></div>
-                            <div>
-                                <strong>Mật khẩu</strong>
-                                <small>Nên đổi mật khẩu định kỳ để bảo vệ tài khoản.</small>
-                            </div>
-                        </div>
-                        <a asp-controller="TaiKhoan" asp-action="DoiMatKhau" class="tk-btn pass">Đổi mật khẩu</a>
-                    </div>
-                    <hr style="border-color:#E5E7EB; margin: 22px 0;" />
                     <ul class="tk-tips">
-                        <li><i class="bi bi-check-circle"></i>Dùng mật khẩu dài, có cả chữ hoa, chữ thường và số.</li>
+                        <li><i class="bi bi-check-circle"></i>Mật khẩu mới phải có ít nhất 6 ký tự.</li>
+                        <li><i class="bi bi-check-circle"></i>Mật khẩu mới phải khác mật khẩu hiện tại.</li>
+                        <li><i class="bi bi-check-circle"></i>Dùng cả chữ hoa, chữ thường, số và ký tự đặc biệt.</li>
                         <li><i class="bi bi-check-circle"></i>Không chia sẻ mật khẩu với bất kỳ ai.</li>
-                        <li><i class="bi bi-check-circle"></i>Đăng xuất sau khi dùng trên máy tính công cộng.</li>
-                        <li><i class="bi bi-check-circle"></i>Cập nhật số điện thoại để nhận thông báo đơn hàng.</li>
                     </ul>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
+
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        // Hiện / ẩn mật khẩu
+        document.querySelectorAll('.tk-eye').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var input = document.getElementById(btn.dataset.target);
+                var icon = btn.querySelector('i');
+                var show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                icon.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+            });
+        });
+
+        // Đo độ mạnh mật khẩu
+        var moi = document.getElementById('matKhauMoi');
+        var xacNhan = document.getElementById('xacNhanMatKhauMoi');
+        var bar = document.getElementById('strengthBar');
+        var text = document.getElementById('strengthText');
+        var hint = document.getElementById('matchHint');
+
+        moi.addEventListener('input', function () {
+            var v = moi.value, score = 0;
+            if (v.length >= 6) score++;
+            if (v.length >= 10) score++;
+            if (/[a-z]/.test(v) && /[A-Z]/.test(v)) score++;
+            if (/\d/.test(v)) score++;
+            if (/[^A-Za-z0-9]/.test(v)) score++;
+
+            var levels = [
+                { w: '0%',   c: '#E5E7EB', t: '' },
+                { w: '25%',  c: '#E0282E', t: 'Yếu' },
+                { w: '50%',  c: '#F59E0B', t: 'Trung bình' },
+                { w: '75%',  c: '#1E4FBF', t: 'Khá' },
+                { w: '100%', c: '#16A34A', t: 'Mạnh' }
+            ];
+            var lv = v.length === 0 ? levels[0] : levels[Math.min(Math.max(score - 1, 1), 4)];
+            bar.style.width = lv.w;
+            bar.style.background = lv.c;
+            text.textContent = lv.t;
+            kiemTraKhop();
+        });
+
+        // Kiểm tra xác nhận khớp
+        function kiemTraKhop() {
+            if (!xacNhan.value) { hint.textContent = ''; return; }
+            if (xacNhan.value === moi.value) {
+                hint.textContent = 'Mật khẩu xác nhận khớp.';
+                hint.style.color = '#16A34A';
+            } else {
+                hint.textContent = 'Mật khẩu xác nhận chưa khớp.';
+                hint.style.color = '#E0282E';
+            }
+        }
+        xacNhan.addEventListener('input', kiemTraKhop);
+    </script>
 }

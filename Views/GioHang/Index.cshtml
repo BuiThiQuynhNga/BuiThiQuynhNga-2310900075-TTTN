@@ -4,439 +4,412 @@
     ViewData["Title"] = "Giỏ hàng";
     decimal tongTruocGiam = Model.OrderDetails.Sum(ct => ct.Quantity * ct.UnitPrice);
     decimal soTienGiam = tongTruocGiam - (Model.TotalAmount - Model.ShippingFee);
+    int soMon = Model.OrderDetails.Count;
+
+    // Chuẩn hóa đường dẫn ảnh: chấp nhận tên trơn, "images/...", "/..." hoặc link http
+    string LayAnh(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return "/images/no-image.png";
+        url = url.Trim();
+        if (url.StartsWith("http") || url.StartsWith("/")) return url;
+        if (url.StartsWith("images/")) return "/" + url;
+        return "/images/" + url;
+    }
 }
 
 <style>
     .gh-page {
-        --hd-primary: #2F5D62;
-        --hd-primary-dark: #22454A;
-        --hd-accent: #C97B4A;
-        --hd-bg: #F7F7F5;
-        --hd-card: #FFFFFF;
-        --hd-text: #24262B;
-        --hd-muted: #6B7076;
-        --hd-border: #E7E5E1;
-        padding: 40px 0 60px;
+        --es-blue: #1E4FBF;
+        --es-blue-dark: #0F2F7A;
+        --es-navy: #0B1F4B;
+        --es-red: #E0282E;
+        --es-green: #16A34A;
+        --es-bg: #F3F5F9;
+        --es-text: #1F2937;
+        --es-muted: #6B7280;
+        --es-border: #E5E7EB;
+        padding: 10px 0 40px;
     }
+    .gh-crumb { font-size: .8rem; color: var(--es-muted); margin-bottom: 14px; }
+    .gh-crumb a { color: var(--es-muted); text-decoration: none; }
+    .gh-crumb a:hover { color: var(--es-blue); }
+    .gh-crumb b { color: var(--es-blue); }
 
-    .gh-header .gh-eyebrow {
-        font-size: 0.78rem;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: var(--hd-muted);
-        font-weight: 600;
+    /* ===== THANH CÁC BƯỚC ===== */
+    .gh-steps {
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; padding: 18px 20px 14px;
+        box-shadow: 0 3px 14px rgba(15,47,122,.05); margin-bottom: 24px;
     }
+    .gh-step { position: relative; text-align: center; font-size: .72rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--es-muted); }
+    .gh-step::before {
+        content: ""; position: absolute; top: 19px; left: -50%; width: 100%; height: 2px; background: var(--es-border); z-index: 0;
+    }
+    .gh-step:first-child::before { display: none; }
+    .gh-step-num {
+        position: relative; z-index: 1; width: 40px; height: 40px; border-radius: 50%; margin: 0 auto 8px;
+        background: #E8EFFC; color: var(--es-muted); display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 1rem;
+    }
+    .gh-step.now { color: var(--es-navy); }
+    .gh-step.now .gh-step-num { background: var(--es-blue); color: #fff; box-shadow: 0 0 0 5px rgba(30,79,191,.15); }
 
-    .gh-header h1 {
-        font-family: 'Poppins', sans-serif;
-        font-weight: 800;
-        font-size: 1.5rem;
-        color: var(--hd-text);
-        margin: 4px 0 24px;
-    }
+    .gh-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+    .gh-title { font-weight: 800; font-size: 1.7rem; color: var(--es-navy); margin: 0; }
+    .gh-count { background: #E8EFFC; color: var(--es-blue); font-weight: 700; font-size: .78rem; padding: 5px 12px; border-radius: 20px; }
 
     .gh-alert {
-        border-radius: 10px;
-        padding: 12px 16px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        margin-bottom: 20px;
+        display: flex; align-items: center; gap: 10px;
+        border-radius: 10px; padding: 12px 16px; font-size: .9rem; font-weight: 600; margin-bottom: 20px;
     }
-
-        .gh-alert.ok {
-            background: #E7F0EF;
-            color: var(--hd-primary-dark);
-        }
-
-        .gh-alert.err {
-            background: #FBEAE8;
-            color: #B3261E;
-        }
+    .gh-alert.ok { background: #E8F6EC; color: #166534; border: 1px solid #BBE5C8; }
+    .gh-alert.err { background: #FDECEC; color: #B3261E; border: 1px solid #F6C7C7; }
 
     .gh-empty {
-        background: var(--hd-card);
-        border: 1px dashed var(--hd-border);
-        border-radius: 16px;
-        padding: 48px 24px;
-        text-align: center;
-        color: var(--hd-muted);
+        background: #fff; border: 1px dashed var(--es-border); border-radius: 14px;
+        padding: 56px 24px; text-align: center; color: var(--es-muted);
     }
-
-        .gh-empty a {
-            color: var(--hd-primary);
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-            .gh-empty a:hover {
-                text-decoration: underline;
-            }
-
-    .gh-layout {
-        display: grid;
-        grid-template-columns: 1.7fr 1fr;
-        gap: 24px;
-        align-items: start;
+    .gh-empty i { font-size: 2.8rem; color: var(--es-blue); display: block; margin-bottom: 10px; }
+    .gh-empty a {
+        display: inline-block; margin-top: 14px; background: var(--es-blue); color: #fff;
+        font-weight: 700; text-decoration: none; padding: 11px 24px; border-radius: 10px;
     }
+    .gh-empty a:hover { background: var(--es-blue-dark); }
 
-    /* ---- Bảng sản phẩm ---- */
-    .gh-table-wrap {
-        background: var(--hd-card);
-        border: 1px solid var(--hd-border);
-        border-radius: 16px;
-        overflow: hidden;
+    .gh-layout { display: grid; grid-template-columns: 1fr 380px; gap: 22px; align-items: start; }
+
+    /* ===== BẢNG SẢN PHẨM ===== */
+    .gh-list {
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; overflow: hidden;
+        box-shadow: 0 3px 14px rgba(15,47,122,.06);
     }
-
-    .gh-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.92rem;
+    .gh-cols, .gh-row-item {
+        display: grid; grid-template-columns: minmax(0, 1fr) 120px 130px 130px 34px; gap: 14px; align-items: center;
     }
-
-        .gh-table thead {
-            background: #F1F0EE;
-        }
-
-            .gh-table thead th {
-                text-align: left;
-                font-weight: 700;
-                color: var(--hd-text);
-                padding: 14px 16px;
-                font-size: 0.78rem;
-                text-transform: uppercase;
-                letter-spacing: 0.04em;
-                border-bottom: 1px solid var(--hd-border);
-            }
-
-        .gh-table tbody td {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--hd-border);
-            color: var(--hd-text);
-            vertical-align: middle;
-        }
-
-        .gh-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-    .gh-product {
-        font-weight: 600;
+    .gh-cols {
+        background: var(--es-bg); padding: 14px 20px; border-bottom: 1px solid var(--es-border);
+        font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--es-muted);
     }
+    .gh-cols .r, .gh-row-item .r { text-align: right; }
+    .gh-cols .c { text-align: center; }
+    .gh-row-item { padding: 16px 20px; border-bottom: 1px solid var(--es-border); }
+    .gh-row-item:last-child { border-bottom: none; }
 
-    .gh-subtotal {
-        font-weight: 700;
-        color: var(--hd-primary);
-    }
+    .gh-prod { display: flex; align-items: center; gap: 14px; min-width: 0; }
+    .gh-thumb { width: 84px; height: 68px; border-radius: 10px; background: var(--es-bg); overflow: hidden; flex-shrink: 0; border: 1px solid var(--es-border); }
+    .gh-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .gh-tag { display: inline-block; background: #E8EFFC; color: var(--es-blue); font-size: .66rem; font-weight: 800; padding: 2px 8px; border-radius: 4px; margin-bottom: 4px; }
+    .gh-name { font-weight: 700; color: var(--es-navy); font-size: .92rem; line-height: 1.35; margin: 0 0 2px; }
+    .gh-name a { color: inherit; text-decoration: none; }
+    .gh-name a:hover { color: var(--es-blue); }
+    .gh-desc { font-size: .76rem; color: var(--es-muted); line-height: 1.4; }
 
-    .gh-qty-form {
-        display: flex;
-        gap: 6px;
-    }
+    .gh-unit { font-size: .88rem; font-weight: 600; color: var(--es-text); }
+    .gh-line-total { font-weight: 800; font-size: .98rem; color: var(--es-red); }
 
+    .gh-qty-form { display: flex; justify-content: center; margin: 0; }
+    .gh-qty { display: inline-flex; align-items: center; border: 1.5px solid var(--es-border); border-radius: 10px; overflow: hidden; background: #fff; }
+    .gh-qty button { border: none; background: var(--es-bg); width: 32px; height: 36px; font-weight: 700; color: var(--es-text); cursor: pointer; }
+    .gh-qty button:hover { background: #E8EFFC; color: var(--es-blue); }
     .gh-qty-input {
-        width: 64px;
-        border: 1.5px solid var(--hd-border);
-        border-radius: 8px;
-        padding: 6px 8px;
-        font-size: 0.88rem;
-        color: var(--hd-text);
+        width: 44px; border: none; outline: none; text-align: center; font-weight: 700; font-size: .92rem; color: var(--es-text);
+        -moz-appearance: textfield;
     }
+    .gh-qty-input::-webkit-outer-spin-button, .gh-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-        .gh-qty-input:focus {
-            outline: none;
-            border-color: var(--hd-primary);
-            box-shadow: 0 0 0 3px rgba(47, 93, 98, 0.12);
-        }
+    .gh-del-form { margin: 0; }
+    .gh-del { border: none; background: none; color: var(--es-muted); cursor: pointer; font-size: 1.05rem; padding: 6px; border-radius: 8px; transition: all .15s ease; }
+    .gh-del:hover { color: var(--es-red); background: #FDECEC; }
 
-    .gh-btn {
-        border: none;
-        border-radius: 8px;
-        padding: 6px 12px;
-        font-size: 0.82rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background .15s ease, color .15s ease, border-color .15s ease;
+    .gh-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+    .gh-back { display: inline-flex; align-items: center; gap: 8px; color: var(--es-blue); font-weight: 700; font-size: .85rem; text-decoration: none; }
+    .gh-back:hover { color: var(--es-blue-dark); text-decoration: underline; }
+
+    .gh-trust {
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+        background: #E8EFFC; border-radius: 12px; padding: 16px 20px; margin-top: 22px;
     }
+    .gh-trust div { display: flex; align-items: center; gap: 10px; font-size: .76rem; color: var(--es-muted); line-height: 1.4; }
+    .gh-trust i { color: var(--es-blue); font-size: 1.4rem; }
+    .gh-trust b { display: block; color: var(--es-navy); font-size: .82rem; }
 
-        .gh-btn.update {
-            background: transparent;
-            border: 1.5px solid var(--hd-primary);
-            color: var(--hd-primary);
-        }
-
-            .gh-btn.update:hover {
-                background: var(--hd-primary);
-                color: #fff;
-            }
-
-        .gh-btn.remove {
-            background: transparent;
-            border: 1.5px solid #C0524A;
-            color: #C0524A;
-        }
-
-            .gh-btn.remove:hover {
-                background: #C0524A;
-                color: #fff;
-            }
-
-    /* ---- Panel bên phải ---- */
-    .gh-box {
-        background: var(--hd-card);
-        border: 1px solid var(--hd-border);
-        border-radius: 16px;
-        padding: 20px;
-        margin-bottom: 20px;
+    /* ===== TÓM TẮT ===== */
+    .gh-summary {
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; padding: 22px;
+        box-shadow: 0 3px 14px rgba(15,47,122,.06); position: sticky; top: 90px;
     }
+    .gh-sum-title { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 1.1rem; color: var(--es-navy); margin: 0 0 16px; }
+    .gh-sum-title i { color: var(--es-blue); }
+    .gh-label { font-size: .78rem; font-weight: 700; color: var(--es-text); margin-bottom: 8px; display: block; }
 
-    /* Voucher đã áp dụng */
-    .gh-voucher-applied {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
+    .gh-voucher-form { display: flex; gap: 8px; margin: 0; }
+    .gh-voucher-field {
+        flex: 1; background: var(--es-bg); border: 1.5px solid transparent; border-radius: 8px; padding: 0 12px;
+        display: flex; align-items: center; transition: all .15s ease;
     }
-
-    .gh-voucher-name {
-        font-weight: 700;
-        color: var(--hd-primary);
-        font-size: 0.95rem;
+    .gh-voucher-field:focus-within { background: #fff; border-color: var(--es-blue); box-shadow: 0 0 0 3px rgba(30,79,191,.12); }
+    .gh-voucher-input { flex: 1; border: none; background: transparent; outline: none; padding: 11px 0; font-size: .88rem; min-width: 0; color: var(--es-text); }
+    .gh-apply {
+        border: none; border-radius: 8px; padding: 0 16px; background: #E8EFFC; color: var(--es-blue);
+        font-weight: 800; font-size: .76rem; text-transform: uppercase; cursor: pointer; transition: all .15s ease;
     }
+    .gh-apply:hover { background: var(--es-blue); color: #fff; }
 
-    .gh-voucher-sub {
-        font-size: 0.8rem;
-        color: var(--hd-muted);
-        margin-top: 2px;
+    .gh-chip {
+        display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px;
+        background: #E8F6EC; border: 1px solid #BBE5C8; border-radius: 8px; padding: 8px 12px;
+        font-size: .8rem; font-weight: 700; color: #166534;
     }
+    .gh-chip span { display: inline-flex; align-items: center; gap: 6px; }
+    .gh-chip form { margin: 0; }
+    .gh-chip button { border: none; background: none; color: #166534; cursor: pointer; font-size: 1rem; line-height: 1; padding: 2px 4px; border-radius: 4px; }
+    .gh-chip button:hover { background: #BBE5C8; }
 
-    .gh-voucher-form {
-        display: flex;
-        gap: 8px;
-    }
+    .gh-divider { border: none; border-top: 1px dashed var(--es-border); margin: 16px 0; }
+    .gh-row { display: flex; justify-content: space-between; gap: 12px; font-size: .88rem; margin-bottom: 10px; color: var(--es-text); }
+    .gh-row span:first-child { color: var(--es-muted); }
+    .gh-row.discount span:last-child { color: var(--es-red); font-weight: 700; }
+    .gh-free { color: var(--es-blue); font-weight: 800; }
 
-    .gh-voucher-input {
-        flex: 1;
-        border: 1.5px solid var(--hd-border);
-        border-radius: 8px;
-        padding: 10px 12px;
-        font-size: 0.9rem;
-        color: var(--hd-text);
-    }
-
-        .gh-voucher-input:focus {
-            outline: none;
-            border-color: var(--hd-primary);
-            box-shadow: 0 0 0 3px rgba(47, 93, 98, 0.12);
-        }
-
-    .gh-btn.apply {
-        background: var(--hd-accent);
-        color: #fff;
-        padding: 10px 16px;
-        white-space: nowrap;
-    }
-
-        .gh-btn.apply:hover {
-            background: #B36A3D;
-        }
-
-    /* Tổng kết */
-    .gh-summary-row {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.92rem;
-        color: var(--hd-text);
-        margin-bottom: 10px;
-    }
-
-        .gh-summary-row.discount {
-            color: var(--hd-primary-dark);
-        }
-
-        .gh-summary-row.free {
-            color: var(--hd-primary-dark);
-            font-weight: 600;
-        }
-
-    .gh-divider {
-        border: none;
-        border-top: 1px solid var(--hd-border);
-        margin: 12px 0;
-    }
-
-    .gh-total-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        margin-bottom: 16px;
-    }
-
-        .gh-total-row span {
-            font-weight: 700;
-            color: var(--hd-text);
-        }
-
-        .gh-total-row strong {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: var(--hd-accent);
-        }
+    .gh-total { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4px; }
+    .gh-total b { font-weight: 800; font-size: 1.05rem; color: var(--es-navy); text-transform: uppercase; }
+    .gh-total strong { font-weight: 800; font-size: 1.6rem; color: var(--es-red); line-height: 1; }
+    .gh-total-note { display: flex; justify-content: space-between; font-size: .74rem; color: var(--es-muted); margin-bottom: 18px; }
+    .gh-total-note em { font-style: normal; color: var(--es-blue); font-weight: 700; }
 
     .gh-checkout {
-        display: block;
-        text-align: center;
-        width: 100%;
-        border: none;
-        border-radius: 10px;
-        padding: 14px;
-        font-weight: 700;
-        font-size: 1rem;
-        color: #fff;
-        background: var(--hd-primary);
-        text-decoration: none;
-        transition: background .15s ease, transform .15s ease;
+        display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+        border-radius: 10px; padding: 15px; font-weight: 800; font-size: .9rem; color: #fff;
+        background: var(--es-blue); text-decoration: none; text-transform: uppercase;
+        transition: all .15s ease;
     }
+    .gh-checkout:hover { background: var(--es-blue-dark); transform: translateY(-1px); color: #fff; }
+    .gh-secure { margin-top: 14px; display: grid; gap: 6px; font-size: .74rem; color: var(--es-muted); }
+    .gh-secure div { display: flex; align-items: center; gap: 8px; }
+    .gh-secure i { color: var(--es-blue); }
 
-        .gh-checkout:hover {
-            background: var(--hd-primary-dark);
-            transform: translateY(-1px);
-            color: #fff;
-        }
-
-    @@media (max-width: 860px) {
-        .gh-layout {
-            grid-template-columns: 1fr;
-        }
-
-        .gh-table-wrap {
-            overflow-x: auto;
-        }
-
-        .gh-table {
-            min-width: 640px;
-        }
+    @@media (max-width: 1000px) {
+        .gh-layout { grid-template-columns: 1fr; }
+        .gh-summary { position: static; }
+        .gh-trust { grid-template-columns: 1fr 1fr; }
     }
+    @@media (max-width: 720px) {
+        .gh-cols { display: none; }
+        .gh-row-item { grid-template-columns: 1fr auto; row-gap: 10px; }
+        .gh-prod { grid-column: 1 / -1; }
+        .gh-unit { grid-column: 1; text-align: left !important; }
+        .gh-qty-form { grid-column: 1; justify-content: flex-start; }
+        .gh-line-total { grid-column: 2; grid-row: 3; }
+        .gh-del-form { grid-column: 2; grid-row: 2; justify-self: end; }
+    }
+    @@media (max-width: 520px) { .gh-trust { grid-template-columns: 1fr; } }
 </style>
 
 <div class="container gh-page">
-    <div class="gh-header">
-        <div class="gh-eyebrow">Đơn hàng</div>
-        <h1>Giỏ hàng của bạn</h1>
+
+    <div class="gh-crumb">
+        <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Trang chủ</a>
+        &nbsp;/&nbsp; <b>Giỏ hàng</b>
+    </div>
+
+    <div class="gh-steps">
+        <div class="gh-step now"><div class="gh-step-num">1</div>1. Giỏ hàng</div>
+        <div class="gh-step"><div class="gh-step-num">2</div>2. Thông tin đặt hàng</div>
+        <div class="gh-step"><div class="gh-step-num">3</div>3. Hoàn tất đơn hàng</div>
+    </div>
+
+    <div class="gh-head">
+        <h1 class="gh-title">Giỏ hàng của bạn</h1>
+        @if (soMon > 0)
+        {
+            <span class="gh-count">@soMon sản phẩm</span>
+        }
     </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="gh-alert ok">@TempData["SuccessMessage"]</div>
+        <div class="gh-alert ok"><i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]</div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="gh-alert err">@TempData["ErrorMessage"]</div>
+        <div class="gh-alert err"><i class="bi bi-exclamation-circle-fill"></i> @TempData["ErrorMessage"]</div>
     }
 
     @if (!Model.OrderDetails.Any())
     {
         <div class="gh-empty">
-            Giỏ hàng đang trống. <a asp-controller="SanPham" asp-action="Index">Tiếp tục mua sắm</a>
+            <i class="bi bi-cart-x"></i>
+            Giỏ hàng đang trống.
+            <div><a asp-controller="SanPham" asp-action="Index">Tiếp tục mua sắm</a></div>
         </div>
     }
     else
     {
         <div class="gh-layout">
-            <div class="gh-table-wrap">
-                <table class="gh-table">
-                    <thead>
-                        <tr>
-                            <th>Sản phẩm</th>
-                            <th>Đơn giá</th>
-                            <th>Số lượng</th>
-                            <th>Thành tiền</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var ct in Model.OrderDetails)
-                        {
-                            <tr>
-                                <td class="gh-product">@ct.Product.ProductName</td>
-                                <td>@ct.UnitPrice.ToString("N0") đ</td>
-                                <td>
-                                    <form asp-action="CapNhatSoLuong" method="post" class="gh-qty-form">
-                                        <input type="hidden" name="maChiTiet" value="@ct.OrderDetailID" />
-                                        <input type="number" name="soLuong" value="@ct.Quantity" min="1" class="gh-qty-input" />
-                                        <button type="submit" class="gh-btn update">Cập nhật</button>
-                                    </form>
-                                </td>
-                                <td class="gh-subtotal">@((ct.UnitPrice * ct.Quantity).ToString("N0")) đ</td>
-                                <td>
-                                    <form asp-action="XoaSanPham" method="post">
-                                        <input type="hidden" name="maChiTiet" value="@ct.OrderDetailID" />
-                                        <button type="submit" class="gh-btn remove">Xóa</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
 
+            <!-- ===== DANH SÁCH SẢN PHẨM ===== -->
             <div>
-                <div class="gh-box">
-                    @if (Model.DiscountCode != null)
+                <div class="gh-list">
+                    <div class="gh-cols">
+                        <div>Sản phẩm</div>
+                        <div class="r">Đơn giá</div>
+                        <div class="c">Số lượng</div>
+                        <div class="r">Thành tiền</div>
+                        <div></div>
+                    </div>
+
+                    @foreach (var ct in Model.OrderDetails)
                     {
-                        <div class="gh-voucher-applied">
-                            <div>
-                                <div class="gh-voucher-name">@Model.DiscountCode.CodeName</div>
-                                <div class="gh-voucher-sub">Giảm @Model.DiscountCode.DiscountPercent%</div>
+                        <div class="gh-row-item">
+                            <div class="gh-prod">
+                                <div class="gh-thumb">
+                                    <img src="@LayAnh(ct.Product.ImageURL)"
+                                         onerror="this.onerror=null;this.src='/images/no-image.png'"
+                                         alt="@ct.Product.ProductName" />
+                                </div>
+                                <div style="min-width:0">
+                                    @if (ct.Product.Category != null)
+                                    {
+                                        <span class="gh-tag">@ct.Product.Category.CategoryName</span>
+                                    }
+                                    <h6 class="gh-name">
+                                        <a asp-controller="SanPham" asp-action="ChiTiet" asp-route-id="@ct.Product.ProductID">@ct.Product.ProductName</a>
+                                    </h6>
+                                    @if (!string.IsNullOrEmpty(ct.Product.Description))
+                                    {
+                                        <div class="gh-desc">@(ct.Product.Description.Length > 60 ? ct.Product.Description.Substring(0, 60) + "..." : ct.Product.Description)</div>
+                                    }
+                                </div>
                             </div>
-                            <form asp-action="GoMaGiamGia" method="post">
-                                <button type="submit" class="gh-btn remove">Gỡ mã</button>
+
+                            <div class="gh-unit r">@ct.UnitPrice.ToString("N0") đ</div>
+
+                            <form asp-action="CapNhatSoLuong" method="post" class="gh-qty-form">
+                                <input type="hidden" name="maChiTiet" value="@ct.OrderDetailID" />
+                                <div class="gh-qty">
+                                    <button type="button" class="gh-minus" aria-label="Giảm">−</button>
+                                    <input type="number" name="soLuong" value="@ct.Quantity" min="1" class="gh-qty-input" />
+                                    <button type="button" class="gh-plus" aria-label="Tăng">+</button>
+                                </div>
+                                <noscript><button type="submit" class="gh-apply" style="margin-left:6px">Cập nhật</button></noscript>
+                            </form>
+
+                            <div class="gh-line-total r">@((ct.UnitPrice * ct.Quantity).ToString("N0")) đ</div>
+
+                            <form asp-action="XoaSanPham" method="post" class="gh-del-form">
+                                <input type="hidden" name="maChiTiet" value="@ct.OrderDetailID" />
+                                <button type="submit" class="gh-del" title="Xóa sản phẩm"><i class="bi bi-trash3"></i></button>
                             </form>
                         </div>
                     }
-                    else
-                    {
-                        <form asp-action="ApDungMaGiamGia" method="post" class="gh-voucher-form">
-                            <input type="text" name="tenVoucher" class="gh-voucher-input" placeholder="Nhập mã giảm giá" />
-                            <button type="submit" class="gh-btn apply">Áp dụng</button>
-                        </form>
-                    }
                 </div>
 
-                <div class="gh-box">
-                    <div class="gh-summary-row">
-                        <span>Tạm tính</span>
-                        <span>@tongTruocGiam.ToString("N0") đ</span>
-                    </div>
-                    @if (soTienGiam > 0)
-                    {
-                        <div class="gh-summary-row discount">
-                            <span>Giảm giá</span>
-                            <span>-@soTienGiam.ToString("N0") đ</span>
-                        </div>
-                    }
-                    <div class="gh-summary-row">
-                        <span>Phí vận chuyển</span>
-                        @if (Model.ShippingFee > 0)
-                        {
-                            <span>@Model.ShippingFee.ToString("N0") đ</span>
-                        }
-                        else
-                        {
-                            <span class="text-nowrap gh-summary-row free" style="display:inline;margin:0;">Miễn phí</span>
-                        }
-                    </div>
+                <div class="gh-foot">
+                    <a asp-controller="SanPham" asp-action="Index" class="gh-back"><i class="bi bi-arrow-left"></i> Tiếp tục mua sắm</a>
+                </div>
 
-                    <hr class="gh-divider" />
-
-                    <div class="gh-total-row">
-                        <span>Tổng tiền</span>
-                        <strong>@Model.TotalAmount.ToString("N0") đ</strong>
-                    </div>
-
-                    <a asp-action="ThanhToan" class="gh-checkout">Tiến hành thanh toán</a>
+                <div class="gh-trust">
+                    <div><i class="bi bi-truck"></i><span><b>Giao hàng nhanh</b>Đóng gói cẩn thận</span></div>
+                    <div><i class="bi bi-patch-check"></i><span><b>100% Chính hãng</b>Đầy đủ hóa đơn</span></div>
+                    <div><i class="bi bi-shield-check"></i><span><b>Bảo hành rõ ràng</b>Theo chính sách hãng</span></div>
+                    <div><i class="bi bi-headset"></i><span><b>Hỗ trợ 24/7</b>Tư vấn tận tình</span></div>
                 </div>
             </div>
+
+            <!-- ===== TÓM TẮT ĐƠN HÀNG ===== -->
+            <aside class="gh-summary">
+                <h5 class="gh-sum-title">Tóm tắt đơn hàng <i class="bi bi-receipt"></i></h5>
+
+                <span class="gh-label">Mã khuyến mại / Voucher</span>
+                @if (Model.DiscountCode != null)
+                {
+                    <div class="gh-chip">
+                        <span><i class="bi bi-ticket-perforated-fill"></i> @Model.DiscountCode.CodeName (giảm @Model.DiscountCode.DiscountPercent%)</span>
+                        <form asp-action="GoMaGiamGia" method="post">
+                            <button type="submit" title="Gỡ mã">×</button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <form asp-action="ApDungMaGiamGia" method="post" class="gh-voucher-form">
+                        <div class="gh-voucher-field">
+                            <input type="text" name="tenVoucher" class="gh-voucher-input" placeholder="Nhập mã giảm giá" />
+                        </div>
+                        <button type="submit" class="gh-apply">Áp dụng</button>
+                    </form>
+                }
+
+                <hr class="gh-divider" />
+
+                <div class="gh-row">
+                    <span>Tạm tính (@soMon món):</span>
+                    <span>@tongTruocGiam.ToString("N0") đ</span>
+                </div>
+                <div class="gh-row">
+                    <span>Phí vận chuyển:</span>
+                    @if (Model.ShippingFee > 0)
+                    {
+                        <span>@Model.ShippingFee.ToString("N0") đ</span>
+                    }
+                    else
+                    {
+                        <span class="gh-free">Miễn phí</span>
+                    }
+                </div>
+                @if (soTienGiam > 0)
+                {
+                    <div class="gh-row discount">
+                        <span>Giảm giá voucher:</span>
+                        <span>-@soTienGiam.ToString("N0") đ</span>
+                    </div>
+                }
+
+                <hr class="gh-divider" />
+
+                <div class="gh-total">
+                    <b>Tổng cộng:</b>
+                    <strong>@Model.TotalAmount.ToString("N0") đ</strong>
+                </div>
+                <div class="gh-total-note">
+                    <span>(Đã bao gồm thuế và phí)</span>
+                    @if (soTienGiam > 0)
+                    {
+                        <em>Tiết kiệm @soTienGiam.ToString("N0") đ</em>
+                    }
+                </div>
+
+                <a asp-action="ThanhToan" class="gh-checkout">Tiến hành đặt hàng <i class="bi bi-arrow-right"></i></a>
+
+                <div class="gh-secure">
+                    <div><i class="bi bi-lock"></i> Bảo mật thanh toán 100%</div>
+                    <div><i class="bi bi-receipt-cutoff"></i> Hỗ trợ xuất hóa đơn điện tử</div>
+                    <div><i class="bi bi-box-seam"></i> Kiểm tra hàng trước khi thanh toán</div>
+                </div>
+            </aside>
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        // Nút − / + tự gửi form CapNhatSoLuong (thay cho nút "Cập nhật" cũ)
+        document.querySelectorAll('.gh-qty-form').forEach(function (form) {
+            var input = form.querySelector('.gh-qty-input');
+            var minus = form.querySelector('.gh-minus');
+            var plus = form.querySelector('.gh-plus');
+            var cu = parseInt(input.value) || 1;
+
+            function gui() {
+                var v = parseInt(input.value);
+                if (isNaN(v) || v < 1) v = 1;
+                input.value = v;
+                if (v !== cu) form.submit();
+            }
+
+            minus.addEventListener('click', function () { input.value = Math.max(1, (parseInt(input.value) || 1) - 1); gui(); });
+            plus.addEventListener('click', function () { input.value = (parseInt(input.value) || 1) + 1; gui(); });
+            input.addEventListener('change', gui);
+        });
+    </script>
+}

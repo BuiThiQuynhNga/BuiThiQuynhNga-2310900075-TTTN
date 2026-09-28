@@ -2,255 +2,220 @@
 
 @{
     ViewData["Title"] = "Quản lý mã giảm giá";
+
+    var dsMa = Model.ToList();
+    int tong = dsMa.Count;
+    int dangHoatDong = dsMa.Count(v => v.IsActive && v.ExpiryDate >= DateTime.Now && v.TotalQuantity - v.UsedQuantity > 0);
+    int daHetHan = dsMa.Count(v => v.ExpiryDate < DateTime.Now);
+    int tongDaDung = dsMa.Sum(v => v.UsedQuantity);
 }
 
 <style>
     .mgg-page {
-        --hd-primary: #2F5D62;
-        --hd-primary-dark: #22454A;
-        --hd-accent: #C97B4A;
-        --hd-bg: #F7F7F5;
-        --hd-card: #FFFFFF;
-        --hd-text: #24262B;
-        --hd-muted: #6B7076;
-        --hd-border: #E7E5E1;
-        padding: 40px 0 60px;
+        --es-blue: #1E4FBF;
+        --es-blue-dark: #0F2F7A;
+        --es-navy: #0B1F4B;
+        --es-red: #E0282E;
+        --es-green: #16A34A;
+        --es-bg: #F3F5F9;
+        --es-text: #1F2937;
+        --es-muted: #6B7280;
+        --es-border: #E5E7EB;
+        padding: 10px 0 50px;
     }
+    .mgg-crumb { font-size: .8rem; color: var(--es-muted); margin-bottom: 14px; }
+    .mgg-crumb a { color: var(--es-muted); text-decoration: none; }
+    .mgg-crumb a:hover { color: var(--es-blue); }
+    .mgg-crumb b { color: var(--es-blue); }
 
-    .mgg-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        margin-bottom: 24px;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-
-        .mgg-header .mgg-eyebrow {
-            font-size: 0.78rem;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: var(--hd-muted);
-            font-weight: 600;
-        }
-
-        .mgg-header h1 {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: var(--hd-text);
-            margin: 4px 0 0;
-        }
+    .mgg-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .mgg-title { font-weight: 800; font-size: 1.7rem; color: var(--es-navy); margin: 0 0 4px; }
+    .mgg-subtitle { color: var(--es-muted); font-size: .92rem; margin: 0; }
 
     .mgg-btn-add {
-        background: var(--hd-primary);
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: 9px 18px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-block;
-        transition: background .15s ease;
+        background: var(--es-blue); color: #fff; border: none; border-radius: 10px; padding: 12px 22px;
+        font-size: .9rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        transition: all .15s ease;
     }
-
-        .mgg-btn-add:hover {
-            background: var(--hd-primary-dark);
-            color: #fff;
-        }
+    .mgg-btn-add:hover { background: var(--es-blue-dark); color: #fff; transform: translateY(-1px); }
 
     .mgg-alert {
-        background: #E7F0EF;
-        color: var(--hd-primary-dark);
-        border-radius: 10px;
-        padding: 12px 16px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        margin-bottom: 16px;
+        display: flex; align-items: center; gap: 10px;
+        background: #E8F6EC; color: #166534; border: 1px solid #BBE5C8;
+        border-radius: 10px; padding: 12px 16px; font-size: .9rem; font-weight: 600; margin-bottom: 16px;
     }
+    .mgg-alert.err { background: #FDECEC; color: #B3261E; border-color: #F6C7C7; }
 
-        .mgg-alert.err {
-            background: #F7E9E7;
-            color: #9A3E33;
-        }
+    /* ===== THỐNG KÊ ===== */
+    .mgg-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+    .mgg-stat {
+        display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid var(--es-border);
+        border-radius: 14px; padding: 16px 18px; box-shadow: 0 3px 14px rgba(15,47,122,.05);
+    }
+    .mgg-stat-icon {
+        width: 46px; height: 46px; border-radius: 12px; background: #E8EFFC; color: var(--es-blue);
+        display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+    }
+    .mgg-stat.green .mgg-stat-icon { background: #E8F6EC; color: var(--es-green); }
+    .mgg-stat.red .mgg-stat-icon { background: #FDECEC; color: var(--es-red); }
+    .mgg-stat b { display: block; font-size: 1.5rem; font-weight: 800; color: var(--es-navy); line-height: 1.1; }
+    .mgg-stat small { color: var(--es-muted); font-size: .78rem; }
 
+    /* ===== THANH CÔNG CỤ ===== */
+    .mgg-toolbar {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        background: #fff; border: 1px solid var(--es-border); border-radius: 12px; padding: 10px 16px;
+        margin-bottom: 16px; box-shadow: 0 3px 14px rgba(15,47,122,.04);
+    }
+    .mgg-search {
+        display: flex; align-items: center; gap: 10px; background: var(--es-bg); border: 1.5px solid transparent;
+        border-radius: 10px; padding: 0 14px; min-width: 260px; transition: all .15s ease;
+    }
+    .mgg-search:focus-within { background: #fff; border-color: var(--es-blue); box-shadow: 0 0 0 3px rgba(30,79,191,.12); }
+    .mgg-search i { color: var(--es-muted); }
+    .mgg-search input { flex: 1; border: none; background: transparent; outline: none; padding: 10px 0; font-size: .9rem; color: var(--es-text); min-width: 0; }
+    .mgg-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .mgg-tab {
+        border: 1.5px solid var(--es-border); background: #fff; color: var(--es-text);
+        font-size: .8rem; font-weight: 700; padding: 7px 14px; border-radius: 20px; cursor: pointer; transition: all .15s ease;
+    }
+    .mgg-tab:hover { border-color: var(--es-blue); color: var(--es-blue); }
+    .mgg-tab.active { background: var(--es-blue); border-color: var(--es-blue); color: #fff; }
+
+    .mgg-empty {
+        background: #fff; border: 1px dashed var(--es-border); border-radius: 14px;
+        padding: 56px 24px; text-align: center; color: var(--es-muted);
+    }
+    .mgg-empty i { font-size: 2.8rem; color: var(--es-blue); display: block; margin-bottom: 10px; }
+
+    /* ===== BẢNG ===== */
     .mgg-table-wrap {
-        background: var(--hd-card);
-        border: 1px solid var(--hd-border);
-        border-radius: 16px;
-        overflow: hidden;
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; overflow: hidden;
+        box-shadow: 0 3px 14px rgba(15,47,122,.06);
     }
-
-    .mgg-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.9rem;
+    .mgg-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    .mgg-table thead { background: linear-gradient(120deg, var(--es-navy), var(--es-blue)); }
+    .mgg-table thead th {
+        text-align: left; font-weight: 700; color: #fff; padding: 14px 16px; font-size: .74rem;
+        text-transform: uppercase; letter-spacing: .06em; white-space: nowrap;
     }
-
-        .mgg-table thead {
-            background: #F1F0EE;
-        }
-
-            .mgg-table thead th {
-                text-align: left;
-                font-weight: 700;
-                color: var(--hd-text);
-                padding: 14px 16px;
-                font-size: 0.8rem;
-                text-transform: uppercase;
-                letter-spacing: 0.04em;
-                border-bottom: 1px solid var(--hd-border);
-                white-space: nowrap;
-            }
-
-        .mgg-table tbody td {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--hd-border);
-            color: var(--hd-text);
-            vertical-align: middle;
-        }
-
-        .mgg-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .mgg-table tbody tr {
-            transition: background .15s ease;
-        }
-
-            .mgg-table tbody tr:hover {
-                background: #FAFAF8;
-            }
+    .mgg-table tbody td { padding: 14px 16px; border-bottom: 1px solid var(--es-border); color: var(--es-text); vertical-align: middle; }
+    .mgg-table tbody tr:last-child td { border-bottom: none; }
+    .mgg-table tbody tr { transition: background .15s ease; }
+    .mgg-table tbody tr:hover { background: #F7F9FE; }
 
     .mgg-code {
-        font-weight: 700;
-        color: var(--hd-primary);
+        display: inline-flex; align-items: center; gap: 8px; font-weight: 800; color: var(--es-blue);
+        background: #F1F5FF; border: 1.5px dashed #B9CBF3; border-radius: 8px; padding: 5px 12px;
+        font-family: Consolas, monospace; letter-spacing: .02em;
     }
+    .mgg-percent { font-weight: 800; color: var(--es-red); }
+    .mgg-num { font-weight: 700; }
 
     .mgg-badge {
-        display: inline-block;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.78rem;
-        font-weight: 700;
-        white-space: nowrap;
+        display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px;
+        font-size: .76rem; font-weight: 800; white-space: nowrap;
     }
+    .mgg-badge.het { background: #EEF0F4; color: var(--es-muted); }
+    .mgg-badge.con { background: #E8EFFC; color: var(--es-blue); }
+    .mgg-badge.hethan { background: #FDECEC; color: var(--es-red); margin-left: 6px; }
+    .mgg-badge.active { background: #E8F6EC; color: var(--es-green); }
+    .mgg-badge.inactive { background: #EEF0F4; color: var(--es-muted); }
+    .mgg-badge.active::before, .mgg-badge.inactive::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
-        .mgg-badge.het {
-            background: #F1F0EE;
-            color: var(--hd-muted);
-        }
+    .mgg-date { white-space: nowrap; }
 
-        .mgg-badge.con {
-            background: #E7F0EF;
-            color: var(--hd-primary-dark);
-        }
-
-        .mgg-badge.hethan {
-            background: #F1F0EE;
-            color: var(--hd-muted);
-            margin-left: 6px;
-        }
-
-        .mgg-badge.active {
-            background: #E7F0EF;
-            color: var(--hd-primary-dark);
-        }
-
-        .mgg-badge.inactive {
-            background: #F7E9E7;
-            color: #9A3E33;
-        }
-
-    .mgg-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-
+    .mgg-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+    .mgg-actions form { margin: 0; }
     .mgg-btn {
-        border: none;
-        border-radius: 8px;
-        padding: 7px 12px;
-        font-size: 0.82rem;
-        font-weight: 600;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-block;
-        transition: background .15s ease, color .15s ease, border-color .15s ease;
+        border: none; border-radius: 8px; padding: 8px 13px; font-size: .8rem; font-weight: 700; cursor: pointer;
+        text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all .15s ease; white-space: nowrap;
     }
+    .mgg-btn.edit { background: #fff; border: 1.5px solid var(--es-blue); color: var(--es-blue); }
+    .mgg-btn.edit:hover { background: var(--es-blue); color: #fff; }
+    .mgg-btn.toggle { background: #fff; border: 1.5px solid var(--es-border); color: var(--es-text); }
+    .mgg-btn.toggle:hover { border-color: var(--es-blue); color: var(--es-blue); }
+    .mgg-btn.del { background: #fff; border: 1.5px solid #F0B4B6; color: var(--es-red); }
+    .mgg-btn.del:hover { background: var(--es-red); border-color: var(--es-red); color: #fff; }
 
-        .mgg-btn.edit {
-            background: transparent;
-            border: 1.5px solid var(--hd-primary);
-            color: var(--hd-primary);
-        }
+    .mgg-none { display: none; text-align: center; padding: 32px; color: var(--es-muted); font-size: .9rem; }
 
-            .mgg-btn.edit:hover {
-                background: var(--hd-primary);
-                color: #fff;
-            }
-
-        .mgg-btn.toggle {
-            background: transparent;
-            border: 1.5px solid var(--hd-border);
-            color: var(--hd-text);
-        }
-
-            .mgg-btn.toggle:hover {
-                border-color: var(--hd-primary);
-                color: var(--hd-primary);
-            }
-
-        .mgg-btn.del {
-            background: transparent;
-            border: 1.5px solid #C0524A;
-            color: #C0524A;
-        }
-
-            .mgg-btn.del:hover {
-                background: #C0524A;
-                color: #fff;
-            }
-
-    @@media (max-width: 1050px) {
-        .mgg-table-wrap {
-            overflow-x: auto;
-        }
-
-        .mgg-table {
-            min-width: 900px;
-        }
+    @@media (max-width: 1000px) {
+        .mgg-stats { grid-template-columns: repeat(2, 1fr); }
+        .mgg-table-wrap { overflow-x: auto; }
+        .mgg-table { min-width: 960px; }
+    }
+    @@media (max-width: 520px) {
+        .mgg-stats { grid-template-columns: 1fr; }
+        .mgg-search { min-width: 0; width: 100%; }
     }
 </style>
 
 <div class="container mgg-page">
+
+    <div class="mgg-crumb">
+        <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Trang chủ</a>
+        &nbsp;/&nbsp; Quản trị &nbsp;/&nbsp; <b>Mã giảm giá</b>
+    </div>
+
     <div class="mgg-header">
         <div>
-            <div class="mgg-eyebrow">Vận hành</div>
-            <h1>Quản lý mã giảm giá</h1>
+            <h1 class="mgg-title">Quản lý mã giảm giá</h1>
+            <p class="mgg-subtitle">Tạo, chỉnh sửa, bật/tắt và xóa các mã khuyến mại của cửa hàng.</p>
         </div>
-        <a asp-action="Create" class="mgg-btn-add">+ Tạo mã mới</a>
+        <a asp-action="Create" class="mgg-btn-add"><i class="bi bi-plus-circle"></i> Tạo mã mới</a>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="mgg-alert">@TempData["SuccessMessage"]</div>
+        <div class="mgg-alert"><i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]</div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="mgg-alert err">@TempData["ErrorMessage"]</div>
+        <div class="mgg-alert err"><i class="bi bi-exclamation-circle-fill"></i> @TempData["ErrorMessage"]</div>
     }
 
-    @if (!Model.Any())
+    @if (!dsMa.Any())
     {
-        <div style="background:var(--hd-card);border:1px dashed var(--hd-border);border-radius:16px;padding:48px 24px;text-align:center;color:var(--hd-muted);">
+        <div class="mgg-empty">
+            <i class="bi bi-ticket-perforated"></i>
             Chưa có mã giảm giá nào.
         </div>
     }
     else
     {
+        <div class="mgg-stats">
+            <div class="mgg-stat">
+                <div class="mgg-stat-icon"><i class="bi bi-ticket-perforated"></i></div>
+                <div><b>@tong</b><small>Tổng số mã</small></div>
+            </div>
+            <div class="mgg-stat green">
+                <div class="mgg-stat-icon"><i class="bi bi-check-circle"></i></div>
+                <div><b>@dangHoatDong</b><small>Đang hoạt động</small></div>
+            </div>
+            <div class="mgg-stat red">
+                <div class="mgg-stat-icon"><i class="bi bi-clock-history"></i></div>
+                <div><b>@daHetHan</b><small>Đã hết hạn</small></div>
+            </div>
+            <div class="mgg-stat">
+                <div class="mgg-stat-icon"><i class="bi bi-bag-check"></i></div>
+                <div><b>@tongDaDung</b><small>Lượt đã sử dụng</small></div>
+            </div>
+        </div>
+
+        <div class="mgg-toolbar">
+            <div class="mgg-search">
+                <i class="bi bi-search"></i>
+                <input type="text" id="mggSearch" placeholder="Tìm theo mã voucher..." />
+            </div>
+            <div class="mgg-tabs">
+                <button type="button" class="mgg-tab active" data-filter="all">Tất cả</button>
+                <button type="button" class="mgg-tab" data-filter="on">Hoạt động</button>
+                <button type="button" class="mgg-tab" data-filter="off">Ngừng</button>
+                <button type="button" class="mgg-tab" data-filter="expired">Hết hạn</button>
+            </div>
+        </div>
+
         <div class="mgg-table-wrap">
             <table class="mgg-table">
                 <thead>
@@ -266,17 +231,19 @@
                         <th style="width: 260px">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach (var v in Model)
+                <tbody id="mggBody">
+                    @foreach (var v in dsMa)
                     {
                         bool hetHan = v.ExpiryDate < DateTime.Now;
                         int conLai = v.TotalQuantity - v.UsedQuantity;
-                        <tr>
-                            <td class="mgg-code">@v.CodeName</td>
-                            <td>@v.DiscountPercent%</td>
+                        <tr data-code="@v.CodeName.ToLower()"
+                            data-active="@(v.IsActive ? "1" : "0")"
+                            data-expired="@(hetHan ? "1" : "0")">
+                            <td><span class="mgg-code">@v.CodeName</span></td>
+                            <td class="mgg-percent">@v.DiscountPercent%</td>
                             <td>@(v.MaxDiscountAmount.HasValue ? v.MaxDiscountAmount.Value.ToString("N0") + " đ" : "Không giới hạn")</td>
-                            <td>@v.TotalQuantity</td>
-                            <td>@v.UsedQuantity</td>
+                            <td class="mgg-num">@v.TotalQuantity</td>
+                            <td class="mgg-num">@v.UsedQuantity</td>
                             <td>
                                 @if (conLai <= 0)
                                 {
@@ -287,7 +254,7 @@
                                     <span class="mgg-badge con">@conLai</span>
                                 }
                             </td>
-                            <td>
+                            <td class="mgg-date">
                                 @v.ExpiryDate.ToString("dd/MM/yyyy")
                                 @if (hetHan)
                                 {
@@ -306,13 +273,15 @@
                             </td>
                             <td>
                                 <div class="mgg-actions">
-                                    <a asp-action="Sua" asp-route-id="@v.DiscountCodeID" class="mgg-btn edit">Sửa</a>
+                                    <a asp-action="Edit" asp-route-id="@v.DiscountCodeID" class="mgg-btn edit"><i class="bi bi-pencil-square"></i> Sửa</a>
                                     <form asp-action="ToggleTrangThai" asp-route-id="@v.DiscountCodeID" method="post" class="d-inline">
-                                        <button type="submit" class="mgg-btn toggle">@(v.IsActive ? "Tắt" : "Bật")</button>
+                                        <button type="submit" class="mgg-btn toggle">
+                                            <i class="bi @(v.IsActive ? "bi-toggle-on" : "bi-toggle-off")"></i> @(v.IsActive ? "Tắt" : "Bật")
+                                        </button>
                                     </form>
                                     <form asp-action="Delete" asp-route-id="@v.DiscountCodeID" method="post" class="d-inline"
                                           onsubmit="return confirm('Xóa mã \'@v.CodeName\'?');">
-                                        <button type="submit" class="mgg-btn del">Xóa</button>
+                                        <button type="submit" class="mgg-btn del"><i class="bi bi-trash3"></i> Xóa</button>
                                     </form>
                                 </div>
                             </td>
@@ -320,6 +289,45 @@
                     }
                 </tbody>
             </table>
+            <div class="mgg-none" id="mggNone">Không có mã nào phù hợp.</div>
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var rows = document.querySelectorAll('#mggBody tr');
+            var search = document.getElementById('mggSearch');
+            var tabs = document.querySelectorAll('.mgg-tab');
+            var none = document.getElementById('mggNone');
+            if (!search) return;
+
+            var filter = 'all';
+
+            function loc() {
+                var q = search.value.trim().toLowerCase();
+                var dem = 0;
+                rows.forEach(function (tr) {
+                    var ok = tr.dataset.code.indexOf(q) !== -1;
+                    if (ok && filter === 'on') ok = tr.dataset.active === '1';
+                    if (ok && filter === 'off') ok = tr.dataset.active === '0';
+                    if (ok && filter === 'expired') ok = tr.dataset.expired === '1';
+                    tr.style.display = ok ? '' : 'none';
+                    if (ok) dem++;
+                });
+                none.style.display = dem === 0 ? 'block' : 'none';
+            }
+
+            search.addEventListener('input', loc);
+            tabs.forEach(function (t) {
+                t.addEventListener('click', function () {
+                    tabs.forEach(function (x) { x.classList.remove('active'); });
+                    t.classList.add('active');
+                    filter = t.dataset.filter;
+                    loc();
+                });
+            });
+        })();
+    </script>
+}

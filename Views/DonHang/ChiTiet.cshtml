@@ -2,38 +2,163 @@
 
 @{
     ViewData["Title"] = "Chi tiết đơn hàng";
+
+    string lopBadge = Model.OrderStatus switch
+    {
+        "Pending" => "cho",
+        "Shipping" => "giao",
+        "Success" => "hoan",
+        "Cancelled" => "huy",
+        _ => "khac"
+    };
+    string tenTrangThai = Model.OrderStatus switch
+    {
+        "Pending" => "Chờ xác nhận",
+        "Shipping" => "Đang giao",
+        "Success" => "Đã giao",
+        "Cancelled" => "Đã hủy",
+        _ => Model.OrderStatus
+    };
 }
-<div class="container py-4">
-    <h3 class="fw-bold mb-4">Chi Tiết Đơn Hàng #@Model.OrderID</h3>
 
-    <p><strong>Khách hàng:</strong> @Model.User?.FullName</p>
-    <p><strong>Địa chỉ giao hàng:</strong> @Model.ShippingAddress</p>
-    <p><strong>SĐT nhận hàng:</strong> @Model.ReceiverPhone</p>
-    <p><strong>Trạng thái:</strong> <span class="badge bg-info text-dark">@Model.OrderStatus</span></p>
+<style>
+    .ct-page {
+        --es-blue: #1E4FBF;
+        --es-blue-dark: #0F2F7A;
+        --es-navy: #0B1F4B;
+        --es-red: #E0282E;
+        --es-green: #16A34A;
+        --es-text: #1F2937;
+        --es-muted: #6B7280;
+        --es-border: #E5E7EB;
+        padding: 40px 0 60px;
+    }
 
-    <table class="table mt-3">
-        <thead>
-            <tr>
-                <th>Sản phẩm</th>
-                <th>Đơn giá</th>
-                <th>Số lượng</th>
-                <th>Thành tiền</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var ct in Model.OrderDetails)
-            {
-                <tr>
-                    <td>@ct.Product.ProductName</td>
-                    <td>@ct.UnitPrice.ToString("N0") đ</td>
-                    <td>@ct.Quantity</td>
-                    <td>@((ct.UnitPrice * ct.Quantity).ToString("N0")) đ</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    .ct-eyebrow {
+        font-size: .78rem; letter-spacing: .14em; text-transform: uppercase;
+        color: var(--es-blue); font-weight: 700;
+    }
+    .ct-title { font-weight: 800; font-size: 1.7rem; color: var(--es-navy); margin: 4px 0 24px; }
 
-    <h5 class="text-end text-danger fw-bold">Tổng tiền: @Model.TotalAmount.ToString("N0") đ</h5>
+    .ct-card {
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px;
+        padding: 22px 24px; margin-bottom: 20px; box-shadow: 0 3px 14px rgba(15,47,122,.06);
+    }
+    .ct-card-title {
+        font-weight: 800; color: var(--es-navy); font-size: 1rem; margin: 0 0 16px;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .ct-card-title i { color: var(--es-blue); }
 
-    <a asp-action="LichSu" class="btn btn-outline-secondary mt-3">← Quay lại</a>
+    .ct-info { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 24px; }
+    .ct-info-full { grid-column: 1 / -1; }
+    .ct-label { font-size: .76rem; font-weight: 700; color: var(--es-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+    .ct-value { font-weight: 700; color: var(--es-text); font-size: .95rem; word-break: break-word; }
+
+    .ct-badge {
+        display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px;
+        font-size: .78rem; font-weight: 800; white-space: nowrap;
+    }
+    .ct-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .ct-badge.cho  { background: #FFF4DB; color: #A16207; }
+    .ct-badge.giao { background: #E8EFFC; color: var(--es-blue); }
+    .ct-badge.hoan { background: #E8F6EC; color: var(--es-green); }
+    .ct-badge.huy  { background: #EEF0F4; color: var(--es-muted); }
+    .ct-badge.khac { background: #EFE8F5; color: #6C4A93; }
+
+    .ct-table-wrap { border: 1px solid var(--es-border); border-radius: 12px; overflow: hidden; }
+    .ct-table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+    .ct-table thead { background: linear-gradient(120deg, var(--es-navy), var(--es-blue)); }
+    .ct-table thead th {
+        text-align: left; font-weight: 700; color: #fff; padding: 13px 16px; font-size: .74rem;
+        text-transform: uppercase; letter-spacing: .06em; white-space: nowrap;
+    }
+    .ct-table tbody td { padding: 13px 16px; border-bottom: 1px solid var(--es-border); color: var(--es-text); vertical-align: middle; }
+    .ct-table tbody tr:last-child td { border-bottom: none; }
+    .ct-table tbody tr:hover { background: #F7F9FE; }
+    .ct-name { font-weight: 700; color: var(--es-navy); }
+    .ct-sum { font-weight: 800; color: var(--es-navy); white-space: nowrap; }
+
+    .ct-total-row {
+        display: flex; justify-content: flex-end; align-items: center; gap: 14px;
+        margin-top: 18px; padding-top: 16px; border-top: 1px dashed var(--es-border);
+    }
+    .ct-total-label { font-weight: 700; color: var(--es-muted); }
+    .ct-total-value { font-weight: 800; font-size: 1.4rem; color: var(--es-red); }
+
+    .ct-back {
+        display: inline-flex; align-items: center; gap: 8px; background: #fff;
+        border: 1.5px solid var(--es-border); color: var(--es-navy); border-radius: 10px;
+        padding: 11px 20px; font-size: .9rem; font-weight: 800; text-decoration: none; transition: all .15s ease;
+    }
+    .ct-back:hover { border-color: var(--es-blue); color: var(--es-blue); }
+
+    @@media (max-width: 700px) {
+        .ct-info { grid-template-columns: 1fr; }
+        .ct-table-wrap { overflow-x: auto; }
+        .ct-table { min-width: 560px; }
+        .ct-total-row { justify-content: space-between; }
+    }
+</style>
+
+<div class="container ct-page">
+    <div class="ct-eyebrow">Đơn hàng</div>
+    <h1 class="ct-title">Chi tiết đơn hàng #@Model.OrderID</h1>
+
+    <div class="ct-card">
+        <h2 class="ct-card-title"><i class="bi bi-person-lines-fill"></i> Thông tin nhận hàng</h2>
+        <div class="ct-info">
+            <div>
+                <div class="ct-label">Khách hàng</div>
+                <div class="ct-value">@Model.User?.FullName</div>
+            </div>
+            <div>
+                <div class="ct-label">SĐT nhận hàng</div>
+                <div class="ct-value">@Model.ReceiverPhone</div>
+            </div>
+            <div class="ct-info-full">
+                <div class="ct-label">Địa chỉ giao hàng</div>
+                <div class="ct-value">@Model.ShippingAddress</div>
+            </div>
+            <div>
+                <div class="ct-label">Trạng thái</div>
+                <span class="ct-badge @lopBadge">@tenTrangThai</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="ct-card">
+        <h2 class="ct-card-title"><i class="bi bi-bag-check"></i> Sản phẩm trong đơn</h2>
+
+        <div class="ct-table-wrap">
+            <table class="ct-table">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th>Đơn giá</th>
+                        <th>Số lượng</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ct in Model.OrderDetails)
+                    {
+                        <tr>
+                            <td class="ct-name">@ct.Product.ProductName</td>
+                            <td>@ct.UnitPrice.ToString("N0") đ</td>
+                            <td>@ct.Quantity</td>
+                            <td class="ct-sum">@((ct.UnitPrice * ct.Quantity).ToString("N0")) đ</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="ct-total-row">
+            <span class="ct-total-label">Tổng tiền:</span>
+            <span class="ct-total-value">@Model.TotalAmount.ToString("N0") đ</span>
+        </div>
+    </div>
+
+    <a asp-action="Index" class="ct-back"><i class="bi bi-arrow-left"></i> Quay lại</a>
 </div>

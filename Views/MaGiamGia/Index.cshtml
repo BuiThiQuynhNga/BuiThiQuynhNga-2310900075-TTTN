@@ -3,186 +3,177 @@
 @{
     ViewData["Title"] = "Mã giảm giá";
 }
+
 <style>
     .vc-page {
-        --hd-primary: #2F5D62;
-        --hd-primary-dark: #22454A;
-        --hd-accent: #C97B4A;
-        --hd-bg: #F7F7F5;
-        --hd-card: #FFFFFF;
-        --hd-text: #24262B;
-        --hd-muted: #6B7076;
-        --hd-border: #E7E5E1;
-        padding: 40px 0 60px;
+        --es-blue: #1E4FBF;
+        --es-blue-dark: #0F2F7A;
+        --es-navy: #0B1F4B;
+        --es-red: #E0282E;
+        --es-green: #16A34A;
+        --es-text: #1F2937;
+        --es-muted: #6B7280;
+        --es-border: #E5E7EB;
+        padding: 10px 0 50px;
     }
+
+    .vc-crumb { font-size: .8rem; color: var(--es-muted); margin-bottom: 14px; }
+    .vc-crumb a { color: var(--es-muted); text-decoration: none; }
+    .vc-crumb a:hover { color: var(--es-blue); }
+    .vc-crumb b { color: var(--es-blue); }
 
     .vc-header {
-        margin-bottom: 28px;
+        display: flex; justify-content: space-between; align-items: flex-end;
+        gap: 12px; flex-wrap: wrap; margin-bottom: 26px;
     }
+    .vc-title { font-weight: 800; font-size: 1.7rem; color: var(--es-navy); margin: 0 0 4px; }
+    .vc-subtitle { color: var(--es-muted); font-size: .92rem; margin: 0; }
 
-        .vc-header .vc-eyebrow {
-            font-size: 0.78rem;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: var(--hd-muted);
-            font-weight: 600;
-        }
-
-        .vc-header h1 {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 800;
-            font-size: 1.6rem;
-            color: var(--hd-text);
-            margin: 4px 0 0;
-        }
+    .vc-btn-admin {
+        background: var(--es-blue); color: #fff; border: none; border-radius: 10px; padding: 11px 20px;
+        font-size: .88rem; font-weight: 800; text-decoration: none;
+        display: inline-flex; align-items: center; gap: 8px; transition: all .15s ease;
+    }
+    .vc-btn-admin:hover { background: var(--es-blue-dark); color: #fff; transform: translateY(-1px); }
 
     .vc-empty {
-        background: var(--hd-card);
-        border: 1px dashed var(--hd-border);
-        border-radius: 16px;
-        padding: 48px 24px;
-        text-align: center;
-        color: var(--hd-muted);
+        background: #fff; border: 1px dashed var(--es-border); border-radius: 16px;
+        padding: 56px 24px; text-align: center; color: var(--es-muted);
     }
+    .vc-empty i { font-size: 2.8rem; color: var(--es-blue); display: block; margin-bottom: 10px; }
 
-    .vc-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
-    }
+    .vc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 22px; }
+
+    /* ===== VÉ MÃ GIẢM GIÁ ===== */
+    .vc-item { filter: drop-shadow(0 3px 10px rgba(15,47,122,.10)); transition: transform .2s ease, filter .2s ease; }
+    .vc-item:hover { transform: translateY(-4px); filter: drop-shadow(0 12px 20px rgba(15,47,122,.20)); }
+    .vc-item.is-expired { opacity: .6; }
+    .vc-item.is-expired:hover { transform: none; filter: drop-shadow(0 3px 10px rgba(15,47,122,.10)); }
 
     .vc-ticket {
-        position: relative;
-        display: flex;
-        background: var(--hd-card);
-        border-radius: 14px;
-        box-shadow: 0 4px 16px rgba(34, 69, 74, 0.08);
-        overflow: hidden;
-        transition: transform .2s ease, box-shadow .2s ease;
+        display: flex; background: #fff; border-radius: 16px; overflow: hidden; min-height: 168px;
+        -webkit-mask-image:
+            radial-gradient(circle at calc(100% - 100px) 0, transparent 10px, #000 10.5px),
+            radial-gradient(circle at calc(100% - 100px) 100%, transparent 10px, #000 10.5px);
+        -webkit-mask-composite: source-in;
+        mask-image:
+            radial-gradient(circle at calc(100% - 100px) 0, transparent 10px, #000 10.5px),
+            radial-gradient(circle at calc(100% - 100px) 100%, transparent 10px, #000 10.5px);
+        mask-composite: intersect;
     }
 
-        .vc-ticket:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 26px rgba(34, 69, 74, 0.14);
-        }
-
-        .vc-ticket.is-expired {
-            filter: grayscale(0.6);
-            opacity: 0.65;
-        }
-
-    .vc-main {
-        flex: 1;
-        padding: 20px 18px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
+    .vc-percent-box {
+        position: relative; width: 104px; flex-shrink: 0; overflow: hidden;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: linear-gradient(160deg, var(--es-navy), var(--es-blue)); color: #fff; text-align: center; padding: 14px 6px;
     }
-
-    .vc-percent {
-        font-family: 'Poppins', sans-serif;
-        font-weight: 800;
-        font-size: 1.9rem;
-        color: var(--hd-accent);
-        line-height: 1;
+    .vc-percent-box::before {
+        content: ""; position: absolute; width: 120px; height: 120px; border-radius: 50%;
+        top: -50px; left: -50px; background: rgba(255,255,255,.08);
     }
+    .vc-percent-box::after {
+        content: ""; position: absolute; width: 90px; height: 90px; border-radius: 50%;
+        bottom: -40px; right: -40px; background: rgba(255,255,255,.07);
+    }
+    .vc-percent-box > * { position: relative; z-index: 1; }
+    .vc-item.is-expired .vc-percent-box { background: linear-gradient(160deg, #6B7280, #9CA3AF); }
+    .vc-percent-box i { font-size: 1.3rem; opacity: .9; margin-bottom: 4px; }
+    .vc-percent { font-weight: 800; font-size: 2.1rem; line-height: 1; }
+    .vc-percent span { font-size: 1.05rem; font-weight: 700; }
+    .vc-percent-label { font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .85; margin-top: 5px; }
 
-        .vc-percent span {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--hd-muted);
-            margin-left: 4px;
-        }
-
+    .vc-main { flex: 1; padding: 16px 18px; display: flex; flex-direction: column; gap: 7px; min-width: 0; }
     .vc-name {
-        font-weight: 700;
-        color: var(--hd-text);
-        font-size: 1rem;
-        margin-top: 2px;
+        align-self: flex-start; font-weight: 800; color: var(--es-blue); font-size: 1rem;
+        font-family: Consolas, Menlo, monospace; letter-spacing: .03em; word-break: break-all;
+        background: #F1F5FF; border: 1.5px dashed #B9CBF3; border-radius: 8px; padding: 4px 12px;
     }
+    .vc-item.is-expired .vc-name { color: var(--es-muted); background: #F3F4F6; border-color: #D1D5DB; }
 
-    .vc-meta {
-        font-size: 0.82rem;
-        color: var(--hd-muted);
-        margin-top: auto;
+    .vc-meta { font-size: .8rem; color: var(--es-muted); margin: 0; display: flex; align-items: center; gap: 6px; }
+    .vc-meta i { color: var(--es-blue); }
+    .vc-item.is-expired .vc-meta i { color: var(--es-muted); }
+
+    .vc-bar { height: 6px; background: #E5E7EB; border-radius: 6px; overflow: hidden; margin-top: 2px; }
+    .vc-bar > div { height: 100%; background: linear-gradient(90deg, var(--es-blue), #4C7DE0); border-radius: 6px; }
+    .vc-item.is-expired .vc-bar > div { background: #9CA3AF; }
+    .vc-bar-note { font-size: .72rem; color: var(--es-muted); margin: 0; }
+
+    .vc-copy {
+        margin-top: auto; align-self: flex-start; display: inline-flex; align-items: center; gap: 6px;
+        border: 1.5px solid var(--es-blue); background: #fff; color: var(--es-blue);
+        font-size: .78rem; font-weight: 800; padding: 7px 14px; border-radius: 8px; cursor: pointer;
+        transition: all .15s ease;
     }
+    .vc-copy:hover { background: var(--es-blue); color: #fff; }
+    .vc-copy.done { border-color: var(--es-green); background: #E8F6EC; color: var(--es-green); }
 
-    .vc-divider {
-        position: relative;
-        width: 0;
-        border-left: 2px dashed var(--hd-border);
-        margin: 14px 0;
-    }
+    .vc-divider { width: 0; border-left: 2px dashed var(--es-border); margin: 16px 0; }
 
-        .vc-divider::before,
-        .vc-divider::after {
-            content: "";
-            position: absolute;
-            left: -9px;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--hd-bg);
-        }
-
-        .vc-divider::before {
-            top: -14px;
-        }
-
-        .vc-divider::after {
-            bottom: -14px;
-        }
-
-    .vc-stub {
-        width: 84px;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 12px 6px;
-    }
-
+    .vc-stub { width: 100px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; padding: 10px 8px; }
     .vc-status {
-        writing-mode: vertical-rl;
-        transform: rotate(180deg);
-        font-size: 0.75rem;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        padding: 10px 4px;
-        border-radius: 20px;
-        text-align: center;
+        display: inline-flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+        font-size: .74rem; font-weight: 800; padding: 10px; border-radius: 12px; line-height: 1.3;
     }
+    .vc-status i { font-size: 1.4rem; }
+    .vc-status.active { color: var(--es-green); background: #E8F6EC; }
+    .vc-status.expired { color: var(--es-muted); background: #EEF0F4; }
 
-        .vc-status.active {
-            color: var(--hd-primary-dark);
-            background: #E7F0EF;
-        }
-
-        .vc-status.expired {
-            color: var(--hd-muted);
-            background: #EFEFEC;
-        }
+    /* ===== HƯỚNG DẪN ===== */
+    .vc-note {
+        display: flex; align-items: center; gap: 12px; background: #E8EFFC; border-radius: 12px;
+        padding: 14px 18px; margin-top: 26px; font-size: .84rem; color: var(--es-muted);
+    }
+    .vc-note i { color: var(--es-blue); font-size: 1.4rem; }
+    .vc-note b { color: var(--es-navy); }
+    .vc-note a { color: var(--es-blue); font-weight: 700; text-decoration: none; margin-left: auto; white-space: nowrap; }
+    .vc-note a:hover { text-decoration: underline; }
 
     @@media (max-width: 480px) {
-        .vc-stub {
-            width: 64px;
+        .vc-grid { grid-template-columns: 1fr; }
+        .vc-percent-box { width: 84px; }
+        .vc-percent { font-size: 1.7rem; }
+        .vc-stub { width: 84px; }
+        .vc-ticket {
+            -webkit-mask-image:
+                radial-gradient(circle at calc(100% - 84px) 0, transparent 10px, #000 10.5px),
+                radial-gradient(circle at calc(100% - 84px) 100%, transparent 10px, #000 10.5px);
+            mask-image:
+                radial-gradient(circle at calc(100% - 84px) 0, transparent 10px, #000 10.5px),
+                radial-gradient(circle at calc(100% - 84px) 100%, transparent 10px, #000 10.5px);
         }
-
-        .vc-percent {
-            font-size: 1.6rem;
-        }
+        .vc-note { flex-wrap: wrap; }
+        .vc-note a { margin-left: 0; }
     }
 </style>
+
 <div class="container vc-page">
+
+    <div class="vc-crumb">
+        <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Trang chủ</a>
+        &nbsp;/&nbsp; <b>Mã giảm giá</b>
+    </div>
+
     <div class="vc-header">
-        <div class="vc-eyebrow">Ưu đãi</div>
-        <h1>Mã giảm giá đang áp dụng</h1>
+        <div>
+            <h1 class="vc-title">Mã giảm giá đang áp dụng</h1>
+            <p class="vc-subtitle">Sao chép mã và nhập vào ô "Mã khuyến mại" trong giỏ hàng để nhận ưu đãi.</p>
+        </div>
+
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-controller="MaGiamGia" asp-action="QuanLy" class="vc-btn-admin">
+                <i class="bi bi-gear-fill"></i> Quản lý mã giảm giá
+            </a>
+        }
     </div>
 
     @if (!Model.Any())
     {
-        <div class="vc-empty">Hiện chưa có mã giảm giá nào. Quay lại sau nhé.</div>
+        <div class="vc-empty">
+            <i class="bi bi-ticket-perforated"></i>
+            Hiện chưa có mã giảm giá nào. Quay lại sau nhé.
+        </div>
     }
     else
     {
@@ -190,32 +181,97 @@
             @foreach (var v in Model)
             {
                 bool conLuot = v.IsActive && v.TotalQuantity > v.UsedQuantity && v.ExpiryDate >= DateTime.Now;
+                int phanTramDaDung = v.TotalQuantity > 0
+                    ? (int)Math.Min(100, Math.Round(v.UsedQuantity * 100.0 / v.TotalQuantity))
+                    : 0;
 
-                <div class="vc-ticket @(conLuot ? "" : "is-expired")">
-                    <div class="vc-main">
-                        <div class="vc-percent">@v.DiscountPercent<span>%</span></div>
-                        <div class="vc-name">@v.CodeName</div>
-                        @if (v.MaxDiscountAmount.HasValue)
-                        {
-                            <p class="vc-meta mb-0">Tối đa @v.MaxDiscountAmount.Value.ToString("N0") đ</p>
-                        }
-                        <p class="vc-meta mb-0">Hết hạn: @v.ExpiryDate.ToString("dd/MM/yyyy")</p>
-                    </div>
+                <div class="vc-item @(conLuot ? "" : "is-expired")">
+                    <div class="vc-ticket">
 
-                    <div class="vc-divider"></div>
+                        <div class="vc-percent-box">
+                            <i class="bi bi-tag-fill"></i>
+                            <div class="vc-percent">@v.DiscountPercent<span>%</span></div>
+                            <div class="vc-percent-label">Giảm giá</div>
+                        </div>
 
-                    <div class="vc-stub">
-                        @if (conLuot)
-                        {
-                            <span class="vc-status active">Còn lượt</span>
-                        }
-                        else
-                        {
-                            <span class="vc-status expired">Hết lượt</span>
-                        }
+                        <div class="vc-main">
+                            <div class="vc-name">@v.CodeName</div>
+
+                            @if (v.MaxDiscountAmount.HasValue)
+                            {
+                                <p class="vc-meta"><i class="bi bi-cash-coin"></i> Tối đa @v.MaxDiscountAmount.Value.ToString("N0") đ</p>
+                            }
+                            <p class="vc-meta"><i class="bi bi-calendar-event"></i> Hết hạn: @v.ExpiryDate.ToString("dd/MM/yyyy")</p>
+
+                            <div class="vc-bar"><div style="width:@(phanTramDaDung)%"></div></div>
+                            <p class="vc-bar-note">Đã dùng @v.UsedQuantity/@v.TotalQuantity lượt</p>
+
+                            @if (conLuot)
+                            {
+                                <button type="button" class="vc-copy" data-code="@v.CodeName">
+                                    <i class="bi bi-clipboard"></i> <span>Sao chép mã</span>
+                                </button>
+                            }
+                        </div>
+
+                        <div class="vc-divider"></div>
+
+                        <div class="vc-stub">
+                            @if (conLuot)
+                            {
+                                <span class="vc-status active"><i class="bi bi-check-circle-fill"></i> Còn lượt</span>
+                            }
+                            else
+                            {
+                                <span class="vc-status expired"><i class="bi bi-x-circle-fill"></i> Hết lượt</span>
+                            }
+                        </div>
                     </div>
                 </div>
             }
         </div>
+
+        <div class="vc-note">
+            <i class="bi bi-info-circle-fill"></i>
+            <span><b>Cách dùng:</b> thêm sản phẩm vào giỏ, nhập mã vào ô "Mã khuyến mại" rồi bấm "Áp dụng".</span>
+            <a asp-controller="GioHang" asp-action="Index">Đến giỏ hàng <i class="bi bi-arrow-right"></i></a>
+        </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            document.querySelectorAll('.vc-copy').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var code = btn.dataset.code;
+                    var label = btn.querySelector('span');
+                    var icon = btn.querySelector('i');
+
+                    function xong() {
+                        btn.classList.add('done');
+                        icon.className = 'bi bi-check2';
+                        label.textContent = 'Đã sao chép';
+                        setTimeout(function () {
+                            btn.classList.remove('done');
+                            icon.className = 'bi bi-clipboard';
+                            label.textContent = 'Sao chép mã';
+                        }, 1800);
+                    }
+
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(code).then(xong);
+                    } else {
+                        var ta = document.createElement('textarea');
+                        ta.value = code;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        xong();
+                    }
+                });
+            });
+        })();
+    </script>
+}

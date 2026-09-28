@@ -1,0 +1,243 @@
+@model ElectronicsShop.Models.Order
+
+@{
+    ViewData["Title"] = "Thanh toán QR";
+
+    bool hetHan = (bool)ViewBag.HetHan;
+    bool thieuCauHinh = (bool)ViewBag.ThieuCauHinh;
+    int soGiayConLai = (int)ViewBag.SoGiayConLai;
+    long soTien = (long)ViewBag.SoTien;
+    string noiDung = (string)ViewBag.NoiDung;
+    string qrUrl = (string)ViewBag.QrUrl;
+    string bankId = (string)ViewBag.BankId;
+    string soTaiKhoan = (string)ViewBag.SoTaiKhoan;
+    string tenChuTk = (string)ViewBag.TenChuTk;
+}
+
+<style>
+    .qr-page {
+        --es-blue: #1E4FBF;
+        --es-blue-dark: #0F2F7A;
+        --es-navy: #0B1F4B;
+        --es-red: #E0282E;
+        --es-green: #16A34A;
+        --es-bg: #F3F5F9;
+        --es-text: #1F2937;
+        --es-muted: #6B7280;
+        --es-border: #E5E7EB;
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 10px 16px 50px;
+    }
+    .qr-crumb { font-size: .8rem; color: var(--es-muted); margin-bottom: 14px; }
+    .qr-crumb a { color: var(--es-muted); text-decoration: none; }
+    .qr-crumb a:hover { color: var(--es-blue); }
+    .qr-crumb b { color: var(--es-blue); }
+    .qr-title { font-weight: 800; font-size: 1.6rem; color: var(--es-navy); margin: 0 0 4px; }
+    .qr-subtitle { color: var(--es-muted); font-size: .92rem; margin: 0 0 20px; }
+
+    .qr-alert {
+        display: flex; align-items: flex-start; gap: 10px;
+        background: #FDECEC; color: #B3261E; border: 1px solid #F6C7C7;
+        border-radius: 10px; padding: 12px 16px; font-size: .88rem; font-weight: 600;
+        margin-bottom: 16px; text-align: left; line-height: 1.5;
+    }
+
+    .qr-card {
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; overflow: hidden;
+        box-shadow: 0 3px 14px rgba(15,47,122,.06);
+    }
+    .qr-card-head {
+        display: flex; align-items: center; gap: 12px;
+        padding: 16px 24px; background: linear-gradient(120deg, var(--es-navy), var(--es-blue)); color: #fff;
+    }
+    .qr-card-head i { font-size: 1.3rem; }
+    .qr-card-head h5 { margin: 0; font-weight: 800; font-size: 1rem; }
+    .qr-card-head small { display: block; color: rgba(255,255,255,.75); font-size: .78rem; }
+    .qr-card-body { padding: 24px; text-align: center; }
+
+    .qr-timer {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: #E8EFFC; color: var(--es-blue); border-radius: 20px;
+        padding: 8px 18px; font-size: .88rem; font-weight: 700; margin-bottom: 18px;
+    }
+    .qr-timer strong { font-family: Consolas, monospace; font-size: 1.2rem; color: var(--es-red); }
+
+    .qr-img-wrap {
+        display: inline-block; padding: 12px; background: #fff;
+        border: 2px solid var(--es-blue); border-radius: 16px; margin-bottom: 20px;
+        box-shadow: 0 6px 20px rgba(30,79,191,.15);
+    }
+    .qr-img { display: block; width: 100%; max-width: 320px; border-radius: 8px; }
+
+    .qr-info { text-align: left; background: var(--es-bg); border-radius: 12px; padding: 8px 16px; margin-bottom: 16px; }
+    .qr-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: .9rem; padding: 10px 0; border-bottom: 1px dashed var(--es-border); color: var(--es-text); }
+    .qr-row:last-child { border-bottom: none; }
+    .qr-row span:first-child { color: var(--es-muted); }
+    .qr-row strong { text-align: right; color: var(--es-navy); }
+    .qr-amount { color: var(--es-red) !important; font-size: 1.2rem; }
+    .qr-code-text {
+        font-family: Consolas, monospace; background: #fff; border: 1px solid var(--es-border);
+        padding: 3px 10px; border-radius: 6px; color: var(--es-blue) !important;
+    }
+
+    .qr-note {
+        display: flex; gap: 10px; font-size: .82rem; color: var(--es-muted);
+        text-align: left; margin-bottom: 20px; line-height: 1.6;
+    }
+    .qr-note i { color: var(--es-blue); margin-top: 2px; }
+
+    .qr-actions { display: flex; gap: 10px; }
+    .qr-actions form { flex: 1; margin: 0; }
+    .qr-btn {
+        width: 100%; border-radius: 10px; padding: 13px; font-weight: 800; font-size: .92rem; cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        transition: all .15s ease;
+    }
+    .qr-btn.primary { border: none; background: var(--es-blue); color: #fff; }
+    .qr-btn.primary:hover { background: var(--es-blue-dark); transform: translateY(-1px); }
+    .qr-btn.back { background: #fff; border: 1.5px solid var(--es-border); color: var(--es-text); }
+    .qr-btn.back:hover { border-color: var(--es-blue); color: var(--es-blue); }
+
+    .qr-expired-icon {
+        width: 72px; height: 72px; border-radius: 50%; background: #FDECEC; color: var(--es-red);
+        display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 12px;
+    }
+    .qr-expired h3 { font-weight: 800; color: var(--es-navy); font-size: 1.2rem; margin-bottom: 6px; }
+    .qr-expired-text { color: var(--es-muted); font-size: .92rem; margin-bottom: 20px; }
+
+    @@media (max-width: 480px) {
+        .qr-actions { flex-direction: column-reverse; }
+        .qr-card-body { padding: 18px 14px; }
+    }
+</style>
+
+<div class="container qr-page">
+
+    <div class="qr-crumb">
+        <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Trang chủ</a>
+        &nbsp;/&nbsp;
+        <a asp-controller="GioHang" asp-action="Index">Giỏ hàng</a>
+        &nbsp;/&nbsp; <b>Thanh toán QR</b>
+    </div>
+
+    <h1 class="qr-title">Thanh toán chuyển khoản QR</h1>
+    <p class="qr-subtitle">Quét mã bằng ứng dụng ngân hàng để hoàn tất thanh toán nhanh chóng.</p>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="qr-alert"><i class="bi bi-exclamation-circle-fill"></i> @TempData["ErrorMessage"]</div>
+    }
+
+    <div class="qr-card">
+        <div class="qr-card-head">
+            <i class="bi bi-qr-code-scan"></i>
+            <div>
+                <h5>Chuyển khoản qua mã QR</h5>
+                <small>Bảo mật và đối chiếu tự động theo nội dung chuyển khoản</small>
+            </div>
+        </div>
+
+        <div class="qr-card-body">
+            @if (thieuCauHinh)
+            {
+                <div class="qr-alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <span>
+                        Cửa hàng chưa cấu hình tài khoản nhận tiền (mục ThanhToanQR trong appsettings.json).
+                        Vui lòng quay lại và chọn thanh toán khi nhận hàng.
+                    </span>
+                </div>
+
+                <form asp-action="QuayLaiTuQr" method="post">
+                    <button type="submit" class="qr-btn back"><i class="bi bi-arrow-left"></i> Quay lại</button>
+                </form>
+            }
+            else if (hetHan)
+            {
+                <div class="qr-expired">
+                    <div class="qr-expired-icon"><i class="bi bi-clock-history"></i></div>
+                    <h3>Mã QR đã hết hiệu lực</h3>
+                    <p class="qr-expired-text">Mã chỉ có hiệu lực trong 10 phút. Vui lòng tạo mã mới để thanh toán.</p>
+
+                    <div class="qr-actions">
+                        <form asp-action="QuayLaiTuQr" method="post">
+                            <button type="submit" class="qr-btn back"><i class="bi bi-arrow-left"></i> Quay lại</button>
+                        </form>
+                        <form asp-action="TaoLaiMaQr" method="post">
+                            <button type="submit" class="qr-btn primary"><i class="bi bi-arrow-repeat"></i> Tạo mã mới</button>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="qr-timer"><i class="bi bi-hourglass-split"></i> Mã còn hiệu lực: <strong id="countdown">--:--</strong></div>
+
+                <div>
+                    <div class="qr-img-wrap">
+                        <img src="@qrUrl" alt="Mã QR chuyển khoản" class="qr-img" />
+                    </div>
+                </div>
+
+                <div class="qr-info">
+                    <div class="qr-row"><span>Ngân hàng</span><strong>@bankId</strong></div>
+                    <div class="qr-row"><span>Số tài khoản</span><strong>@soTaiKhoan</strong></div>
+                    @if (!string.IsNullOrWhiteSpace(tenChuTk))
+                    {
+                        <div class="qr-row"><span>Chủ tài khoản</span><strong>@tenChuTk</strong></div>
+                    }
+                    <div class="qr-row"><span>Số tiền</span><strong class="qr-amount">@soTien.ToString("N0") đ</strong></div>
+                    <div class="qr-row"><span>Nội dung chuyển khoản</span><strong class="qr-code-text">@noiDung</strong></div>
+                </div>
+
+                <div class="qr-note">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span>
+                        Vui lòng giữ nguyên số tiền và nội dung chuyển khoản để cửa hàng đối chiếu.
+                        Sau khi chuyển xong, bấm "Tôi đã chuyển khoản".
+                    </span>
+                </div>
+
+                <div class="qr-actions">
+                    <form asp-action="QuayLaiTuQr" method="post">
+                        <button type="submit" class="qr-btn back"><i class="bi bi-arrow-left"></i> Quay lại</button>
+                    </form>
+                    <form asp-action="XacNhanDaChuyenKhoan" method="post">
+                        <button type="submit" class="qr-btn primary"><i class="bi bi-check2-circle"></i> Tôi đã chuyển khoản</button>
+                    </form>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @if (!hetHan && !thieuCauHinh)
+    {
+        <script>
+            (function () {
+                var conLai = @soGiayConLai;
+                var el = document.getElementById('countdown');
+
+                function hienThi() {
+                    var phut = Math.floor(conLai / 60);
+                    var giay = conLai % 60;
+                    el.textContent = String(phut).padStart(2, '0') + ':' + String(giay).padStart(2, '0');
+                }
+
+                hienThi();
+
+                var timer = setInterval(function () {
+                    conLai--;
+                    if (conLai <= 0) {
+                        clearInterval(timer);
+                        location.reload(); // server sẽ hiện trạng thái "hết hiệu lực"
+                        return;
+                    }
+                    hienThi();
+                }, 1000);
+            })();
+        </script>
+    }
+}

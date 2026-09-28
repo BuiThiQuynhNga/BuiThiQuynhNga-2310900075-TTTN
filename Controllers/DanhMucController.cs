@@ -19,10 +19,13 @@ namespace ElectronicsShop.Controllers
         // Ai cũng xem được, không cần đăng nhập
         public async Task<IActionResult> Index()
         {
-            var danhSach = await _context.Categories.OrderByDescending(d => d.CategoryID).ToListAsync();
-            return View(danhSach);
-        }
+            var danhMucList = await _context.Categories
+                .Include(c => c.Products)
+                .OrderByDescending(c => c.CategoryID)
+                .ToListAsync();
 
+            return View(danhMucList);
+        }
         // GET: /DanhMuc/Them
         [Authorize(Roles = "Admin")]
         public IActionResult Them()

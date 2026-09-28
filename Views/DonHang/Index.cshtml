@@ -3,223 +3,109 @@
 @{
     ViewData["Title"] = "Quản lý đơn hàng";
 }
+
 <style>
     .dh-page {
-        --hd-primary: #2F5D62;
-        --hd-primary-dark: #22454A;
-        --hd-accent: #C97B4A;
-        --hd-bg: #F7F7F5;
-        --hd-card: #FFFFFF;
-        --hd-text: #24262B;
-        --hd-muted: #6B7076;
-        --hd-border: #E7E5E1;
+        --es-blue: #1E4FBF;
+        --es-blue-dark: #0F2F7A;
+        --es-navy: #0B1F4B;
+        --es-red: #E0282E;
+        --es-green: #16A34A;
+        --es-text: #1F2937;
+        --es-muted: #6B7280;
+        --es-border: #E5E7EB;
         padding: 40px 0 60px;
     }
 
     .dh-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        margin-bottom: 24px;
-        flex-wrap: wrap;
-        gap: 12px;
+        display: flex; justify-content: space-between; align-items: flex-end;
+        gap: 12px; flex-wrap: wrap; margin-bottom: 24px;
     }
-
-        .dh-header .dh-eyebrow {
-            font-size: 0.78rem;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: var(--hd-muted);
-            font-weight: 600;
-        }
-
-        .dh-header h1 {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: var(--hd-text);
-            margin: 4px 0 0;
-        }
+    .dh-eyebrow {
+        font-size: .78rem; letter-spacing: .14em; text-transform: uppercase;
+        color: var(--es-blue); font-weight: 700;
+    }
+    .dh-header h1 { font-weight: 800; font-size: 1.7rem; color: var(--es-navy); margin: 4px 0 0; }
 
     .dh-count {
-        font-size: 0.85rem;
-        color: var(--hd-muted);
-        background: var(--hd-card);
-        border: 1px solid var(--hd-border);
-        border-radius: 20px;
-        padding: 6px 14px;
+        font-size: .85rem; font-weight: 700; color: var(--es-blue);
+        background: #E8EFFC; border-radius: 20px; padding: 7px 16px;
     }
 
     .dh-alert {
-        background: #E7F0EF;
-        color: var(--hd-primary-dark);
-        border-radius: 10px;
-        padding: 12px 16px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        margin-bottom: 20px;
+        display: flex; align-items: center; gap: 10px;
+        background: #E8F6EC; color: #166534; border: 1px solid #BBE5C8;
+        border-radius: 10px; padding: 12px 16px; font-size: .9rem; font-weight: 600; margin-bottom: 20px;
     }
 
     .dh-empty {
-        background: var(--hd-card);
-        border: 1px dashed var(--hd-border);
-        border-radius: 16px;
-        padding: 48px 24px;
-        text-align: center;
-        color: var(--hd-muted);
+        background: #fff; border: 1px dashed var(--es-border); border-radius: 16px;
+        padding: 48px 24px; text-align: center; color: var(--es-muted);
     }
 
     .dh-table-wrap {
-        background: var(--hd-card);
-        border: 1px solid var(--hd-border);
-        border-radius: 16px;
-        overflow: hidden;
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; overflow: hidden;
+        box-shadow: 0 3px 14px rgba(15,47,122,.06);
     }
-
-    .dh-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.92rem;
+    .dh-table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+    .dh-table thead { background: linear-gradient(120deg, var(--es-navy), var(--es-blue)); }
+    .dh-table thead th {
+        text-align: left; font-weight: 700; color: #fff; padding: 14px 16px; font-size: .74rem;
+        text-transform: uppercase; letter-spacing: .06em; white-space: nowrap;
     }
-
-        .dh-table thead {
-            background: #F1F0EE;
-        }
-
-            .dh-table thead th {
-                text-align: left;
-                font-weight: 700;
-                color: var(--hd-text);
-                padding: 14px 16px;
-                font-size: 0.82rem;
-                text-transform: uppercase;
-                letter-spacing: 0.04em;
-                border-bottom: 1px solid var(--hd-border);
-            }
-
-        .dh-table tbody td {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--hd-border);
-            color: var(--hd-text);
-            vertical-align: middle;
-        }
-
-        .dh-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .dh-table tbody tr {
-            transition: background .15s ease;
-        }
-
-            .dh-table tbody tr:hover {
-                background: #FAFAF8;
-            }
-
-    .dh-id {
-        font-weight: 700;
-        color: var(--hd-primary);
+    .dh-table tbody td {
+        padding: 14px 16px; border-bottom: 1px solid var(--es-border);
+        color: var(--es-text); vertical-align: middle;
     }
+    .dh-table tbody tr:last-child td { border-bottom: none; }
+    .dh-table tbody tr { transition: background .15s ease; }
+    .dh-table tbody tr:hover { background: #F7F9FE; }
 
-    .dh-total {
-        font-weight: 700;
+    .dh-id { font-weight: 800; color: var(--es-blue); }
+    .dh-total { font-weight: 800; color: var(--es-navy); white-space: nowrap; }
+
+    /* ---- Badge phương thức thanh toán ---- */
+    .dh-pay {
+        display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 8px;
+        font-size: .78rem; font-weight: 800; white-space: nowrap;
     }
+    .dh-pay.ck   { background: #E8EFFC; color: var(--es-blue); }
+    .dh-pay.cod  { background: #FFF1E6; color: #C2410C; }
+    .dh-pay.khac { background: #EEF0F4; color: var(--es-muted); }
 
     /* ---- Badge trạng thái ---- */
     .dh-badge {
-        display: inline-block;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.78rem;
-        font-weight: 700;
-        white-space: nowrap;
+        display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px;
+        font-size: .78rem; font-weight: 800; white-space: nowrap;
     }
-
-        .dh-badge.cho {
-            background: #FBEFDD;
-            color: #9A6A1E;
-        }
-
-        .dh-badge.giao {
-            background: #E4EEF6;
-            color: #2A5F8A;
-        }
-
-        .dh-badge.hoan {
-            background: #E7F0EF;
-            color: var(--hd-primary-dark);
-        }
-
-        .dh-badge.huy {
-            background: #F1F0EE;
-            color: var(--hd-muted);
-        }
-
-        .dh-badge.khac {
-            background: #EFE8F5;
-            color: #6C4A93;
-        }
+    .dh-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .dh-badge.cho  { background: #FFF4DB; color: #A16207; }
+    .dh-badge.giao { background: #E8EFFC; color: var(--es-blue); }
+    .dh-badge.hoan { background: #E8F6EC; color: var(--es-green); }
+    .dh-badge.huy  { background: #EEF0F4; color: var(--es-muted); }
+    .dh-badge.khac { background: #EFE8F5; color: #6C4A93; }
 
     /* ---- Nút hành động ---- */
-    .dh-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-
+    .dh-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+    .dh-actions form { margin: 0; }
     .dh-btn {
-        border: none;
-        border-radius: 8px;
-        padding: 7px 12px;
-        font-size: 0.82rem;
-        font-weight: 600;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-block;
-        transition: background .15s ease, color .15s ease, border-color .15s ease;
+        border: none; border-radius: 8px; padding: 8px 14px; font-size: .82rem; font-weight: 700;
+        cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+        white-space: nowrap; transition: all .15s ease;
     }
+    .dh-btn.view { background: #fff; border: 1.5px solid var(--es-blue); color: var(--es-blue); }
+    .dh-btn.view:hover { background: var(--es-blue); color: #fff; }
+    .dh-btn.confirm { background: var(--es-blue); color: #fff; }
+    .dh-btn.confirm:hover { background: var(--es-blue-dark); }
+    .dh-btn.cancel { background: #fff; border: 1.5px solid #F0B4B6; color: var(--es-red); }
+    .dh-btn.cancel:hover { background: var(--es-red); border-color: var(--es-red); color: #fff; }
 
-        .dh-btn.view {
-            background: transparent;
-            border: 1.5px solid var(--hd-primary);
-            color: var(--hd-primary);
-        }
-
-            .dh-btn.view:hover {
-                background: var(--hd-primary);
-                color: #fff;
-            }
-
-        .dh-btn.confirm {
-            background: var(--hd-primary);
-            color: #fff;
-        }
-
-            .dh-btn.confirm:hover {
-                background: var(--hd-primary-dark);
-            }
-
-        .dh-btn.cancel {
-            background: transparent;
-            border: 1.5px solid #C0524A;
-            color: #C0524A;
-        }
-
-            .dh-btn.cancel:hover {
-                background: #C0524A;
-                color: #fff;
-            }
-
-    @@media (max-width: 900px) {
-        .dh-table-wrap {
-            overflow-x: auto;
-        }
-
-        .dh-table {
-            min-width: 760px;
-        }
+    @@media (max-width: 1000px) {
+        .dh-table-wrap { overflow-x: auto; }
+        .dh-table { min-width: 900px; }
     }
 </style>
+
 <div class="container dh-page">
     <div class="dh-header">
         <div>
@@ -231,7 +117,7 @@
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="dh-alert">@TempData["SuccessMessage"]</div>
+        <div class="dh-alert"><i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]</div>
     }
 
     @if (!Model.Any())
@@ -248,6 +134,7 @@
                         <th>Khách hàng</th>
                         <th>Ngày đặt</th>
                         <th>Tổng tiền</th>
+                        <th>Thanh toán</th>
                         <th>Trạng thái</th>
                         <th style="width: 320px">Hành động</th>
                     </tr>
@@ -260,6 +147,31 @@
                             <td>@dh.User?.FullName</td>
                             <td>@dh.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
                             <td class="dh-total">@dh.TotalAmount.ToString("N0") đ</td>
+                            <td>
+                                @{
+                                    // Đổi PaymentMethod thành tên thuộc tính thật trong model Order của bạn
+                                    string pt = (dh.PaymentMethod ?? "").Trim().ToLower();
+                                    string lopPt, tenPt, iconPt;
+
+                                    if (pt.Contains("bank") || pt.Contains("chuyen") || pt.Contains("chuyển")
+                                        || pt.Contains("transfer") || pt.Contains("qr"))
+                                    {
+                                        lopPt = "ck"; tenPt = "Chuyển khoản"; iconPt = "bi-bank";
+                                    }
+                                    else if (pt.Contains("cod") || pt.Contains("cash") || pt.Contains("tien")
+                                        || pt.Contains("tiền") || pt.Contains("mặt"))
+                                    {
+                                        lopPt = "cod"; tenPt = "Tiền mặt (COD)"; iconPt = "bi-cash-coin";
+                                    }
+                                    else
+                                    {
+                                        lopPt = "khac";
+                                        tenPt = string.IsNullOrEmpty(pt) ? "Chưa rõ" : dh.PaymentMethod;
+                                        iconPt = "bi-wallet2";
+                                    }
+                                }
+                                <span class="dh-pay @lopPt"><i class="bi @iconPt"></i> @tenPt</span>
+                            </td>
                             <td>
                                 @{
                                     string lopBadge = dh.OrderStatus switch
@@ -283,20 +195,20 @@
                             </td>
                             <td>
                                 <div class="dh-actions">
-                                    <a asp-action="ChiTiet" asp-route-id="@dh.OrderID" class="dh-btn view">Xem</a>
+                                    <a asp-action="ChiTiet" asp-route-id="@dh.OrderID" class="dh-btn view"><i class="bi bi-eye"></i> Xem</a>
 
                                     @if (dh.OrderStatus == "Pending")
                                     {
                                         <form asp-action="CapNhatTrangThai" method="post" class="d-inline">
                                             <input type="hidden" name="id" value="@dh.OrderID" />
                                             <input type="hidden" name="trangThai" value="Shipping" />
-                                            <button type="submit" class="dh-btn confirm">Xác nhận</button>
+                                            <button type="submit" class="dh-btn confirm"><i class="bi bi-check2-circle"></i> Xác nhận</button>
                                         </form>
                                         <form asp-action="CapNhatTrangThai" method="post" class="d-inline"
                                               onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn hàng #@dh.OrderID?');">
                                             <input type="hidden" name="id" value="@dh.OrderID" />
                                             <input type="hidden" name="trangThai" value="Cancelled" />
-                                            <button type="submit" class="dh-btn cancel">Hủy đơn</button>
+                                            <button type="submit" class="dh-btn cancel"><i class="bi bi-x-circle"></i> Hủy đơn</button>
                                         </form>
                                     }
                                     else if (dh.OrderStatus == "Shipping")
@@ -304,7 +216,7 @@
                                         <form asp-action="CapNhatTrangThai" method="post" class="d-inline">
                                             <input type="hidden" name="id" value="@dh.OrderID" />
                                             <input type="hidden" name="trangThai" value="Success" />
-                                            <button type="submit" class="dh-btn confirm">Hoàn tất giao hàng</button>
+                                            <button type="submit" class="dh-btn confirm"><i class="bi bi-truck"></i> Hoàn tất giao hàng</button>
                                         </form>
                                     }
                                 </div>

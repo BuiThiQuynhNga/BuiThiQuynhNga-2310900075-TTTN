@@ -2,154 +2,191 @@
 
 @{
     ViewData["Title"] = "Thêm danh mục";
+
+    // Model có thể null khi mở trang lần đầu, nên dùng Model? để không bị lỗi
+    string tenBanDau = Model?.CategoryName ?? "";
+    string moTaBanDau = Model?.Description ?? "";
+    string chuCai = string.IsNullOrWhiteSpace(tenBanDau) ? "?" : tenBanDau.Trim().Substring(0, 1).ToUpper();
 }
+
 <style>
     .dmf-page {
-        --hd-primary: #2F5D62;
-        --hd-primary-dark: #22454A;
-        --hd-accent: #C97B4A;
-        --hd-bg: #F7F7F5;
-        --hd-card: #FFFFFF;
-        --hd-text: #24262B;
-        --hd-muted: #6B7076;
-        --hd-border: #E7E5E1;
-        padding: 40px 0 60px;
+        --es-blue: #1E4FBF;
+        --es-blue-dark: #0F2F7A;
+        --es-navy: #0B1F4B;
+        --es-red: #E0282E;
+        --es-bg: #F3F5F9;
+        --es-text: #1F2937;
+        --es-muted: #6B7280;
+        --es-border: #E5E7EB;
+        padding: 10px 0 50px;
     }
+    .dmf-crumb { font-size: .8rem; color: var(--es-muted); margin-bottom: 14px; }
+    .dmf-crumb a { color: var(--es-muted); text-decoration: none; }
+    .dmf-crumb a:hover { color: var(--es-blue); }
+    .dmf-crumb b { color: var(--es-blue); }
+    .dmf-title { font-weight: 800; font-size: 1.7rem; color: var(--es-navy); margin: 0 0 4px; }
+    .dmf-subtitle { color: var(--es-muted); font-size: .92rem; margin: 0 0 22px; }
 
-    .dmf-eyebrow {
-        font-size: 0.78rem;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: var(--hd-muted);
-        font-weight: 600;
-    }
+    .dmf-layout { display: grid; grid-template-columns: 1fr 360px; gap: 22px; align-items: start; }
 
-    .dmf-title {
-        font-family: 'Poppins', sans-serif;
-        font-weight: 800;
-        font-size: 1.5rem;
-        color: var(--hd-text);
-        margin: 4px 0 24px;
-    }
-
+    /* ===== THẺ FORM ===== */
     .dmf-card {
-        background: var(--hd-card);
-        border: 1px solid var(--hd-border);
-        border-radius: 16px;
-        padding: 32px;
-        max-width: 500px;
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; overflow: hidden;
+        box-shadow: 0 3px 14px rgba(15,47,122,.06);
     }
-
-    .dmf-group {
-        margin-bottom: 18px;
+    .dmf-card-head {
+        display: flex; align-items: center; gap: 12px; padding: 16px 24px;
+        background: linear-gradient(120deg, var(--es-navy), var(--es-blue)); color: #fff;
     }
-
-    .dmf-label {
-        display: block;
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: var(--hd-text);
-        margin-bottom: 6px;
-    }
-
-    .dmf-input,
-    .dmf-textarea {
-        width: 100%;
-        border: 1px solid var(--hd-border);
-        border-radius: 8px;
-        padding: 10px 12px;
-        font-size: 0.92rem;
-        color: var(--hd-text);
-        background: #fff;
-        transition: border-color .15s ease;
-        font-family: inherit;
-    }
-
-        .dmf-input:focus,
-        .dmf-textarea:focus {
-            outline: none;
-            border-color: var(--hd-primary);
-        }
-
-    .dmf-textarea {
-        resize: vertical;
-    }
-
-    .dmf-err {
-        color: #C0524A;
-        font-size: 0.8rem;
-        margin-top: 4px;
-        display: block;
-    }
+    .dmf-card-head i { font-size: 1.2rem; }
+    .dmf-card-head h5 { margin: 0; font-weight: 800; font-size: 1rem; }
+    .dmf-card-head small { display: block; color: rgba(255,255,255,.75); font-size: .78rem; font-weight: 400; }
+    .dmf-card-body { padding: 26px 24px; }
 
     .dmf-summary {
-        color: #C0524A;
-        font-size: 0.85rem;
-        margin-bottom: 16px;
+        color: #B3261E; font-size: .88rem; margin-bottom: 16px;
+        background: #FDECEC; border: 1px solid #F6C7C7; border-radius: 10px; padding: 10px 16px;
     }
+    .dmf-summary.validation-summary-valid { display: none; }
+    .dmf-summary ul { margin: 0; padding-left: 18px; }
 
-    .dmf-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 24px;
+    .dmf-group { margin-bottom: 18px; }
+    .dmf-group:last-of-type { margin-bottom: 0; }
+    .dmf-label { display: block; font-size: .82rem; font-weight: 700; color: var(--es-text); margin-bottom: 6px; }
+    .dmf-label span { color: var(--es-red); }
+
+    .dmf-field {
+        display: flex; align-items: flex-start; gap: 10px;
+        background: #F3F5F9; border: 1.5px solid transparent; border-radius: 10px;
+        padding: 0 14px; transition: all .15s ease;
     }
+    .dmf-field:focus-within { background: #fff; border-color: var(--es-blue); box-shadow: 0 0 0 3px rgba(30,79,191,.12); }
+    .dmf-field > i { color: var(--es-muted); margin-top: 14px; }
+    .dmf-input, .dmf-textarea {
+        flex: 1; border: none; background: transparent; outline: none;
+        padding: 13px 0; font-size: .95rem; color: var(--es-text); font-family: inherit; min-width: 0; width: 100%;
+    }
+    .dmf-textarea { resize: vertical; min-height: 96px; }
+    .dmf-hint { font-size: .76rem; color: var(--es-muted); margin-top: 5px; display: block; }
+    .dmf-err { color: #B3261E; font-size: .78rem; margin-top: 4px; display: block; }
 
+    .dmf-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--es-border); }
     .dmf-btn {
-        border: none;
-        border-radius: 8px;
-        padding: 10px 22px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-block;
-        transition: background .15s ease, color .15s ease, border-color .15s ease;
+        border: none; border-radius: 10px; padding: 13px 26px; font-size: .92rem; font-weight: 800; cursor: pointer;
+        text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        transition: all .15s ease;
     }
+    .dmf-btn.save { background: var(--es-blue); color: #fff; flex: 1; min-width: 180px; }
+    .dmf-btn.save:hover { background: var(--es-blue-dark); transform: translateY(-1px); }
+    .dmf-btn.cancel { background: #fff; border: 1.5px solid var(--es-border); color: var(--es-text); }
+    .dmf-btn.cancel:hover { border-color: var(--es-blue); color: var(--es-blue); }
 
-        .dmf-btn.save {
-            background: var(--hd-primary);
-            color: #fff;
-        }
+    /* ===== XEM TRƯỚC ===== */
+    .dmf-side { position: sticky; top: 90px; }
+    .dmf-side-title { font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--es-muted); margin: 0 0 10px; display: flex; align-items: center; gap: 6px; }
+    .dmf-side-title i { color: var(--es-blue); }
 
-            .dmf-btn.save:hover {
-                background: var(--hd-primary-dark);
-            }
+    .dmf-preview {
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; overflow: hidden;
+        box-shadow: 0 3px 14px rgba(15,47,122,.08); margin-bottom: 16px;
+    }
+    .dmf-cover { height: 64px; background: linear-gradient(120deg, var(--es-navy), var(--es-blue)); }
+    .dmf-preview-body { padding: 0 22px 22px; text-align: center; }
+    .dmf-avatar {
+        width: 68px; height: 68px; border-radius: 16px; color: var(--es-blue); background: #E8EFFC;
+        border: 4px solid #fff; box-shadow: 0 4px 14px rgba(15,47,122,.2);
+        display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.7rem;
+        margin: -34px auto 10px;
+    }
+    .dmf-pname { font-weight: 800; font-size: 1.1rem; color: var(--es-navy); margin: 0 0 6px; word-break: break-word; }
+    .dmf-pdesc { font-size: .85rem; color: var(--es-muted); line-height: 1.6; margin: 0; word-break: break-word; }
+    .dmf-pdesc.empty { font-style: italic; }
 
-        .dmf-btn.cancel {
-            background: transparent;
-            border: 1.5px solid var(--hd-border);
-            color: var(--hd-text);
-        }
+    .dmf-tips { background: #E8EFFC; border-radius: 12px; padding: 14px 16px; font-size: .8rem; color: var(--es-muted); line-height: 1.6; }
+    .dmf-tips b { color: var(--es-navy); display: block; margin-bottom: 4px; }
+    .dmf-tips i { color: var(--es-blue); }
 
-            .dmf-btn.cancel:hover {
-                border-color: var(--hd-primary);
-                color: var(--hd-primary);
-            }
+    @@media (max-width: 900px) {
+        .dmf-layout { grid-template-columns: 1fr; }
+        .dmf-side { position: static; order: -1; }
+    }
+    @@media (max-width: 576px) {
+        .dmf-card-body { padding: 20px 16px; }
+    }
 </style>
+
 <div class="container dmf-page">
-    <div class="dmf-eyebrow">Vận hành</div>
+
+    <div class="dmf-crumb">
+        <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Trang chủ</a>
+        &nbsp;/&nbsp;
+        <a asp-action="Index">Danh mục</a>
+        &nbsp;/&nbsp; <b>Thêm danh mục</b>
+    </div>
+
     <h1 class="dmf-title">Thêm danh mục mới</h1>
+    <p class="dmf-subtitle">Tạo nhóm sản phẩm mới để khách hàng dễ tìm kiếm và lọc.</p>
 
-    <div class="dmf-card">
-        <form asp-action="Them" method="post">
-            <div asp-validation-summary="ModelOnly" class="dmf-summary"></div>
+    <div class="dmf-layout">
 
-            <div class="dmf-group">
-                <label asp-for="CategoryName" class="dmf-label">Tên danh mục</label>
-                <input asp-for="CategoryName" class="dmf-input" placeholder="Ví dụ: Điện thoại di động" />
-                <span asp-validation-for="CategoryName" class="dmf-err"></span>
+        <!-- ===== FORM ===== -->
+        <div class="dmf-card">
+            <div class="dmf-card-head">
+                <i class="bi bi-plus-circle"></i>
+                <div>
+                    <h5>Thông tin danh mục</h5>
+                    <small>Điền tên và mô tả rồi bấm "Lưu"</small>
+                </div>
+            </div>
+            <div class="dmf-card-body">
+                <form asp-action="Them" method="post">
+                    <div asp-validation-summary="ModelOnly" class="dmf-summary"></div>
+
+                    <div class="dmf-group">
+                        <label asp-for="CategoryName" class="dmf-label">Tên danh mục <span>*</span></label>
+                        <div class="dmf-field">
+                            <i class="bi bi-grid"></i>
+                            <input asp-for="CategoryName" class="dmf-input" placeholder="Ví dụ: Điện thoại di động" autocomplete="off" />
+                        </div>
+                        <span asp-validation-for="CategoryName" class="dmf-err"></span>
+                    </div>
+
+                    <div class="dmf-group">
+                        <label asp-for="Description" class="dmf-label">Mô tả</label>
+                        <div class="dmf-field">
+                            <i class="bi bi-card-text"></i>
+                            <textarea asp-for="Description" class="dmf-textarea" rows="4" placeholder="Mô tả ngắn về nhóm sản phẩm này"></textarea>
+                        </div>
+                        <span class="dmf-hint">Không bắt buộc, giúp khách và nhân viên hiểu rõ nhóm sản phẩm.</span>
+                    </div>
+
+                    <div class="dmf-actions">
+                        <button type="submit" class="dmf-btn save"><i class="bi bi-check2-circle"></i> Lưu</button>
+                        <a asp-action="Index" class="dmf-btn cancel"><i class="bi bi-x-lg"></i> Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ===== XEM TRƯỚC ===== -->
+        <aside class="dmf-side">
+            <h6 class="dmf-side-title"><i class="bi bi-eye"></i> Xem trước</h6>
+
+            <div class="dmf-preview">
+                <div class="dmf-cover"></div>
+                <div class="dmf-preview-body">
+                    <div class="dmf-avatar" id="pvAvatar">@chuCai</div>
+                    <h3 class="dmf-pname" id="pvName">@(string.IsNullOrWhiteSpace(tenBanDau) ? "Tên danh mục" : tenBanDau)</h3>
+                    <p class="dmf-pdesc @(string.IsNullOrWhiteSpace(moTaBanDau) ? "empty" : "")" id="pvDesc">@(string.IsNullOrWhiteSpace(moTaBanDau) ? "Chưa có mô tả" : moTaBanDau)</p>
+                </div>
             </div>
 
-            <div class="dmf-group">
-                <label asp-for="Description" class="dmf-label">Mô tả</label>
-                <textarea asp-for="Description" class="dmf-textarea" rows="3"></textarea>
+            <div class="dmf-tips">
+                <b><i class="bi bi-lightbulb"></i> Gợi ý</b>
+                Đặt tên ngắn gọn, dễ hiểu (ví dụ "Laptop &amp; Di động"). Sau khi tạo, bạn có thể gán sản phẩm vào danh mục này.
             </div>
-
-            <div class="dmf-actions">
-                <button type="submit" class="dmf-btn save">Lưu</button>
-                <a asp-action="Index" class="dmf-btn cancel">Hủy</a>
-            </div>
-        </form>
+        </aside>
     </div>
 </div>
 
@@ -157,4 +194,27 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        // Thẻ xem trước cập nhật theo dữ liệu đang nhập (chỉ hiển thị trên trang, không gửi gì lên server)
+        (function () {
+            var elName = document.getElementById('CategoryName');
+            var elDesc = document.getElementById('Description');
+            var pvAvatar = document.getElementById('pvAvatar');
+            var pvName = document.getElementById('pvName');
+            var pvDesc = document.getElementById('pvDesc');
+
+            function capNhat() {
+                var ten = (elName.value || '').trim();
+                pvName.textContent = ten || 'Tên danh mục';
+                pvAvatar.textContent = ten ? ten.charAt(0).toUpperCase() : '?';
+
+                var mt = (elDesc.value || '').trim();
+                pvDesc.textContent = mt || 'Chưa có mô tả';
+                pvDesc.classList.toggle('empty', !mt);
+            }
+
+            if (elName) elName.addEventListener('input', capNhat);
+            if (elDesc) elDesc.addEventListener('input', capNhat);
+        })();
+    </script>
 }

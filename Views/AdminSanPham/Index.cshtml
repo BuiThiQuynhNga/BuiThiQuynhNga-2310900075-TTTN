@@ -1,315 +1,241 @@
 ﻿@model IEnumerable<ElectronicsShop.Models.Product>
+
 @{
     ViewData["Title"] = "Quản lý sản phẩm";
+
+    var dsSp = Model.ToList();
+    int tongSp = dsSp.Count;
+    int tongTon = dsSp.Sum(p => p.Stock);
+    int sapHet = dsSp.Count(p => p.Stock <= 20);
 }
+
 <style>
     .sp-page {
-        --ga-primary: #007bff;
-        --ga-primary-dark: #0056b3;
-        --ga-accent: #28a745;
-        --ga-accent-dark: #218838;
-        --ga-bg: #f4f6f9;
-        --ga-card: #FFFFFF;
-        --ga-text: #333333;
-        --ga-muted: #666666;
-        --ga-border: #dee2e6;
-        --ga-success: #28a745;
-        --ga-warning: #ffc107;
-        --ga-danger: #dc3545;
-        --ga-danger-dark: #c82333;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        padding: 35px 0 60px;
-        background: var(--ga-bg);
-        min-height: calc(100vh - 100px);
+        --es-blue: #1E4FBF;
+        --es-blue-dark: #0F2F7A;
+        --es-navy: #0B1F4B;
+        --es-red: #E0282E;
+        --es-green: #16A34A;
+        --es-bg: #F3F5F9;
+        --es-text: #1F2937;
+        --es-muted: #6B7280;
+        --es-border: #E5E7EB;
+        padding: 10px 0 50px;
     }
-    .sp-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 28px;
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-    .sp-header-left {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
-    .sp-eyebrow {
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 1.8px;
-        text-transform: uppercase;
-        color: var(--ga-primary);
-    }
-    .sp-header h1 {
-        margin: 0;
-        color: var(--ga-text);
-        font-size: 28px;
-        font-weight: 800;
-        line-height: 1.25;
-    }
-    .sp-header-desc {
-        margin: 4px 0 0;
-        color: var(--ga-muted);
-        font-size: 14px;
-    }
+    .sp-crumb { font-size: .8rem; color: var(--es-muted); margin-bottom: 14px; }
+    .sp-crumb a { color: var(--es-muted); text-decoration: none; }
+    .sp-crumb a:hover { color: var(--es-blue); }
+    .sp-crumb b { color: var(--es-blue); }
+
+    .sp-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .sp-title { font-weight: 800; font-size: 1.7rem; color: var(--es-navy); margin: 0 0 4px; }
+    .sp-subtitle { color: var(--es-muted); font-size: .92rem; margin: 0; }
+
     .sp-btn-add {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 7px;
-        min-height: 42px;
-        padding: 0 20px;
-        border-radius: 5px;
-        background: var(--ga-accent);
-        color: #fff;
-        border: none;
-        font-size: 14px;
-        font-weight: 700;
-        text-decoration: none;
-        transition: all .2s ease;
+        background: var(--es-blue); color: #fff; border: none; border-radius: 10px; padding: 12px 22px;
+        font-size: .9rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        transition: all .15s ease;
     }
-    .sp-btn-add:hover {
-        background: var(--ga-accent-dark);
-        color: #fff;
-        transform: translateY(-1px);
-    }
+    .sp-btn-add:hover { background: var(--es-blue-dark); color: #fff; transform: translateY(-1px); }
+
     .sp-alert {
-        margin-bottom: 18px;
-        padding: 13px 17px;
-        border-radius: 5px;
-        border: 1px solid #c3e6cb;
-        background: #d4edda;
-        color: #155724;
-        font-size: 14px;
-        font-weight: 600;
+        display: flex; align-items: center; gap: 10px;
+        background: #E8F6EC; color: #166534; border: 1px solid #BBE5C8;
+        border-radius: 10px; padding: 12px 16px; font-size: .9rem; font-weight: 600; margin-bottom: 16px;
     }
-    .sp-alert.err {
-        border-color: #f5c6cb;
-        background: #f8d7da;
-        color: #721c24;
+    .sp-alert.err { background: #FDECEC; color: #B3261E; border-color: #F6C7C7; }
+
+    /* ===== THỐNG KÊ ===== */
+    .sp-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+    .sp-stat {
+        display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid var(--es-border);
+        border-radius: 14px; padding: 16px 18px; box-shadow: 0 3px 14px rgba(15,47,122,.05);
     }
-    .sp-table-wrap {
-        background: var(--ga-card);
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+    .sp-stat-icon {
+        width: 46px; height: 46px; border-radius: 12px; background: #E8EFFC; color: var(--es-blue);
+        display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;
     }
-    .sp-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
+    .sp-stat.green .sp-stat-icon { background: #E8F6EC; color: var(--es-green); }
+    .sp-stat.red .sp-stat-icon { background: #FDECEC; color: var(--es-red); }
+    .sp-stat b { display: block; font-size: 1.5rem; font-weight: 800; color: var(--es-navy); line-height: 1.1; }
+    .sp-stat small { color: var(--es-muted); font-size: .78rem; }
+
+    /* ===== THANH TÌM KIẾM ===== */
+    .sp-toolbar {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        background: #fff; border: 1px solid var(--es-border); border-radius: 12px; padding: 10px 16px;
+        margin-bottom: 16px; box-shadow: 0 3px 14px rgba(15,47,122,.04);
     }
-    .sp-table thead {
-        background: #f8f9fa;
+    .sp-search {
+        display: flex; align-items: center; gap: 10px; background: var(--es-bg); border: 1.5px solid transparent;
+        border-radius: 10px; padding: 0 14px; min-width: 300px; transition: all .15s ease;
     }
-    .sp-table thead th {
-        padding: 15px 16px;
-        color: #555;
-        text-align: left;
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: .7px;
-        text-transform: uppercase;
-        border-bottom: 1px solid var(--ga-border);
-        white-space: nowrap;
-    }
-    .sp-table tbody td {
-        padding: 14px 16px;
-        color: var(--ga-text);
-        border-bottom: 1px solid var(--ga-border);
-        vertical-align: middle;
-    }
-    .sp-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-    .sp-table tbody tr {
-        transition: background .15s ease;
-    }
-    .sp-table tbody tr:hover {
-        background: #f8f9fa;
-    }
-    .sp-id {
-        color: #8A8A8A;
-        font-size: 13px;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-    .sp-thumb {
-        width: 58px;
-        height: 58px;
-        display: block;
-        object-fit: cover;
-        border-radius: 6px;
-        border: 1px solid var(--ga-border);
-        background: #FAFAF8;
-    }
-    .sp-name {
-        color: var(--ga-text);
-        font-weight: 700;
-        line-height: 1.4;
-        min-width: 180px;
-    }
-    .sp-color {
-        display: inline-flex;
-        align-items: center;
-        padding: 5px 11px;
-        border-radius: 20px;
-        background: #eef1f4;
-        color: #686868;
-        font-size: 12px;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-    .sp-price {
-        color: var(--ga-accent);
-        font-size: 15px;
-        font-weight: 800;
-        white-space: nowrap;
-    }
-    .sp-stock {
-        display: inline-flex;
-        align-items: center;
-        padding: 5px 11px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-    .sp-stock.cao {
-        background: #d4edda;
-        color: #155724;
-    }
-    .sp-stock.vua {
-        background: #fff3cd;
-        color: #856404;
-    }
-    .sp-stock.thap {
-        background: #f8d7da;
-        color: #721c24;
-    }
-    .sp-actions {
-        display: flex;
-        align-items: center;
-        gap: 7px;
-        flex-wrap: wrap;
-    }
-    .sp-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 52px;
-        height: 32px;
-        padding: 0 12px;
-        border-radius: 5px;
-        font-size: 12px;
-        font-weight: 700;
-        text-decoration: none;
-        cursor: pointer;
-        border: none;
-        transition: all .18s ease;
-    }
-    .sp-btn.edit {
-        color: #fff;
-        background: var(--ga-primary);
-    }
-    .sp-btn.edit:hover {
-        background: var(--ga-primary-dark);
-    }
-    .sp-btn.del {
-        color: #fff;
-        background: var(--ga-danger);
-    }
-    .sp-btn.del:hover {
-        background: var(--ga-danger-dark);
-    }
+    .sp-search:focus-within { background: #fff; border-color: var(--es-blue); box-shadow: 0 0 0 3px rgba(30,79,191,.12); }
+    .sp-search i { color: var(--es-muted); }
+    .sp-search input { flex: 1; border: none; background: transparent; outline: none; padding: 10px 0; font-size: .9rem; color: var(--es-text); min-width: 0; }
+    .sp-count { font-size: .82rem; color: var(--es-muted); }
+    .sp-count b { color: var(--es-blue); }
+
     .sp-empty {
-        background: var(--ga-card);
-        border: 1px dashed var(--ga-border);
-        border-radius: 8px;
-        padding: 55px 25px;
-        text-align: center;
-        color: var(--ga-muted);
-        font-size: 14px;
+        background: #fff; border: 1px dashed var(--es-border); border-radius: 14px;
+        padding: 56px 24px; text-align: center; color: var(--es-muted);
     }
-    .sp-empty::before {
-        content: "◌";
-        display: block;
-        margin-bottom: 10px;
-        color: #ced4da;
-        font-size: 28px;
+    .sp-empty i { font-size: 2.8rem; color: var(--es-blue); display: block; margin-bottom: 10px; }
+
+    /* ===== BẢNG ===== */
+    .sp-table-wrap {
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; overflow: hidden;
+        box-shadow: 0 3px 14px rgba(15,47,122,.06);
     }
+    .sp-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    .sp-table thead { background: linear-gradient(120deg, var(--es-navy), var(--es-blue)); }
+    .sp-table thead th {
+        text-align: left; font-weight: 700; color: #fff; padding: 14px 16px; font-size: .74rem;
+        text-transform: uppercase; letter-spacing: .06em; white-space: nowrap;
+    }
+    .sp-table thead th.end { text-align: right; }
+    .sp-table tbody td { padding: 12px 16px; border-bottom: 1px solid var(--es-border); color: var(--es-text); vertical-align: middle; }
+    .sp-table tbody tr:last-child td { border-bottom: none; }
+    .sp-table tbody tr { transition: background .15s ease; }
+    .sp-table tbody tr:hover { background: #F7F9FE; }
+
+    .sp-prod { display: flex; align-items: center; gap: 12px; min-width: 240px; }
+    .sp-thumb {
+        width: 52px; height: 52px; object-fit: cover; flex-shrink: 0;
+        border-radius: 10px; border: 1px solid var(--es-border); background: var(--es-bg);
+    }
+    .sp-name { font-weight: 800; color: var(--es-navy); line-height: 1.35; }
+    .sp-id { font-size: .74rem; color: var(--es-muted); font-weight: 600; }
+
+    .sp-cat {
+        display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px;
+        background: #E8EFFC; color: var(--es-blue); font-size: .76rem; font-weight: 800; white-space: nowrap;
+    }
+    .sp-color { color: var(--es-muted); font-size: .84rem; white-space: nowrap; }
+    .sp-price { color: var(--es-red); font-size: .95rem; font-weight: 800; white-space: nowrap; }
+
+    .sp-stock {
+        display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px;
+        font-size: .76rem; font-weight: 800; white-space: nowrap;
+    }
+    .sp-stock::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .sp-stock.cao { background: #E8F6EC; color: var(--es-green); }
+    .sp-stock.vua { background: #FFF4DB; color: #A16207; }
+    .sp-stock.thap { background: #FDECEC; color: var(--es-red); }
+
+    .sp-actions { display: flex; justify-content: flex-end; gap: 6px; }
+    .sp-actions form { margin: 0; }
+    .sp-btn {
+        border: none; border-radius: 8px; padding: 8px 13px; font-size: .8rem; font-weight: 700; cursor: pointer;
+        text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all .15s ease; white-space: nowrap;
+    }
+    .sp-btn.edit { background: #fff; border: 1.5px solid var(--es-blue); color: var(--es-blue); }
+    .sp-btn.edit:hover { background: var(--es-blue); color: #fff; }
+    .sp-btn.del { background: #fff; border: 1.5px solid #F0B4B6; color: var(--es-red); }
+    .sp-btn.del:hover { background: var(--es-red); border-color: var(--es-red); color: #fff; }
+
+    .sp-none { display: none; text-align: center; padding: 32px; color: var(--es-muted); font-size: .9rem; }
+
     @@media (max-width: 1000px) {
-        .sp-table-wrap {
-            overflow-x: auto;
-        }
-        .sp-table {
-            min-width: 950px;
-        }
+        .sp-table-wrap { overflow-x: auto; }
+        .sp-table { min-width: 900px; }
     }
-    @@media (max-width: 576px) {
-        .sp-page {
-            padding-top: 25px;
-        }
-        .sp-header h1 {
-            font-size: 24px;
-        }
-        .sp-btn-add {
-            width: 100%;
-        }
+    @@media (max-width: 700px) { .sp-stats { grid-template-columns: 1fr; } }
+    @@media (max-width: 520px) {
+        .sp-search { min-width: 0; width: 100%; }
+        .sp-btn-add { width: 100%; justify-content: center; }
     }
 </style>
+
 <div class="container sp-page">
-    <div class="sp-header">
-        <div class="sp-header-left">
-            <div class="sp-eyebrow">Global Aspire</div>
-            <h1>Quản lý sản phẩm</h1>
-            <div class="sp-header-desc">Quản lý danh sách sản phẩm, giá bán và tình trạng tồn kho</div>
-        </div>
-        <a asp-action="Them" class="sp-btn-add">+ Thêm sản phẩm</a>
+
+    <div class="sp-crumb">
+        <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Trang chủ</a>
+        &nbsp;/&nbsp; Quản trị &nbsp;/&nbsp; <b>Sản phẩm</b>
     </div>
+
+    <div class="sp-header">
+        <div>
+            <h1 class="sp-title">Quản lý sản phẩm</h1>
+            <p class="sp-subtitle">Quản lý danh sách sản phẩm, giá bán và tình trạng tồn kho.</p>
+        </div>
+        <a asp-action="Them" class="sp-btn-add"><i class="bi bi-plus-circle"></i> Thêm sản phẩm</a>
+    </div>
+
     @if (TempData["ThongBao"] != null)
     {
-        <div class="sp-alert">@TempData["ThongBao"]</div>
+        <div class="sp-alert"><i class="bi bi-check-circle-fill"></i> @TempData["ThongBao"]</div>
     }
     @if (TempData["LoiXoa"] != null)
     {
-        <div class="sp-alert err">@TempData["LoiXoa"]</div>
+        <div class="sp-alert err"><i class="bi bi-exclamation-circle-fill"></i> @TempData["LoiXoa"]</div>
     }
-    @if (!Model.Any())
+
+    @if (!dsSp.Any())
     {
-        <div class="sp-empty">Chưa có sản phẩm nào.</div>
+        <div class="sp-empty">
+            <i class="bi bi-box-seam"></i>
+            Chưa có sản phẩm nào.
+        </div>
     }
     else
     {
+        <div class="sp-stats">
+            <div class="sp-stat">
+                <div class="sp-stat-icon"><i class="bi bi-box-seam"></i></div>
+                <div><b>@tongSp</b><small>Tổng số sản phẩm</small></div>
+            </div>
+            <div class="sp-stat green">
+                <div class="sp-stat-icon"><i class="bi bi-archive"></i></div>
+                <div><b>@tongTon.ToString("N0")</b><small>Tổng tồn kho</small></div>
+            </div>
+            <div class="sp-stat red">
+                <div class="sp-stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
+                <div><b>@sapHet</b><small>Sản phẩm sắp hết hàng</small></div>
+            </div>
+        </div>
+
+        <div class="sp-toolbar">
+            <div class="sp-search">
+                <i class="bi bi-search"></i>
+                <input type="text" id="spSearch" placeholder="Tìm theo tên hoặc danh mục..." />
+            </div>
+            <div class="sp-count">Hiển thị <b id="spShown">@tongSp</b> / @tongSp sản phẩm</div>
+        </div>
+
         <div class="sp-table-wrap">
             <table class="sp-table">
                 <thead>
                     <tr>
-                        <th>Mã SP</th>
-                        <th>Ảnh</th>
-                        <th>Tên sản phẩm</th>
+                        <th>Sản phẩm</th>
                         <th>Danh mục</th>
                         <th>Mã màu</th>
                         <th>Giá bán</th>
                         <th>Tồn kho</th>
-                        <th style="width: 180px">Thao tác</th>
+                        <th class="end">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach (var item in Model)
+                <tbody id="spBody">
+                    @foreach (var item in dsSp)
                     {
-                        <tr>
-                            <td class="sp-id">#@item.ProductID</td>
+                        string tuKhoa = ((item.ProductName ?? "") + " " + (item.Category?.CategoryName ?? "")).ToLower();
+                        <tr data-search="@tuKhoa">
                             <td>
-                                <img src="~/images/@(string.IsNullOrEmpty(item.ImageURL) ? "no-image.png" : item.ImageURL)" class="sp-thumb" onerror="this.src='/images/no-image.png'" />
+                                <div class="sp-prod">
+                                    <img src="~/images/@(string.IsNullOrEmpty(item.ImageURL) ? "no-image.png" : item.ImageURL)" class="sp-thumb" onerror="this.src='/images/no-image.png'" />
+                                    <div>
+                                        <div class="sp-name">@item.ProductName</div>
+                                        <div class="sp-id">Mã SP: #@item.ProductID</div>
+                                    </div>
+                                </div>
                             </td>
-                            <td class="sp-name">@item.ProductName</td>
-                            <td>@item.Category?.CategoryName</td>
                             <td>
-                                <span class="sp-color">@item.ColorVariant</span>
+                                @if (item.Category != null)
+                                {
+                                    <span class="sp-cat"><i class="bi bi-grid"></i> @item.Category.CategoryName</span>
+                                }
                             </td>
+                            <td class="sp-color">@item.ColorVariant</td>
                             <td class="sp-price">@item.Price.ToString("N0") đ</td>
                             <td>
                                 @if (item.Stock > 100)
@@ -327,9 +253,9 @@
                             </td>
                             <td>
                                 <div class="sp-actions">
-                                    <a asp-action="Sua" asp-route-id="@item.ProductID" class="sp-btn edit">Sửa</a>
-                                    <form asp-action="Xoa" asp-route-id="@item.ProductID" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này?');">
-                                        <button type="submit" class="sp-btn del">Xóa</button>
+                                    <a asp-action="Sua" asp-route-id="@item.ProductID" class="sp-btn edit"><i class="bi bi-pencil-square"></i> Sửa</a>
+                                    <form asp-action="Xoa" asp-route-id="@item.ProductID" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này?');">
+                                        <button type="submit" class="sp-btn del"><i class="bi bi-trash3"></i> Xóa</button>
                                     </form>
                                 </div>
                             </td>
@@ -337,6 +263,31 @@
                     }
                 </tbody>
             </table>
+            <div class="sp-none" id="spNone">Không có sản phẩm nào phù hợp.</div>
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var rows = document.querySelectorAll('#spBody tr');
+            var search = document.getElementById('spSearch');
+            var shown = document.getElementById('spShown');
+            var none = document.getElementById('spNone');
+            if (!search) return;
+
+            search.addEventListener('input', function () {
+                var q = search.value.trim().toLowerCase();
+                var dem = 0;
+                rows.forEach(function (tr) {
+                    var ok = tr.dataset.search.indexOf(q) !== -1;
+                    tr.style.display = ok ? '' : 'none';
+                    if (ok) dem++;
+                });
+                shown.textContent = dem;
+                none.style.display = dem === 0 ? 'block' : 'none';
+            });
+        })();
+    </script>
+}

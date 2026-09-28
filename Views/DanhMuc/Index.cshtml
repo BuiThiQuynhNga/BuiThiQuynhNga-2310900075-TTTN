@@ -3,227 +3,197 @@
 @{
     ViewData["Title"] = "Quản lý danh mục";
     bool laAdmin = User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Admin");
+
+    var dsDanhMuc = Model.ToList();
+    int tongDanhMuc = dsDanhMuc.Count;
+    int tongSanPham = dsDanhMuc.Sum(d => d.Products?.Count ?? 0);
+    int danhMucTrong = dsDanhMuc.Count(d => (d.Products?.Count ?? 0) == 0);
 }
+
 <style>
     .dm-page {
-        --hd-primary: #2F5D62;
-        --hd-primary-dark: #22454A;
-        --hd-accent: #C97B4A;
-        --hd-bg: #F7F7F5;
-        --hd-card: #FFFFFF;
-        --hd-text: #24262B;
-        --hd-muted: #6B7076;
-        --hd-border: #E7E5E1;
-        padding: 40px 0 60px;
+        --es-blue: #1E4FBF;
+        --es-blue-dark: #0F2F7A;
+        --es-navy: #0B1F4B;
+        --es-red: #E0282E;
+        --es-green: #16A34A;
+        --es-bg: #F3F5F9;
+        --es-text: #1F2937;
+        --es-muted: #6B7280;
+        --es-border: #E5E7EB;
+        padding: 10px 0 50px;
     }
+    .dm-crumb { font-size: .8rem; color: var(--es-muted); margin-bottom: 14px; }
+    .dm-crumb a { color: var(--es-muted); text-decoration: none; }
+    .dm-crumb a:hover { color: var(--es-blue); }
+    .dm-crumb b { color: var(--es-blue); }
 
-    .dm-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        margin-bottom: 24px;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-
-        .dm-header .dm-eyebrow {
-            font-size: 0.78rem;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: var(--hd-muted);
-            font-weight: 600;
-        }
-
-        .dm-header h1 {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: var(--hd-text);
-            margin: 4px 0 0;
-        }
+    .dm-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .dm-title { font-weight: 800; font-size: 1.7rem; color: var(--es-navy); margin: 0 0 4px; }
+    .dm-subtitle { color: var(--es-muted); font-size: .92rem; margin: 0; }
 
     .dm-btn-add {
-        background: var(--hd-primary);
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: 9px 18px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-block;
-        transition: background .15s ease;
+        background: var(--es-blue); color: #fff; border: none; border-radius: 10px; padding: 12px 22px;
+        font-size: .9rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        transition: all .15s ease;
     }
-
-        .dm-btn-add:hover {
-            background: var(--hd-primary-dark);
-            color: #fff;
-        }
+    .dm-btn-add:hover { background: var(--es-blue-dark); color: #fff; transform: translateY(-1px); }
 
     .dm-alert {
-        background: #E7F0EF;
-        color: var(--hd-primary-dark);
-        border-radius: 10px;
-        padding: 12px 16px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        margin-bottom: 16px;
+        display: flex; align-items: center; gap: 10px;
+        background: #E8F6EC; color: #166534; border: 1px solid #BBE5C8;
+        border-radius: 10px; padding: 12px 16px; font-size: .9rem; font-weight: 600; margin-bottom: 16px;
     }
+    .dm-alert.err { background: #FDECEC; color: #B3261E; border-color: #F6C7C7; }
 
-        .dm-alert.err {
-            background: #F7E9E7;
-            color: #9A3E33;
-        }
+    /* ===== THỐNG KÊ ===== */
+    .dm-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+    .dm-stat {
+        display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid var(--es-border);
+        border-radius: 14px; padding: 16px 18px; box-shadow: 0 3px 14px rgba(15,47,122,.05);
+    }
+    .dm-stat-icon {
+        width: 46px; height: 46px; border-radius: 12px; background: #E8EFFC; color: var(--es-blue);
+        display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+    }
+    .dm-stat.green .dm-stat-icon { background: #E8F6EC; color: var(--es-green); }
+    .dm-stat.red .dm-stat-icon { background: #FDECEC; color: var(--es-red); }
+    .dm-stat b { display: block; font-size: 1.5rem; font-weight: 800; color: var(--es-navy); line-height: 1.1; }
+    .dm-stat small { color: var(--es-muted); font-size: .78rem; }
+
+    /* ===== THANH TÌM KIẾM ===== */
+    .dm-toolbar {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+        background: #fff; border: 1px solid var(--es-border); border-radius: 12px; padding: 10px 16px;
+        margin-bottom: 16px; box-shadow: 0 3px 14px rgba(15,47,122,.04);
+    }
+    .dm-search {
+        display: flex; align-items: center; gap: 10px; background: var(--es-bg); border: 1.5px solid transparent;
+        border-radius: 10px; padding: 0 14px; min-width: 280px; transition: all .15s ease;
+    }
+    .dm-search:focus-within { background: #fff; border-color: var(--es-blue); box-shadow: 0 0 0 3px rgba(30,79,191,.12); }
+    .dm-search i { color: var(--es-muted); }
+    .dm-search input { flex: 1; border: none; background: transparent; outline: none; padding: 10px 0; font-size: .9rem; color: var(--es-text); min-width: 0; }
+    .dm-count-note { font-size: .82rem; color: var(--es-muted); }
+    .dm-count-note b { color: var(--es-blue); }
 
     .dm-empty {
-        background: var(--hd-card);
-        border: 1px dashed var(--hd-border);
-        border-radius: 16px;
-        padding: 48px 24px;
-        text-align: center;
-        color: var(--hd-muted);
+        background: #fff; border: 1px dashed var(--es-border); border-radius: 14px;
+        padding: 56px 24px; text-align: center; color: var(--es-muted);
     }
+    .dm-empty i { font-size: 2.8rem; color: var(--es-blue); display: block; margin-bottom: 10px; }
 
+    /* ===== BẢNG ===== */
     .dm-table-wrap {
-        background: var(--hd-card);
-        border: 1px solid var(--hd-border);
-        border-radius: 16px;
-        overflow: hidden;
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; overflow: hidden;
+        box-shadow: 0 3px 14px rgba(15,47,122,.06);
     }
-
-    .dm-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.92rem;
+    .dm-table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+    .dm-table thead { background: linear-gradient(120deg, var(--es-navy), var(--es-blue)); }
+    .dm-table thead th {
+        text-align: left; font-weight: 700; color: #fff; padding: 14px 16px; font-size: .74rem;
+        text-transform: uppercase; letter-spacing: .06em; white-space: nowrap;
     }
+    .dm-table tbody td { padding: 14px 16px; border-bottom: 1px solid var(--es-border); color: var(--es-text); vertical-align: middle; }
+    .dm-table tbody tr:last-child td { border-bottom: none; }
+    .dm-table tbody tr { transition: background .15s ease; }
+    .dm-table tbody tr:hover { background: #F7F9FE; }
 
-        .dm-table thead {
-            background: #F1F0EE;
-        }
-
-            .dm-table thead th {
-                text-align: left;
-                font-weight: 700;
-                color: var(--hd-text);
-                padding: 14px 16px;
-                font-size: 0.82rem;
-                text-transform: uppercase;
-                letter-spacing: 0.04em;
-                border-bottom: 1px solid var(--hd-border);
-            }
-
-        .dm-table tbody td {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--hd-border);
-            color: var(--hd-text);
-            vertical-align: middle;
-        }
-
-        .dm-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .dm-table tbody tr {
-            transition: background .15s ease;
-        }
-
-            .dm-table tbody tr:hover {
-                background: #FAFAF8;
-            }
-
-    .dm-name {
-        font-weight: 700;
-        color: var(--hd-primary);
+    .dm-name-cell { display: flex; align-items: center; gap: 12px; }
+    .dm-avatar {
+        width: 40px; height: 40px; border-radius: 10px; background: #E8EFFC; color: var(--es-blue);
+        display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; flex-shrink: 0;
     }
+    .dm-name { font-weight: 800; color: var(--es-navy); }
+    .dm-desc { color: var(--es-muted); font-size: .88rem; line-height: 1.5; max-width: 460px; }
+    .dm-desc.empty { font-style: italic; }
 
     .dm-count {
-        display: inline-block;
-        background: #E4EEF6;
-        color: #2A5F8A;
-        font-weight: 700;
-        font-size: 0.8rem;
-        padding: 4px 10px;
-        border-radius: 20px;
+        display: inline-flex; align-items: center; gap: 6px; background: #E8EFFC; color: var(--es-blue);
+        font-weight: 800; font-size: .8rem; padding: 5px 12px; border-radius: 20px; white-space: nowrap;
     }
+    .dm-count.zero { background: #EEF0F4; color: var(--es-muted); }
 
-    .dm-actions {
-        display: flex;
-        justify-content: flex-end;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-
+    .dm-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 6px; }
+    .dm-actions form { margin: 0; }
     .dm-btn {
-        border: none;
-        border-radius: 8px;
-        padding: 7px 12px;
-        font-size: 0.82rem;
-        font-weight: 600;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-block;
-        transition: background .15s ease, color .15s ease, border-color .15s ease;
+        border: none; border-radius: 8px; padding: 8px 13px; font-size: .8rem; font-weight: 700; cursor: pointer;
+        text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all .15s ease; white-space: nowrap;
     }
+    .dm-btn.edit { background: #fff; border: 1.5px solid var(--es-blue); color: var(--es-blue); }
+    .dm-btn.edit:hover { background: var(--es-blue); color: #fff; }
+    .dm-btn.del { background: #fff; border: 1.5px solid #F0B4B6; color: var(--es-red); }
+    .dm-btn.del:hover { background: var(--es-red); border-color: var(--es-red); color: #fff; }
 
-        .dm-btn.edit {
-            background: transparent;
-            border: 1.5px solid var(--hd-primary);
-            color: var(--hd-primary);
-        }
+    .dm-none { display: none; text-align: center; padding: 32px; color: var(--es-muted); font-size: .9rem; }
 
-            .dm-btn.edit:hover {
-                background: var(--hd-primary);
-                color: #fff;
-            }
-
-        .dm-btn.del {
-            background: transparent;
-            border: 1.5px solid #C0524A;
-            color: #C0524A;
-        }
-
-            .dm-btn.del:hover {
-                background: #C0524A;
-                color: #fff;
-            }
-
-    @@media (max-width: 700px) {
-        .dm-table-wrap {
-            overflow-x: auto;
-        }
-
-        .dm-table {
-            min-width: 560px;
-        }
+    @@media (max-width: 800px) {
+        .dm-stats { grid-template-columns: 1fr; }
+        .dm-table-wrap { overflow-x: auto; }
+        .dm-table { min-width: 600px; }
+        .dm-search { min-width: 0; width: 100%; }
     }
 </style>
+
 <div class="container dm-page">
+
+    <div class="dm-crumb">
+        <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Trang chủ</a>
+        &nbsp;/&nbsp; Quản trị &nbsp;/&nbsp; <b>Danh mục</b>
+    </div>
+
     <div class="dm-header">
         <div>
-            <div class="dm-eyebrow">Vận hành</div>
-            <h1>Quản lý danh mục</h1>
+            <h1 class="dm-title">Quản lý danh mục</h1>
+            <p class="dm-subtitle">Xem và sắp xếp các nhóm sản phẩm của cửa hàng.</p>
         </div>
         @if (laAdmin)
         {
-            <a asp-action="Them" class="dm-btn-add">+ Thêm danh mục</a>
+            <a asp-action="Them" class="dm-btn-add"><i class="bi bi-plus-circle"></i> Thêm danh mục</a>
         }
     </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="dm-alert">@TempData["SuccessMessage"]</div>
+        <div class="dm-alert"><i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]</div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="dm-alert err">@TempData["ErrorMessage"]</div>
+        <div class="dm-alert err"><i class="bi bi-exclamation-circle-fill"></i> @TempData["ErrorMessage"]</div>
     }
 
-    @if (!Model.Any())
+    @if (!dsDanhMuc.Any())
     {
-        <div class="dm-empty">Chưa có danh mục nào.</div>
+        <div class="dm-empty">
+            <i class="bi bi-grid"></i>
+            Chưa có danh mục nào.
+        </div>
     }
     else
     {
+        <div class="dm-stats">
+            <div class="dm-stat">
+                <div class="dm-stat-icon"><i class="bi bi-grid"></i></div>
+                <div><b>@tongDanhMuc</b><small>Tổng số danh mục</small></div>
+            </div>
+            <div class="dm-stat green">
+                <div class="dm-stat-icon"><i class="bi bi-box-seam"></i></div>
+                <div><b>@tongSanPham</b><small>Tổng số sản phẩm</small></div>
+            </div>
+            <div class="dm-stat red">
+                <div class="dm-stat-icon"><i class="bi bi-inbox"></i></div>
+                <div><b>@danhMucTrong</b><small>Danh mục chưa có sản phẩm</small></div>
+            </div>
+        </div>
+
+        <div class="dm-toolbar">
+            <div class="dm-search">
+                <i class="bi bi-search"></i>
+                <input type="text" id="dmSearch" placeholder="Tìm theo tên hoặc mô tả danh mục..." />
+            </div>
+            <div class="dm-count-note">Hiển thị <b id="dmShown">@tongDanhMuc</b> / @tongDanhMuc danh mục</div>
+        </div>
+
         <div class="dm-table-wrap">
             <table class="dm-table">
                 <thead>
@@ -237,21 +207,37 @@
                         }
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach (var dm in Model)
+                <tbody id="dmBody">
+                    @foreach (var dm in dsDanhMuc)
                     {
-                        <tr>
-                            <td class="dm-name">@dm.CategoryName</td>
-                            <td>@dm.Description</td>
-                            <td><span class="dm-count">@(dm.Products?.Count ?? 0)</span></td>
+                        int soSp = dm.Products?.Count ?? 0;
+                        string chuCai = string.IsNullOrWhiteSpace(dm.CategoryName) ? "?" : dm.CategoryName.Trim().Substring(0, 1).ToUpper();
+                        <tr data-search="@((dm.CategoryName + " " + dm.Description).ToLower())">
+                            <td>
+                                <div class="dm-name-cell">
+                                    <div class="dm-avatar">@chuCai</div>
+                                    <span class="dm-name">@dm.CategoryName</span>
+                                </div>
+                            </td>
+                            <td>
+                                @if (string.IsNullOrWhiteSpace(dm.Description))
+                                {
+                                    <span class="dm-desc empty">Chưa có mô tả</span>
+                                }
+                                else
+                                {
+                                    <span class="dm-desc">@dm.Description</span>
+                                }
+                            </td>
+                            <td><span class="dm-count @(soSp == 0 ? "zero" : "")"><i class="bi bi-box-seam"></i> @soSp</span></td>
                             @if (laAdmin)
                             {
                                 <td>
                                     <div class="dm-actions">
-                                        <a asp-action="Sua" asp-route-id="@dm.CategoryID" class="dm-btn edit">Sửa</a>
+                                        <a asp-action="Sua" asp-route-id="@dm.CategoryID" class="dm-btn edit"><i class="bi bi-pencil-square"></i> Sửa</a>
                                         <form asp-action="Xoa" asp-route-id="@dm.CategoryID" method="post" class="d-inline"
                                               onsubmit="return confirm('Bạn có chắc muốn xóa danh mục này?');">
-                                            <button type="submit" class="dm-btn del">Xóa</button>
+                                            <button type="submit" class="dm-btn del"><i class="bi bi-trash3"></i> Xóa</button>
                                         </form>
                                     </div>
                                 </td>
@@ -260,6 +246,31 @@
                     }
                 </tbody>
             </table>
+            <div class="dm-none" id="dmNone">Không có danh mục nào phù hợp.</div>
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var input = document.getElementById('dmSearch');
+            if (!input) return;
+            var rows = document.querySelectorAll('#dmBody tr');
+            var shown = document.getElementById('dmShown');
+            var none = document.getElementById('dmNone');
+
+            input.addEventListener('input', function () {
+                var q = input.value.trim().toLowerCase();
+                var dem = 0;
+                rows.forEach(function (tr) {
+                    var ok = tr.dataset.search.indexOf(q) !== -1;
+                    tr.style.display = ok ? '' : 'none';
+                    if (ok) dem++;
+                });
+                shown.textContent = dem;
+                none.style.display = dem === 0 ? 'block' : 'none';
+            });
+        })();
+    </script>
+}

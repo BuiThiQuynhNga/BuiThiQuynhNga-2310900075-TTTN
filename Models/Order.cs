@@ -29,6 +29,13 @@ namespace ElectronicsShop.Models
         [Required(ErrorMessage = "Vui lòng nhập số điện thoại")]
         public string ReceiverPhone { get; set; }
 
+        // MỚI: phương thức thanh toán ("COD" hoặc "QR")
+        [StringLength(20)]
+        public string? PaymentMethod { get; set; }
+
+        // MỚI: thời điểm mã QR hết hiệu lực (lúc tạo mã + 10 phút)
+        public DateTime? QrExpiresAt { get; set; }
+
         // Navigation properties
         [ForeignKey("UserID")]
         public User User { get; set; }
@@ -36,6 +43,7 @@ namespace ElectronicsShop.Models
         [ForeignKey("DiscountCodeID")]
         public DiscountCode DiscountCode { get; set; }
 
-        public ICollection<OrderDetail> OrderDetails { get; set; }
+        // Khởi tạo danh sách rỗng để giỏ hàng mới tạo không bị null
+        public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
     }
 }

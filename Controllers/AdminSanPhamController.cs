@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ElectronicsShop.Data;
 using ElectronicsShop.Models;
@@ -6,6 +7,7 @@ using System.IO;
 
 namespace ElectronicsShop.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class AdminSanPhamController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -15,6 +17,24 @@ namespace ElectronicsShop.Controllers
         {
             _context = context;
             _env = env;
+        }
+
+        // Chỉ giữ lại kiểm tra cho các trường thực sự có trên form.
+        // Mọi trường khác (Category, Reviews, OrderDetails, ImageURL, ColorVariant...) bị bỏ qua.
+        private void ChiKiemTraTruongTrenForm()
+        {
+            var truongTrenForm = new[]
+            {
+                "ProductID", "ProductName", "CategoryID", "Description", "Price", "Stock"
+            };
+
+            foreach (var key in ModelState.Keys.ToList())
+            {
+                if (!truongTrenForm.Contains(key))
+                {
+                    ModelState.Remove(key);
+                }
+            }
         }
 
         // GET: /AdminSanPham
@@ -40,8 +60,7 @@ namespace ElectronicsShop.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Them(Product product, IFormFile? anhUpload)
         {
-            ModelState.Remove("Category");
-            ModelState.Remove("Reviews");
+            ChiKiemTraTruongTrenForm();
 
             if (!ModelState.IsValid)
             {
@@ -57,6 +76,9 @@ namespace ElectronicsShop.Controllers
             {
                 product.ImageURL = "";
             }
+
+            // Hàng điện tử không dùng mã màu, gán rỗng để cột trong database không bị null
+            product.ColorVariant = "";
 
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
@@ -88,9 +110,7 @@ namespace ElectronicsShop.Controllers
                 return NotFound();
             }
 
-            ModelState.Remove("Category");
-            ModelState.Remove("Reviews");
-            ModelState.Remove("ImageURL");
+            ChiKiemTraTruongTrenForm();
 
             if (!ModelState.IsValid)
             {
@@ -98,27 +118,27 @@ namespace ElectronicsShop.Controllers
                 return View(product);
             }
 
-            var spCu = await _context.Products.AsNoTracking().FirstOrDefaultAsync(s => s.ProductID == id);
-            if (spCu == null)
+            var sp = await _context.Products.FindAsync(id);
+            if (sp == null)
             {
                 return NotFound();
             }
 
-            // Xử lý ảnh
+            sp.ProductName = product.ProductName;
+            sp.CategoryID = product.CategoryID;
+            sp.Description = product.Description;
+            sp.Price = product.Price;
+            sp.Stock = product.Stock;
+
             if (anhUpload != null && anhUpload.Length > 0)
             {
-                product.ImageURL = await LuuAnh(anhUpload);
-            }
-            else
-            {
-                // Giữ nguyên ảnh cũ nếu không chọn ảnh mới
-                product.ImageURL = spCu.ImageURL;
+                string anhMoi = await LuuAnh(anhUpload);
+                if (!string.IsNullOrEmpty(anhMoi))
+                {
+                    sp.ImageURL = anhMoi;
+                }
             }
 
-            // Bổ sung ngày tạo cũ để không bị ghi đè
-            product.CreatedAt = spCu.CreatedAt;
-
-            _context.Update(product);
             await _context.SaveChangesAsync();
 
             TempData["ThongBao"] = "Cập nhật sản phẩm thành công!";
@@ -147,23 +167,34 @@ namespace ElectronicsShop.Controllers
             var product = await _context.Products.FindAsync(id);
             if (product != null)
             {
-                _context.Products.Remove(product);
-                await _context.SaveChangesAsync();
-                TempData["ThongBao"] = "Xóa sản phẩm thành công!";
+                try
+                {
+                    _context.Products.Remove(product);
+                    await _context.SaveChangesAsync();
+                    TempData["ThongBao"] = "Xóa sản phẩm thành công!";
+                }
+                catch (DbUpdateException)
+                {
+                    TempData["LoiXoa"] = "Không thể xóa: sản phẩm này đã có trong đơn hàng hoặc đánh giá.";
+                }
             }
             return RedirectToAction(nameof(Index));
         }
 
-        // Hàm hỗ trợ lưu ảnh
+        // Lưu ảnh với tên file an toàn: chỉ gồm mã ngẫu nhiên + đuôi file
         private async Task<string> LuuAnh(IFormFile file)
         {
             string uploadsFolder = Path.Combine(_env.WebRootPath, "images");
-            if (!Directory.Exists(uploadsFolder))
+            Directory.CreateDirectory(uploadsFolder);
+
+            string ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            string[] choPhep = { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
+            if (!choPhep.Contains(ext))
             {
-                Directory.CreateDirectory(uploadsFolder);
+                return "";
             }
 
-            string uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+            string uniqueFileName = Guid.NewGuid().ToString("N") + ext;
             string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
             using (var fileStream = new FileStream(filePath, FileMode.Create))

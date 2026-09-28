@@ -4,334 +4,344 @@
 @{
     ViewData["Title"] = Model.ProductName;
     var danhGiaList = ViewBag.DanhGiaList as List<ElectronicsShop.Models.Review>;
+
+    // Chuẩn hóa đường dẫn ảnh: chấp nhận tên trơn, "images/...", "/..." hoặc link http
+    string LayAnh(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return "/images/no-image.png";
+        url = url.Trim();
+        if (url.StartsWith("http") || url.StartsWith("/")) return url;
+        if (url.StartsWith("images/")) return "/" + url;
+        return "/images/" + url;
+    }
+
+    bool coDanhGia = danhGiaList != null && danhGiaList.Any();
+    double diemTB = coDanhGia ? danhGiaList!.Average(x => (double)x.Rating) : 0;
+    int soDanhGia = coDanhGia ? danhGiaList!.Count : 0;
 }
+
 <style>
-    .spct-page {
-        --hd-primary: #2F5D62;
-        --hd-primary-dark: #22454A;
-        --hd-accent: #C97B4A;
-        --hd-bg: #F7F7F5;
-        --hd-card: #FFFFFF;
-        --hd-text: #24262B;
-        --hd-muted: #6B7076;
-        --hd-border: #E7E5E1;
-        padding: 32px 0 60px;
+    .ct-page {
+        --es-blue: #1E4FBF;
+        --es-blue-dark: #0F2F7A;
+        --es-navy: #0B1F4B;
+        --es-red: #E0282E;
+        --es-green: #16A34A;
+        --es-star: #F59E0B;
+        --es-bg: #F3F5F9;
+        --es-text: #1F2937;
+        --es-muted: #6B7280;
+        --es-border: #E5E7EB;
+        padding: 10px 0 50px;
+    }
+    .ct-crumb { font-size: .8rem; color: var(--es-muted); margin-bottom: 14px; }
+    .ct-crumb a { color: var(--es-muted); text-decoration: none; }
+    .ct-crumb a:hover { color: var(--es-blue); }
+    .ct-crumb b { color: var(--es-blue); }
+
+    .ct-alert {
+        display: flex; align-items: center; gap: 10px;
+        background: #E8F6EC; color: #166534; border: 1px solid #BBE5C8;
+        border-radius: 10px; padding: 12px 16px; font-size: .9rem; font-weight: 600; margin-bottom: 20px;
     }
 
-    .spct-breadcrumb {
-        list-style: none;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        padding: 0;
-        margin: 0 0 24px;
-        font-size: 0.85rem;
-        color: var(--hd-muted);
+    .ct-layout { display: grid; grid-template-columns: 440px 1fr; gap: 26px; align-items: start; }
+
+    /* ===== ẢNH ===== */
+    .ct-media {
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; padding: 16px;
+        box-shadow: 0 3px 14px rgba(15,47,122,.06); position: sticky; top: 90px;
     }
+    .ct-img-wrap { position: relative; background: var(--es-bg); border-radius: 10px; overflow: hidden; }
+    .ct-img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+    .ct-tags { position: absolute; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; z-index: 2; }
+    .ct-tag { font-size: .72rem; font-weight: 700; padding: 5px 11px; border-radius: 6px; color: #fff; background: var(--es-navy); }
+    .ct-tag.red { background: var(--es-red); }
+    .ct-tag.blue { background: var(--es-blue); }
 
-        .spct-breadcrumb li:not(:last-child)::after {
-            content: "/";
-            margin-left: 6px;
-            color: var(--hd-border);
-        }
+    /* ===== THÔNG TIN ===== */
+    .ct-info-top { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; font-size: .8rem; }
+    .ct-cat { background: #E8EFFC; color: var(--es-blue); font-weight: 700; font-size: .75rem; padding: 5px 12px; border-radius: 6px; }
+    .ct-rate { color: var(--es-star); display: inline-flex; align-items: center; gap: 4px; font-weight: 700; }
+    .ct-rate small { color: var(--es-muted); font-weight: 400; }
+    .ct-stock { margin-left: auto; color: var(--es-green); font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+    .ct-stock.out { color: var(--es-red); }
+    .ct-stock::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 
-        .spct-breadcrumb a {
-            color: var(--hd-muted);
-            text-decoration: none;
-            font-weight: 500;
-        }
+    .ct-name { font-weight: 800; font-size: 1.7rem; line-height: 1.3; color: var(--es-navy); margin: 0 0 16px; }
 
-            .spct-breadcrumb a:hover {
-                color: var(--hd-primary);
-            }
-
-        .spct-breadcrumb .active {
-            color: var(--hd-text);
-            font-weight: 600;
-        }
-
-    .spct-alert {
-        background: #E7F0EF;
-        color: var(--hd-primary-dark);
-        border-radius: 10px;
-        padding: 12px 16px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        margin-bottom: 20px;
+    .ct-box {
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; padding: 20px 22px;
+        box-shadow: 0 3px 14px rgba(15,47,122,.05); margin-bottom: 16px;
     }
+    .ct-price { font-size: 2.2rem; font-weight: 800; color: var(--es-red); line-height: 1.1; }
+    .ct-price-note { font-size: .8rem; color: var(--es-muted); margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+    .ct-price-note i { color: var(--es-blue); }
 
-    .spct-grid {
-        display: grid;
-        grid-template-columns: 380px 1fr;
-        gap: 40px;
-        align-items: flex-start;
+    .ct-box-title { font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--es-muted); margin: 0 0 10px; }
+    .ct-desc { color: var(--es-text); font-size: .92rem; line-height: 1.7; margin: 0; white-space: pre-line; }
+    .ct-desc.empty { color: var(--es-muted); font-style: italic; }
+
+    /* ===== MUA HÀNG ===== */
+    .ct-buy { display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch; }
+    .ct-buy form { display: flex; flex: 1; gap: 12px; margin: 0; min-width: 280px; }
+    .ct-qty { display: inline-flex; align-items: center; border: 1.5px solid var(--es-border); border-radius: 10px; background: #fff; overflow: hidden; }
+    .ct-qty button { border: none; background: #F3F5F9; width: 38px; height: 100%; min-height: 48px; font-size: 1.1rem; font-weight: 700; color: var(--es-text); cursor: pointer; }
+    .ct-qty button:hover { background: #E8EFFC; color: var(--es-blue); }
+    .ct-qty input {
+        width: 56px; border: none; outline: none; text-align: center; font-weight: 700; font-size: 1rem; color: var(--es-text);
+        -moz-appearance: textfield;
     }
+    .ct-qty input::-webkit-outer-spin-button, .ct-qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-    .spct-media {
-        background: var(--hd-card);
-        border: 1px solid var(--hd-border);
-        border-radius: 16px;
-        padding: 20px;
-        text-align: center;
+    .ct-btn {
+        border: none; border-radius: 10px; padding: 13px 24px; font-size: .95rem; font-weight: 800; cursor: pointer;
+        text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        transition: all .15s ease;
     }
+    .ct-btn.add { background: var(--es-blue); color: #fff; flex: 1; text-transform: uppercase; }
+    .ct-btn.add:hover { background: var(--es-blue-dark); transform: translateY(-1px); }
+    .ct-btn.disabled { background: #E5E7EB; color: var(--es-muted); cursor: not-allowed; flex: 1; }
+    .ct-btn.back { background: #fff; border: 1.5px solid var(--es-border); color: var(--es-text); }
+    .ct-btn.back:hover { border-color: var(--es-blue); color: var(--es-blue); }
 
-    .spct-img {
-        width: 100%;
-        aspect-ratio: 1 / 1;
-        object-fit: cover;
-        border-radius: 12px;
-        background: var(--hd-bg);
-        display: block;
-        margin-bottom: 16px;
+    .ct-trust { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .ct-trust div {
+        display: flex; align-items: center; gap: 10px; background: var(--es-bg);
+        border-radius: 10px; padding: 12px; font-size: .78rem; color: var(--es-muted); line-height: 1.4;
     }
+    .ct-trust i { color: var(--es-blue); font-size: 1.3rem; }
+    .ct-trust b { display: block; color: var(--es-text); font-size: .82rem; }
 
-    .spct-cat {
-        display: inline-block;
-        background: #E7F0EF;
-        color: var(--hd-primary-dark);
-        font-weight: 700;
-        font-size: 0.8rem;
-        padding: 6px 14px;
-        border-radius: 20px;
+    /* ===== ĐÁNH GIÁ ===== */
+    .ct-review-head {
+        display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 34px 0 16px;
     }
-
-    .spct-name {
-        font-family: 'Poppins', sans-serif;
-        font-weight: 800;
-        font-size: 1.7rem;
-        color: var(--hd-text);
-        margin: 0 0 8px;
+    .ct-review-head h4 { margin: 0; font-weight: 800; font-size: 1.2rem; color: var(--es-navy); }
+    .ct-review-sum { display: inline-flex; align-items: center; gap: 6px; color: var(--es-star); font-weight: 800; }
+    .ct-review-sum small { color: var(--es-muted); font-weight: 400; }
+    .ct-review-list { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .ct-review-card {
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; padding: 16px 20px;
+        box-shadow: 0 3px 14px rgba(15,47,122,.05);
     }
-
-    .spct-desc {
-        color: var(--hd-muted);
-        font-size: 0.95rem;
-        line-height: 1.6;
-        margin-bottom: 20px;
+    .ct-review-top { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .ct-avatar {
+        width: 38px; height: 38px; border-radius: 50%; background: #E8EFFC; color: var(--es-blue);
+        display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0;
     }
-
-    .spct-divider {
-        border: none;
-        border-top: 1px solid var(--hd-border);
-        margin: 20px 0;
+    .ct-review-name { font-weight: 700; color: var(--es-navy); font-size: .92rem; margin: 0; }
+    .ct-stars { color: var(--es-star); font-size: .8rem; letter-spacing: 1px; }
+    .ct-stars .off { color: #D1D5DB; }
+    .ct-review-text { color: var(--es-text); font-size: .9rem; margin: 0 0 8px; line-height: 1.6; }
+    .ct-review-date { color: var(--es-muted); font-size: .76rem; }
+    .ct-review-empty {
+        color: var(--es-muted); background: #fff; border: 1px dashed var(--es-border);
+        border-radius: 14px; padding: 30px; text-align: center;
     }
+    .ct-review-empty i { font-size: 2rem; color: var(--es-blue); display: block; margin-bottom: 6px; }
 
-    .spct-price {
-        font-family: 'Poppins', sans-serif;
-        font-weight: 800;
-        font-size: 1.5rem;
-        color: var(--hd-accent);
-        margin: 0 0 18px;
+    @@media (max-width: 1000px) {
+        .ct-layout { grid-template-columns: 1fr; }
+        .ct-media { position: static; }
     }
-
-    .spct-info {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-bottom: 24px;
-        font-size: 0.92rem;
-        color: var(--hd-text);
-    }
-
-        .spct-info strong {
-            font-weight: 700;
-            margin-right: 6px;
-        }
-
-    .spct-color-badge {
-        display: inline-block;
-        background: #F1F0EE;
-        color: var(--hd-muted);
-        font-weight: 600;
-        font-size: 0.8rem;
-        padding: 4px 10px;
-        border-radius: 20px;
-    }
-
-    .spct-stock {
-        color: var(--hd-primary-dark);
-        font-weight: 600;
-    }
-
-    .spct-stock.out {
-        color: #9A3E33;
-    }
-
-    .spct-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-
-    .spct-btn {
-        border: none;
-        border-radius: 10px;
-        padding: 12px 26px;
-        font-size: 0.95rem;
-        font-weight: 700;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-block;
-        transition: background .15s ease, color .15s ease, border-color .15s ease;
-    }
-
-        .spct-btn.add {
-            background: var(--hd-primary);
-            color: #fff;
-        }
-
-            .spct-btn.add:hover {
-                background: var(--hd-primary-dark);
-            }
-
-        .spct-btn.disabled {
-            background: #F1F0EE;
-            color: var(--hd-muted);
-            cursor: not-allowed;
-        }
-
-        .spct-btn.back {
-            background: transparent;
-            border: 1.5px solid var(--hd-border);
-            color: var(--hd-text);
-        }
-
-            .spct-btn.back:hover {
-                border-color: var(--hd-primary);
-                color: var(--hd-primary);
-            }
-
-    .spct-review-title {
-        font-family: 'Poppins', sans-serif;
-        font-weight: 800;
-        font-size: 1.2rem;
-        color: var(--hd-text);
-        margin: 40px 0 16px;
-    }
-
-    .spct-review-card {
-        background: var(--hd-card);
-        border: 1px solid var(--hd-border);
-        border-radius: 14px;
-        padding: 16px 20px;
-        margin-bottom: 14px;
-    }
-
-    .spct-review-name {
-        font-weight: 700;
-        color: var(--hd-primary);
-        margin: 0 0 6px;
-        font-size: 0.95rem;
-    }
-
-    .spct-review-stars {
-        color: var(--hd-accent);
-        font-weight: 600;
-        margin-left: 4px;
-    }
-
-    .spct-review-text {
-        color: var(--hd-text);
-        margin: 0 0 6px;
-        font-size: 0.92rem;
-    }
-
-    .spct-review-date {
-        color: var(--hd-muted);
-        font-size: 0.8rem;
-    }
-
-    .spct-review-empty {
-        color: var(--hd-muted);
-        background: var(--hd-card);
-        border: 1px dashed var(--hd-border);
-        border-radius: 14px;
-        padding: 24px;
-        text-align: center;
-    }
-
-    @@media (max-width: 800px) {
-        .spct-grid {
-            grid-template-columns: 1fr;
-        }
+    @@media (max-width: 700px) {
+        .ct-review-list, .ct-trust { grid-template-columns: 1fr; }
+        .ct-name { font-size: 1.35rem; }
+        .ct-price { font-size: 1.8rem; }
     }
 </style>
-<div class="container spct-page">
-    <ul class="spct-breadcrumb">
-        <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
-        <li><a asp-controller="SanPham" asp-action="Index">Sản phẩm</a></li>
-        <li class="active">@Model.ProductName</li>
-    </ul>
+
+<div class="container ct-page">
+
+    <div class="ct-crumb">
+        <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Trang chủ</a>
+        &nbsp;/&nbsp;
+        <a asp-controller="SanPham" asp-action="Index">Sản phẩm</a>
+        &nbsp;/&nbsp; <b>@Model.ProductName</b>
+    </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="spct-alert">@TempData["SuccessMessage"]</div>
+        <div class="ct-alert"><i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]</div>
     }
 
-    <div class="spct-grid">
-        <div class="spct-media">
-            <img src="~/images/@(string.IsNullOrEmpty(Model.ImageURL) ? "no-image.png" : Model.ImageURL)"
-                 class="spct-img"
-                 onerror="this.src='/images/no-image.png'"
-                 alt="@Model.ProductName" />
-            <span class="spct-cat">@Model.Category?.CategoryName</span>
-        </div>
-        <div>
-            <h2 class="spct-name">@Model.ProductName</h2>
-            <p class="spct-desc">@Model.Description</p>
-            <hr class="spct-divider" />
-            <p class="spct-price">Giá bán: @Model.Price.ToString("N0") đ</p>
+    <div class="ct-layout">
 
-            <div class="spct-info">
-                <div>
-                    <strong>Màu sắc:</strong>
-                    <span class="spct-color-badge">@(string.IsNullOrEmpty(Model.ColorVariant) ? "Không có" : Model.ColorVariant)</span>
-                </div>
-                <div>
-                    <strong>Tình trạng:</strong>
+        <!-- ===== ẢNH ===== -->
+        <div class="ct-media">
+            <div class="ct-img-wrap">
+                <div class="ct-tags">
                     @if (Model.Stock > 0)
                     {
-                        <span class="spct-stock">Còn lại @Model.Stock sản phẩm</span>
+                        <span class="ct-tag blue"><i class="bi bi-patch-check-fill"></i> Chính hãng</span>
                     }
                     else
                     {
-                        <span class="spct-stock out">Hết hàng</span>
+                        <span class="ct-tag red">Tạm hết hàng</span>
                     }
                 </div>
+                <img src="@LayAnh(Model.ImageURL)"
+                     class="ct-img"
+                     onerror="this.onerror=null;this.src='/images/no-image.png'"
+                     alt="@Model.ProductName" />
             </div>
+        </div>
 
-            <div class="spct-actions">
+        <!-- ===== THÔNG TIN ===== -->
+        <div>
+            <div class="ct-info-top">
+                <span class="ct-cat">@(Model.Category?.CategoryName ?? "Sản phẩm")</span>
+
+                @if (coDanhGia)
+                {
+                    <span class="ct-rate">
+                        <i class="bi bi-star-fill"></i> @diemTB.ToString("0.0")
+                        <small>(@soDanhGia đánh giá)</small>
+                    </span>
+                }
+
                 @if (Model.Stock > 0)
                 {
-                    <form asp-controller="GioHang" asp-action="ThemVaoGio" method="post" class="d-inline">
-                        <input type="hidden" name="id" value="@Model.ProductID" />
-                        <input type="hidden" name="soLuong" value="1" />
-                        <button type="submit" class="spct-btn add">Thêm vào giỏ hàng</button>
-                    </form>
+                    <span class="ct-stock">Còn hàng</span>
                 }
                 else
                 {
-                    <button type="button" class="spct-btn disabled" disabled>Hết hàng</button>
+                    <span class="ct-stock out">Hết hàng</span>
                 }
-                <a asp-action="Index" class="spct-btn back">Quay lại danh sách</a>
+            </div>
+
+            <h1 class="ct-name">@Model.ProductName</h1>
+
+            <div class="ct-box">
+                <div class="ct-price">@Model.Price.ToString("N0") đ</div>
+                <div class="ct-price-note"><i class="bi bi-receipt"></i> Giá đã bao gồm VAT và đầy đủ chứng từ chính hãng</div>
+            </div>
+
+            <div class="ct-box">
+                <h6 class="ct-box-title">Mô tả sản phẩm</h6>
+                @if (!string.IsNullOrWhiteSpace(Model.Description))
+                {
+                    <p class="ct-desc">@Model.Description</p>
+                }
+                else
+                {
+                    <p class="ct-desc empty">Sản phẩm chưa có mô tả chi tiết.</p>
+                }
+            </div>
+
+            <div class="ct-box">
+                <h6 class="ct-box-title">
+                    Tình trạng:
+                    @if (Model.Stock > 0)
+                    {
+                        <span style="color:var(--es-green)">Còn lại @Model.Stock sản phẩm</span>
+                    }
+                    else
+                    {
+                        <span style="color:var(--es-red)">Hết hàng</span>
+                    }
+                </h6>
+
+                <div class="ct-buy">
+                    @if (Model.Stock > 0)
+                    {
+                        <form asp-controller="GioHang" asp-action="ThemVaoGio" method="post">
+                            <input type="hidden" name="maSanPham" value="@Model.ProductID" />
+                            <div class="ct-qty">
+                                <button type="button" id="ctMinus" aria-label="Giảm">−</button>
+                                <input type="number" name="soLuong" id="ctQty" value="1" min="1" max="@Model.Stock" />
+                                <button type="button" id="ctPlus" aria-label="Tăng">+</button>
+                            </div>
+                            <button type="submit" class="ct-btn add"><i class="bi bi-cart3"></i> Thêm vào giỏ hàng</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <button type="button" class="ct-btn disabled" disabled>Hết hàng</button>
+                    }
+                    <a asp-action="Index" class="ct-btn back"><i class="bi bi-arrow-left"></i> Quay lại danh sách</a>
+                </div>
+            </div>
+
+            <div class="ct-trust">
+                <div><i class="bi bi-shield-check"></i><span><b>Chính hãng 100%</b>Đầy đủ VAT và CO/CQ</span></div>
+                <div><i class="bi bi-truck"></i><span><b>Giao hàng nhanh</b>Đóng gói cẩn thận</span></div>
+                <div><i class="bi bi-headset"></i><span><b>Hỗ trợ kỹ thuật</b>Tư vấn tận tình</span></div>
             </div>
         </div>
     </div>
 
-    <h4 class="spct-review-title">Đánh giá từ khách hàng</h4>
-    @if (danhGiaList != null && danhGiaList.Any())
-    {
-        foreach (var dg in danhGiaList)
+    <!-- ===== ĐÁNH GIÁ ===== -->
+    <div class="ct-review-head">
+        <h4>Đánh giá từ khách hàng</h4>
+        @if (coDanhGia)
         {
-            <div class="spct-review-card">
-                <p class="spct-review-name">@dg.User?.FullName <span class="spct-review-stars">(@dg.Rating ⭐)</span></p>
-                <p class="spct-review-text">@dg.Comment</p>
-                <span class="spct-review-date">Ngày đánh giá: @dg.ReviewDate.ToString("dd/MM/yyyy HH:mm")</span>
-            </div>
+            <span class="ct-review-sum">
+                <i class="bi bi-star-fill"></i> @diemTB.ToString("0.0")
+                <small>(@soDanhGia đánh giá)</small>
+            </span>
         }
+    </div>
+
+    @if (coDanhGia)
+    {
+        <div class="ct-review-list">
+            @foreach (var dg in danhGiaList!)
+            {
+                var ten = dg.User?.FullName ?? "Khách hàng";
+                <div class="ct-review-card">
+                    <div class="ct-review-top">
+                        <div class="ct-avatar">@ten.Trim().Substring(0, 1).ToUpper()</div>
+                        <div>
+                            <p class="ct-review-name">@ten</p>
+                            <div class="ct-stars">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <i class="bi @(i <= dg.Rating ? "bi-star-fill" : "bi-star-fill off")"></i>
+                                }
+                                <span style="color:var(--es-muted); letter-spacing:0;">(@dg.Rating ⭐)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="ct-review-text">@dg.Comment</p>
+                    <span class="ct-review-date">Ngày đánh giá: @dg.ReviewDate.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+            }
+        </div>
     }
     else
     {
-        <div class="spct-review-empty">Chưa có đánh giá nào cho sản phẩm này.</div>
+        <div class="ct-review-empty">
+            <i class="bi bi-chat-square-text"></i>
+            Chưa có đánh giá nào cho sản phẩm này.
+        </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var qty = document.getElementById('ctQty');
+            if (!qty) return;
+            var max = parseInt(qty.max) || 1;
+
+            function chuanHoa() {
+                var v = parseInt(qty.value);
+                if (isNaN(v) || v < 1) v = 1;
+                if (v > max) v = max;
+                qty.value = v;
+            }
+
+            document.getElementById('ctMinus').addEventListener('click', function () {
+                qty.value = (parseInt(qty.value) || 1) - 1;
+                chuanHoa();
+            });
+            document.getElementById('ctPlus').addEventListener('click', function () {
+                qty.value = (parseInt(qty.value) || 1) + 1;
+                chuanHoa();
+            });
+            qty.addEventListener('change', chuanHoa);
+        })();
+    </script>
+}

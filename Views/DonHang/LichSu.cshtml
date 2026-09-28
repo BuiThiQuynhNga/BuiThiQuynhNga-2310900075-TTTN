@@ -3,140 +3,73 @@
 @{
     ViewData["Title"] = "Đơn hàng của tôi";
 }
+
 <style>
     .dhc-page {
-        --hd-primary: #2F5D62;
-        --hd-primary-dark: #22454A;
-        --hd-accent: #C97B4A;
-        --hd-bg: #F7F7F5;
-        --hd-card: #FFFFFF;
-        --hd-text: #24262B;
-        --hd-muted: #6B7076;
-        --hd-border: #E7E5E1;
+        --es-blue: #1E4FBF;
+        --es-blue-dark: #0F2F7A;
+        --es-navy: #0B1F4B;
+        --es-red: #E0282E;
+        --es-green: #16A34A;
+        --es-text: #1F2937;
+        --es-muted: #6B7280;
+        --es-border: #E5E7EB;
         padding: 40px 0 60px;
     }
 
     .dhc-eyebrow {
-        font-size: 0.78rem;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: var(--hd-muted);
-        font-weight: 600;
+        font-size: .78rem; letter-spacing: .14em; text-transform: uppercase;
+        color: var(--es-blue); font-weight: 700;
     }
-
-    .dhc-title {
-        font-family: 'Poppins', sans-serif;
-        font-weight: 800;
-        font-size: 1.5rem;
-        color: var(--hd-text);
-        margin: 4px 0 24px;
-    }
+    .dhc-title { font-weight: 800; font-size: 1.7rem; color: var(--es-navy); margin: 4px 0 24px; }
 
     .dhc-empty {
-        background: var(--hd-card);
-        border: 1px dashed var(--hd-border);
-        border-radius: 16px;
-        padding: 48px 24px;
-        text-align: center;
-        color: var(--hd-muted);
+        background: #fff; border: 1px dashed var(--es-border); border-radius: 16px;
+        padding: 48px 24px; text-align: center; color: var(--es-muted);
     }
-
-        .dhc-empty a {
-            color: var(--hd-primary);
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-            .dhc-empty a:hover {
-                text-decoration: underline;
-            }
+    .dhc-empty a { color: var(--es-blue); font-weight: 700; text-decoration: none; }
+    .dhc-empty a:hover { text-decoration: underline; }
 
     .dhc-card {
-        background: var(--hd-card);
-        border: 1px solid var(--hd-border);
-        border-radius: 16px;
-        padding: 20px 24px;
-        margin-bottom: 16px;
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px;
+        padding: 20px 24px; margin-bottom: 16px;
+        box-shadow: 0 3px 14px rgba(15,47,122,.06);
+        transition: transform .2s ease, box-shadow .2s ease;
     }
+    .dhc-card:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(15,47,122,.12); }
 
     .dhc-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-        flex-wrap: wrap;
-        gap: 8px;
+        display: flex; justify-content: space-between; align-items: center;
+        flex-wrap: wrap; gap: 8px; margin-bottom: 10px;
     }
-
-    .dhc-id {
-        font-weight: 700;
-        color: var(--hd-primary);
-        font-size: 1rem;
-        margin: 0;
-    }
+    .dhc-id { font-weight: 800; color: var(--es-blue); font-size: 1.05rem; margin: 0; }
 
     .dhc-badge {
-        display: inline-block;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.78rem;
-        font-weight: 700;
-        white-space: nowrap;
+        display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px;
+        font-size: .78rem; font-weight: 800; white-space: nowrap;
     }
-
-        .dhc-badge.cho {
-            background: #FBEFDD;
-            color: #9A6A1E;
-        }
-
-        .dhc-badge.giao {
-            background: #E4EEF6;
-            color: #2A5F8A;
-        }
-
-        .dhc-badge.hoan {
-            background: #E7F0EF;
-            color: var(--hd-primary-dark);
-        }
-
-        .dhc-badge.huy {
-            background: #F1F0EE;
-            color: var(--hd-muted);
-        }
-
-        .dhc-badge.khac {
-            background: #EFE8F5;
-            color: #6C4A93;
-        }
+    .dhc-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .dhc-badge.cho  { background: #FFF4DB; color: #A16207; }
+    .dhc-badge.giao { background: #E8EFFC; color: var(--es-blue); }
+    .dhc-badge.hoan { background: #E8F6EC; color: var(--es-green); }
+    .dhc-badge.huy  { background: #EEF0F4; color: var(--es-muted); }
+    .dhc-badge.khac { background: #EFE8F5; color: #6C4A93; }
 
     .dhc-date {
-        color: var(--hd-muted);
-        font-size: 0.85rem;
-        margin: 0 0 10px;
+        color: var(--es-muted); font-size: .85rem; margin: 0 0 10px;
+        display: flex; align-items: center; gap: 6px;
     }
+    .dhc-date i { color: var(--es-blue); }
 
     .dhc-items {
-        border-top: 1px solid var(--hd-border);
-        border-bottom: 1px solid var(--hd-border);
-        padding: 10px 0;
-        margin-bottom: 12px;
+        border-top: 1px dashed var(--es-border); border-bottom: 1px dashed var(--es-border);
+        padding: 10px 0; margin-bottom: 12px;
     }
+    .dhc-item { display: block; color: var(--es-text); font-size: .9rem; padding: 3px 0; }
 
-    .dhc-item {
-        display: block;
-        color: var(--hd-text);
-        font-size: 0.9rem;
-        padding: 2px 0;
-    }
-
-    .dhc-total {
-        font-weight: 700;
-        color: var(--hd-accent);
-        font-size: 1rem;
-        margin: 0;
-        text-align: right;
-    }
+    .dhc-total { font-weight: 800; color: var(--es-red); font-size: 1.05rem; margin: 0; text-align: right; }
 </style>
+
 <div class="container dhc-page">
     <div class="dhc-eyebrow">Tài khoản</div>
     <h1 class="dhc-title">Đơn hàng của tôi</h1>
@@ -174,7 +107,7 @@
                     <h6 class="dhc-id">Đơn hàng #@dh.OrderID</h6>
                     <span class="dhc-badge @lopBadge">@tenTrangThai</span>
                 </div>
-                <p class="dhc-date">Ngày đặt: @dh.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                <p class="dhc-date"><i class="bi bi-calendar-event"></i> Ngày đặt: @dh.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
                 <div class="dhc-items">
                     @foreach (var ct in dh.OrderDetails)
                     {

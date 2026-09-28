@@ -9,229 +9,283 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <style>
-        .navbar-custom {
-            background-color: #2F5D62; /* --hd-primary */
+        :root {
+            --es-blue: #1E4FBF;
+            --es-blue-dark: #0F2F7A;
+            --es-navy: #0B1F4B;
+            --es-red: #E0282E;
+            --es-bg: #F3F5F9;
+            --es-text: #1F2937;
+            --es-muted: #6B7280;
+            --es-border: #E5E7EB;
         }
-        .btn-custom-accent {
-            background-color: #C97B4A; /* --hd-accent */
-            color: #fff;
-            border: none;
+        body { background: var(--es-bg); color: var(--es-text); }
+
+        /* Thanh thông tin trên cùng */
+        .es-topbar { background: var(--es-navy); color: rgba(255,255,255,.85); font-size: .78rem; }
+        .es-topbar .container { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 20px; padding-top: 7px; padding-bottom: 7px; }
+        .es-topbar span { white-space: nowrap; }
+        .es-topbar span + span { margin-left: 18px; }
+        .es-topbar i { margin-right: 4px; color: #8FB0F5; }
+
+        /* Header (nằm trên thanh menu để menu thả xuống không bị che) */
+        .es-header { background: #fff; border-bottom: 1px solid var(--es-border); position: relative; z-index: 1100; }
+        .es-header .container { display: flex; align-items: center; gap: 24px; padding-top: 14px; padding-bottom: 14px; }
+        .es-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; white-space: nowrap; }
+        .es-brand-icon { width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, var(--es-blue), var(--es-blue-dark)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+        .es-brand-text { font-weight: 800; font-size: 1.3rem; color: var(--es-navy); line-height: 1.1; }
+        .es-brand-text small { display: block; font-size: .62rem; font-weight: 600; color: var(--es-red); letter-spacing: .14em; text-transform: uppercase; }
+        .es-brand:hover .es-brand-text { color: var(--es-blue); }
+
+        .es-search { flex: 1; display: flex; max-width: 640px; margin: 0 auto; border: 2px solid var(--es-blue); border-radius: 10px; overflow: hidden; background: #fff; }
+        .es-search input { flex: 1; border: none; padding: 10px 16px; font-size: .92rem; outline: none; background: transparent; min-width: 0; }
+        .es-search button { border: none; background: var(--es-blue); color: #fff; padding: 0 22px; font-weight: 700; font-size: .9rem; white-space: nowrap; }
+        .es-search button:hover { background: var(--es-blue-dark); }
+
+        .es-actions { display: flex; align-items: center; gap: 10px; }
+        .es-btn-cart { position: relative; display: flex; align-items: center; gap: 8px; color: var(--es-navy); text-decoration: none; border: 1px solid var(--es-border); border-radius: 10px; padding: 9px 16px; font-weight: 700; font-size: .9rem; white-space: nowrap; background: #fff; transition: all .15s ease; }
+        .es-btn-cart i { color: var(--es-blue); font-size: 1.1rem; }
+        .es-btn-cart:hover { border-color: var(--es-blue); color: var(--es-blue); }
+        .es-btn-account { display: flex; align-items: center; gap: 8px; background: var(--es-blue); color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-weight: 700; font-size: .9rem; white-space: nowrap; }
+        .es-btn-account:hover, .es-btn-account:focus, .es-btn-account.show { background: var(--es-blue-dark); color: #fff; }
+        .es-btn-login { color: var(--es-blue); border: 1px solid var(--es-blue); border-radius: 10px; padding: 9px 18px; font-weight: 700; font-size: .9rem; text-decoration: none; white-space: nowrap; }
+        .es-btn-login:hover { background: var(--es-blue); color: #fff; }
+        .es-btn-register { background: var(--es-red); color: #fff; border: 1px solid var(--es-red); border-radius: 10px; padding: 9px 18px; font-weight: 700; font-size: .9rem; text-decoration: none; white-space: nowrap; }
+        .es-btn-register:hover { background: #c41f25; border-color: #c41f25; color: #fff; }
+
+        /* Menu thả xuống của tài khoản */
+        .es-dropdown { min-width: 270px; padding: 0; overflow: hidden; border-radius: 12px; border: 1px solid var(--es-border); box-shadow: 0 14px 34px rgba(15,47,122,.18); margin-top: 10px !important; z-index: 1200; }
+        .es-dd-head { display: flex; align-items: center; gap: 12px; padding: 16px; background: linear-gradient(120deg, var(--es-navy), var(--es-blue)); color: #fff; }
+        .es-dd-avatar { width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; flex-shrink: 0; }
+        .es-dd-name { font-weight: 800; font-size: .95rem; line-height: 1.2; word-break: break-word; }
+        .es-dd-role { font-size: .72rem; color: rgba(255,255,255,.8); }
+        .es-dd-body { padding: 8px; }
+        .es-dd-title { font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--es-muted); padding: 8px 10px 4px; }
+        .es-dropdown .dropdown-item { display: flex; align-items: center; gap: 10px; border-radius: 8px; font-size: .9rem; font-weight: 600; padding: 9px 10px; color: var(--es-text); }
+        .es-dropdown .dropdown-item i { width: 20px; text-align: center; color: var(--es-blue); font-size: 1.05rem; }
+        .es-dropdown .dropdown-item:hover { background: #E8EFFC; color: var(--es-blue); }
+        .es-dropdown .dropdown-item.text-danger, .es-dropdown .dropdown-item.text-danger i { color: var(--es-red) !important; }
+        .es-dropdown .dropdown-item.text-danger:hover { background: #FDECEC; }
+        .es-dropdown .dropdown-divider { margin: 6px 4px; }
+
+        /* Thanh menu */
+        .es-nav { background: var(--es-blue); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 14px rgba(15,47,122,.18); }
+        .es-nav .container { display: flex; align-items: center; }
+        .es-nav-list { list-style: none; display: flex; flex-wrap: wrap; margin: 0; padding: 0; }
+        .es-nav-list a { display: block; color: rgba(255,255,255,.92); text-decoration: none; font-weight: 700; font-size: .88rem; padding: 13px 20px; white-space: nowrap; text-transform: uppercase; letter-spacing: .02em; border-bottom: 3px solid transparent; transition: all .15s ease; }
+        .es-nav-list a i { margin-right: 6px; }
+        .es-nav-list a:hover { background: var(--es-blue-dark); color: #fff; border-bottom-color: var(--es-red); }
+
+        /* Chân trang */
+        .es-footer { background: var(--es-navy); color: rgba(255,255,255,.72); margin-top: 60px; padding-top: 46px; }
+        .es-footer-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1.3fr; gap: 32px; padding-bottom: 32px; }
+        .es-footer h6 { color: #fff; font-weight: 800; font-size: .85rem; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--es-red); display: inline-block; }
+        .es-footer p, .es-footer li { font-size: .87rem; line-height: 1.7; }
+        .es-footer ul { list-style: none; padding: 0; margin: 0; }
+        .es-footer li { margin-bottom: 6px; }
+        .es-footer a { color: rgba(255,255,255,.72); text-decoration: none; }
+        .es-footer a:hover { color: #fff; }
+        .es-footer i { color: #8FB0F5; margin-right: 6px; }
+        .es-footer-brand { color: #fff; font-weight: 800; font-size: 1.25rem; margin-bottom: 10px; }
+        .es-footer-bottom { border-top: 1px solid rgba(255,255,255,.12); padding: 16px 0; text-align: center; font-size: .8rem; color: rgba(255,255,255,.55); }
+
+        @@media (max-width: 992px) {
+            .es-header .container { flex-wrap: wrap; gap: 12px; }
+            .es-search { order: 3; flex-basis: 100%; max-width: 100%; }
+            .es-actions { margin-left: auto; }
+            .es-footer-grid { grid-template-columns: 1fr 1fr; }
         }
-        .btn-custom-accent:hover {
-            background-color: #B36A3D;
-            color: #fff;
+        @@media (max-width: 768px) {
+            .es-topbar .container { justify-content: center; }
+            .es-nav-list { overflow-x: auto; flex-wrap: nowrap; }
+        }
+        @@media (max-width: 576px) {
+            .es-footer-grid { grid-template-columns: 1fr; }
+            .es-btn-cart span.es-label { display: none; }
         }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow">
+    <!-- Thanh thông tin -->
+    <div class="es-topbar">
+        <div class="container">
+            <div>
+                <span><i class="bi bi-patch-check"></i>Thiết bị điện tử chính hãng</span>
+                <span><i class="bi bi-truck"></i>Giao hàng toàn quốc</span>
+            </div>
+            <div>
+                <span><i class="bi bi-telephone"></i>Hotline: 1800 xxxx (miễn phí)</span>
+                <span><i class="bi bi-headset"></i>Hỗ trợ kỹ thuật 24/7</span>
+            </div>
+        </div>
+    </div>
 
+    <!-- Header -->
+    <header class="es-header">
         <div class="container">
 
-            <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
-                <i class="bi bi-laptop"></i>
-                ElectronicsShop
+            <a class="es-brand" asp-controller="Home" asp-action="Index">
+                <span class="es-brand-icon"><i class="bi bi-laptop"></i></span>
+                <span class="es-brand-text">ElectronicsShop<small>Công nghệ chính hãng</small></span>
             </a>
 
-            <button class="navbar-toggler"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#menu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <form class="es-search" asp-controller="SanPham" asp-action="Index" method="get">
+                <input type="search" name="keyword" placeholder="Bạn cần tìm sản phẩm gì hôm nay?">
+                <button type="submit"><i class="bi bi-search"></i> Tìm kiếm</button>
+            </form>
 
-            <div class="collapse navbar-collapse" id="menu">
+            <div class="es-actions">
 
-                <!-- Menu trái -->
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-2">
-
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Home" asp-action="Index">
-                            <i class="bi bi-house"></i> Trang chủ
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="SanPham" asp-action="Index">
-                            <i class="bi bi-box"></i> Sản phẩm
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="DanhMuc" asp-action="Index">
-                            <i class="bi bi-grid"></i> Danh mục
-                        </a>
-                    </li>
-
-                    @if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Admin"))
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="DonHang" asp-action="Index">
-                                <i class="bi bi-cart-check"></i> Đơn hàng
-                            </a>
-                        </li>
-                    }
-
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="MaGiamGia" asp-action="Index">
-                            <i class="bi bi-tag"></i> Mã giảm giá
-                        </a>
-                    </li>
-
-                </ul>
-
-                <!-- Tìm kiếm -->
-                <form class="d-flex me-3 mb-2 mb-lg-0"
-                      asp-controller="SanPham"
-                      asp-action="Index"
-                      method="get">
-
-                    <input class="form-control me-2"
-                           type="search"
-                           name="keyword"
-                           placeholder="Tìm sản phẩm...">
-
-                    <button class="btn btn-custom-accent">
-                        <i class="bi bi-search"></i>
-                    </button>
-
-                </form>
-
-                <!-- Giỏ hàng -->
-                <a asp-controller="GioHang"
-                   asp-action="Index"
-                   class="btn btn-outline-light me-3 mb-2 mb-lg-0 position-relative">
-
+                <a asp-controller="GioHang" asp-action="Index" class="es-btn-cart">
                     <i class="bi bi-cart3"></i>
-                    Giỏ hàng
+                    <span class="es-label">Giỏ hàng</span>
                     @await Component.InvokeAsync("GioHangCount")
-
                 </a>
 
-                <!-- Tài khoản -->
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
+                    var tenHienThi = User.Identity.Name ?? "";
+                    var chuCai = string.IsNullOrWhiteSpace(tenHienThi) ? "?" : tenHienThi.Trim().Substring(0, 1).ToUpper();
+
                     <div class="dropdown">
-
-                        <button class="btn btn-success dropdown-toggle"
-                                data-bs-toggle="dropdown" style="background-color: #22454A; border: none;">
-
+                        <button class="es-btn-account dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-person-circle"></i>
                             @User.Identity.Name
-
                         </button>
 
-                        <ul class="dropdown-menu dropdown-menu-end">
+                        <div class="dropdown-menu dropdown-menu-end es-dropdown">
 
-                            <li>
-                                <a class="dropdown-item"
-                                   asp-controller="TaiKhoan"
-                                   asp-action="ThongTin">
-                                    Hồ sơ
+                            <div class="es-dd-head">
+                                <div class="es-dd-avatar">@chuCai</div>
+                                <div>
+                                    <div class="es-dd-name">@User.Identity.Name</div>
+                                    <div class="es-dd-role">@(User.IsInRole("Admin") ? "Quản trị viên" : "Khách hàng")</div>
+                                </div>
+                            </div>
+
+                            <div class="es-dd-body">
+                                <div class="es-dd-title">Tài khoản</div>
+                                <a class="dropdown-item" asp-controller="TaiKhoan" asp-action="ThongTin">
+                                    <i class="bi bi-person-vcard"></i> Hồ sơ
                                 </a>
-                            </li>
-
-                            <li>
-                                <a class="dropdown-item"
-                                   asp-controller="DonHang"
-                                   asp-action="LichSu">
-                                    Đơn hàng của tôi
+                                <a class="dropdown-item" asp-controller="DonHang" asp-action="LichSu">
+                                    <i class="bi bi-receipt"></i> Đơn hàng của tôi
                                 </a>
-                            </li>
 
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <li><hr class="dropdown-divider"></li>
-
-                                <li>
-                                    <a class="dropdown-item"
-                                       asp-controller="SanPham"
-                                       asp-action="Index">
-                                        Quản lý sản phẩm
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <hr class="dropdown-divider">
+                                    <div class="es-dd-title">Quản trị</div>
+                                    <a class="dropdown-item" asp-controller="AdminSanPham" asp-action="Index">
+                                        <i class="bi bi-box-seam"></i> Quản lý sản phẩm
                                     </a>
-                                </li>
-
-                                <li>
-                                    <a class="dropdown-item"
-                                       asp-controller="DanhMuc"
-                                       asp-action="Index">
-                                        Quản lý danh mục
+                                    <a class="dropdown-item" asp-controller="DanhMuc" asp-action="Index">
+                                        <i class="bi bi-grid"></i> Quản lý danh mục
                                     </a>
-                                </li>
-
-                                <li>
-                                    <a class="dropdown-item"
-                                       asp-controller="DonHang"
-                                       asp-action="Index">
-                                        Quản lý đơn hàng
+                                    <a class="dropdown-item" asp-controller="DonHang" asp-action="Index">
+                                        <i class="bi bi-cart-check"></i> Quản lý đơn hàng
                                     </a>
-                                </li>
-
-                                <li>
-                                    <a class="dropdown-item"
-                                       asp-controller="MaGiamGia"
-                                       asp-action="Index">
-                                        Quản lý mã giảm giá
+                                    <a class="dropdown-item" asp-controller="MaGiamGia" asp-action="Index">
+                                        <i class="bi bi-tag"></i> Quản lý mã giảm giá
                                     </a>
-                                </li>
-                            }
+                                }
 
-                            <li><hr class="dropdown-divider"></li>
-
-                            <li>
-                                <a class="dropdown-item text-danger"
-                                   asp-controller="TaiKhoan"
-                                   asp-action="DangXuat">
-                                    Đăng xuất
+                                <hr class="dropdown-divider">
+                                <a class="dropdown-item text-danger" asp-controller="TaiKhoan" asp-action="DangXuat">
+                                    <i class="bi bi-box-arrow-right"></i> Đăng xuất
                                 </a>
-                            </li>
-
-                        </ul>
-
+                            </div>
+                        </div>
                     </div>
                 }
                 else
                 {
-                    <a asp-controller="TaiKhoan"
-                       asp-action="DangNhap"
-                       class="btn btn-outline-light me-2 mb-2 mb-lg-0">
-                        Đăng nhập
-                    </a>
-
-                    <a asp-controller="TaiKhoan"
-                       asp-action="DangKy"
-                       class="btn btn-custom-accent">
-                        Đăng ký
-                    </a>
+                    <a asp-controller="TaiKhoan" asp-action="DangNhap" class="es-btn-login">Đăng nhập</a>
+                    <a asp-controller="TaiKhoan" asp-action="DangKy" class="es-btn-register">Đăng ký</a>
                 }
 
             </div>
-
         </div>
+    </header>
 
+    <!-- Thanh menu -->
+    <nav class="es-nav">
+        <div class="container">
+            <ul class="es-nav-list">
+                <li>
+                    <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i>Trang chủ</a>
+                </li>
+                <li>
+                    @if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                    {
+                        <a asp-controller="AdminSanPham" asp-action="Index"><i class="bi bi-box-seam"></i>Quản lý sản phẩm</a>
+                    }
+                    else
+                    {
+                        <a asp-controller="SanPham" asp-action="Index"><i class="bi bi-box-seam"></i>Sản phẩm</a>
+                    }
+                </li>
+                <li>
+                    <a asp-controller="DanhMuc" asp-action="Index"><i class="bi bi-grid"></i>Danh mục</a>
+                </li>
+                @if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                {
+                    <li>
+                        <a asp-controller="DonHang" asp-action="Index"><i class="bi bi-cart-check"></i>Đơn hàng</a>
+                    </li>
+                }
+                <li>
+                    <a asp-controller="MaGiamGia" asp-action="Index"><i class="bi bi-tag"></i>Mã giảm giá</a>
+                </li>
+            </ul>
+        </div>
     </nav>
 
     <div class="container mt-4">
         @RenderBody()
     </div>
 
-    <footer class="text-white mt-5 py-4" style="background-color: #24262B;">
-
-        <div class="container text-center">
-
-            <h5>ElectronicsShop</h5>
-
-            <p class="text-muted">
-                Hệ thống bán lẻ thiết bị điện tử & công nghệ chính hãng
-            </p>
-
-            <small class="text-muted">
-                &copy; 2026 ElectronicsShop - ASP.NET Core MVC
-            </small>
-
+    <!-- Chân trang -->
+    <footer class="es-footer">
+        <div class="container">
+            <div class="es-footer-grid">
+                <div>
+                    <div class="es-footer-brand"><i class="bi bi-laptop"></i>ElectronicsShop</div>
+                    <p>Hệ thống bán lẻ thiết bị điện tử và công nghệ chính hãng, cam kết nguồn gốc rõ ràng, giá tốt và bảo hành uy tín.</p>
+                </div>
+                <div>
+                    <h6>Mua sắm</h6>
+                    <ul>
+                        <li><a asp-controller="SanPham" asp-action="Index">Tất cả sản phẩm</a></li>
+                        <li><a asp-controller="DanhMuc" asp-action="Index">Danh mục</a></li>
+                        <li><a asp-controller="MaGiamGia" asp-action="Index">Mã giảm giá</a></li>
+                        <li><a asp-controller="GioHang" asp-action="Index">Giỏ hàng</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h6>Hỗ trợ</h6>
+                    <ul>
+                        <li>Bảo hành 1 đổi 1 trong 30 ngày</li>
+                        <li>Giao hàng nhanh toàn quốc</li>
+                        <li>Sản phẩm chính hãng 100%</li>
+                        <li>Tư vấn kỹ thuật 24/7</li>
+                    </ul>
+                </div>
+                <div>
+                    <h6>Liên hệ</h6>
+                    <ul>
+                        <li><i class="bi bi-geo-alt"></i>Hà Nội, Việt Nam</li>
+                        <li><i class="bi bi-telephone"></i>Hotline: 1800 xxxx</li>
+                        <li><i class="bi bi-envelope"></i>contact@electronicsshop.vn</li>
+                        <li><i class="bi bi-clock"></i>T2 - T7: 08:00 - 17:30</li>
+                    </ul>
+                </div>
+            </div>
         </div>
-
+        <div class="es-footer-bottom">
+            &copy; 2026 ElectronicsShop - ASP.NET Core MVC
+        </div>
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

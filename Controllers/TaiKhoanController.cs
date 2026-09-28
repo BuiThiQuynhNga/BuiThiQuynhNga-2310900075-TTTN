@@ -6,24 +6,20 @@ using Microsoft.EntityFrameworkCore;
 using ElectronicsShop.Data;
 using ElectronicsShop.Models;
 using System.Security.Claims;
-
 namespace ElectronicsShop.Controllers
 {
     public class TaiKhoanController : Controller
     {
         private readonly ApplicationDbContext _context;
-
         public TaiKhoanController(ApplicationDbContext context)
         {
             _context = context;
         }
-
         [HttpGet]
         public IActionResult DangKy()
         {
             return View(new User());
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DangKy(
@@ -38,42 +34,34 @@ namespace ElectronicsShop.Controllers
             {
                 ModelState.AddModelError("FullName", "Vui lòng nhập họ tên.");
             }
-
             if (string.IsNullOrWhiteSpace(email))
             {
                 ModelState.AddModelError("Email", "Vui lòng nhập email.");
             }
-
             if (string.IsNullOrWhiteSpace(matKhau))
             {
                 ModelState.AddModelError("matKhau", "Vui lòng nhập mật khẩu.");
             }
-
             if (string.IsNullOrWhiteSpace(XacNhanMatKhau))
             {
                 ModelState.AddModelError("XacNhanMatKhau", "Vui lòng xác nhận mật khẩu.");
             }
-
             if (!string.IsNullOrWhiteSpace(matKhau) &&
                 !string.IsNullOrWhiteSpace(XacNhanMatKhau) &&
                 matKhau != XacNhanMatKhau)
             {
                 ModelState.AddModelError("XacNhanMatKhau", "Mật khẩu xác nhận không khớp.");
             }
-
             if (!string.IsNullOrWhiteSpace(email))
             {
                 email = email.Trim();
-
                 var existingUser = await _context.Users
                     .FirstOrDefaultAsync(u => u.Email == email);
-
                 if (existingUser != null)
                 {
                     ModelState.AddModelError("Email", "Email này đã được sử dụng.");
                 }
             }
-
             if (!ModelState.IsValid)
             {
                 var viewModel = new User
@@ -83,10 +71,8 @@ namespace ElectronicsShop.Controllers
                     Phone = phone ?? "",
                     Address = address ?? ""
                 };
-
                 return View(viewModel);
             }
-
             var user = new User
             {
                 FullName = fullName.Trim(),
@@ -96,24 +82,18 @@ namespace ElectronicsShop.Controllers
                 Role = "Customer",
                 CreatedAt = DateTime.Now
             };
-
             // Luu mat khau dang thuong (khong hash) - chi de test/hoc tap
             user.PasswordHash = matKhau;
-
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-
             TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
-
             return RedirectToAction("DangNhap");
         }
-
         [HttpGet]
         public IActionResult DangNhap()
         {
             return View();
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DangNhap(string email, string matKhau)
@@ -123,23 +103,19 @@ namespace ElectronicsShop.Controllers
                 ModelState.AddModelError("", "Vui lòng nhập đầy đủ email và mật khẩu.");
                 return View();
             }
-
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Email == email.Trim());
-
             if (user == null)
             {
                 ModelState.AddModelError("", "Email hoặc mật khẩu không chính xác.");
                 return View();
             }
-
             // So sanh mat khau dang thuong (khong hash) - chi de test/hoc tap
             if (user.PasswordHash != matKhau)
             {
                 ModelState.AddModelError("", "Email hoặc mật khẩu không chính xác.");
                 return View();
             }
-
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.FullName),
@@ -147,58 +123,45 @@ namespace ElectronicsShop.Controllers
                 new Claim(ClaimTypes.Role, user.Role),
                 new Claim("MaNguoiDung", user.UserID.ToString())
             };
-
             var claimsIdentity = new ClaimsIdentity(
                 claims,
                 CookieAuthenticationDefaults.AuthenticationScheme
             );
-
             var principal = new ClaimsPrincipal(claimsIdentity);
-
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal
             );
-
             return RedirectToAction("Index", "Home");
         }
-
         public async Task<IActionResult> DangXuat()
         {
             await HttpContext.SignOutAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme
             );
-
             return RedirectToAction("Index", "Home");
         }
-
         public IActionResult KhongCoQuyen()
         {
             return View();
         }
-
         [Authorize]
         public async Task<IActionResult> ThongTin()
         {
             var maNguoiDungStr = User.FindFirst("MaNguoiDung")?.Value;
-
             if (string.IsNullOrEmpty(maNguoiDungStr) ||
                 !int.TryParse(maNguoiDungStr, out int maNguoiDung))
             {
                 return RedirectToAction("DangNhap");
             }
-
             var nguoiDung = await _context.Users
                 .FirstOrDefaultAsync(u => u.UserID == maNguoiDung);
-
             if (nguoiDung == null)
             {
                 return NotFound();
             }
-
             return View(nguoiDung);
         }
-
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -209,35 +172,80 @@ namespace ElectronicsShop.Controllers
             string? diaChi)
         {
             var maNguoiDungClaim = User.FindFirst("MaNguoiDung")?.Value;
-
             if (string.IsNullOrEmpty(maNguoiDungClaim) ||
                 !int.TryParse(maNguoiDungClaim, out int maHienTai) ||
                 maHienTai != maNguoiDung)
             {
                 return Forbid();
             }
-
             var nguoiDung = await _context.Users.FindAsync(maNguoiDung);
-
             if (nguoiDung == null)
             {
                 return NotFound();
             }
-
             if (string.IsNullOrWhiteSpace(hoTen))
             {
                 ModelState.AddModelError("", "Họ tên không được để trống.");
                 return View("ThongTin", nguoiDung);
             }
-
             nguoiDung.FullName = hoTen.Trim();
             nguoiDung.Phone = soDienThoai?.Trim() ?? "";
             nguoiDung.Address = diaChi?.Trim() ?? "";
-
             await _context.SaveChangesAsync();
-
             TempData["ThongBao"] = "Cập nhật thông tin thành công!";
-
+            return RedirectToAction("ThongTin");
+        }
+        [Authorize]
+        [HttpGet]
+        public IActionResult DoiMatKhau()
+        {
+            return View();
+        }
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DoiMatKhau(string matKhauCu, string matKhauMoi, string xacNhanMatKhauMoi)
+        {
+            var maNguoiDungStr = User.FindFirst("MaNguoiDung")?.Value;
+            if (string.IsNullOrEmpty(maNguoiDungStr) ||
+                !int.TryParse(maNguoiDungStr, out int maNguoiDung))
+            {
+                return RedirectToAction("DangNhap");
+            }
+            var nguoiDung = await _context.Users.FirstOrDefaultAsync(u => u.UserID == maNguoiDung);
+            if (nguoiDung == null)
+            {
+                return NotFound();
+            }
+            if (string.IsNullOrWhiteSpace(matKhauCu) || string.IsNullOrWhiteSpace(matKhauMoi))
+            {
+                ModelState.AddModelError("", "Vui lòng nhập đầy đủ thông tin.");
+                return View();
+            }
+            // So sanh mat khau dang thuong (khong hash) - chi de test/hoc tap
+            if (nguoiDung.PasswordHash != matKhauCu)
+            {
+                ModelState.AddModelError("", "Mật khẩu hiện tại không đúng.");
+                return View();
+            }
+            if (matKhauMoi.Length < 6)
+            {
+                ModelState.AddModelError("", "Mật khẩu mới phải có ít nhất 6 ký tự.");
+                return View();
+            }
+            if (matKhauMoi != xacNhanMatKhauMoi)
+            {
+                ModelState.AddModelError("", "Mật khẩu xác nhận không khớp.");
+                return View();
+            }
+            if (matKhauMoi == matKhauCu)
+            {
+                ModelState.AddModelError("", "Mật khẩu mới phải khác mật khẩu hiện tại.");
+                return View();
+            }
+            nguoiDung.PasswordHash = matKhauMoi;
+            await _context.SaveChangesAsync();
+            TempData["ThongBao"] = "Đổi mật khẩu thành công.";
             return RedirectToAction("ThongTin");
         }
     }

@@ -3,207 +3,226 @@
 @{
     ViewData["Title"] = "Sửa sản phẩm";
     var danhMucList = ViewBag.DanhMucList as List<ElectronicsShop.Models.Category>;
+    string anhHienTai = string.IsNullOrEmpty(Model.ImageURL) ? "/images/no-image.png" : "/images/" + Model.ImageURL;
 }
+
 <style>
     .spf-page {
-        --hd-primary: #2F5D62;
-        --hd-primary-dark: #22454A;
-        --hd-accent: #C97B4A;
-        --hd-bg: #F7F7F5;
-        --hd-card: #FFFFFF;
-        --hd-text: #24262B;
-        --hd-muted: #6B7076;
-        --hd-border: #E7E5E1;
-        padding: 40px 0 60px;
+        --es-blue: #1E4FBF;
+        --es-blue-dark: #0F2F7A;
+        --es-navy: #0B1F4B;
+        --es-red: #E0282E;
+        --es-text: #1F2937;
+        --es-muted: #6B7280;
+        --es-border: #E5E7EB;
+        --es-bg: #F3F5F9;
+        padding: 10px 0 50px;
     }
+    .spf-crumb { font-size: .8rem; color: var(--es-muted); margin-bottom: 14px; }
+    .spf-crumb a { color: var(--es-muted); text-decoration: none; }
+    .spf-crumb a:hover { color: var(--es-blue); }
+    .spf-crumb b { color: var(--es-blue); }
+    .spf-title { font-weight: 800; font-size: 1.7rem; color: var(--es-navy); margin: 0 0 4px; }
+    .spf-subtitle { color: var(--es-muted); font-size: .92rem; margin: 0 0 22px; }
 
-    .spf-eyebrow {
-        font-size: 0.78rem;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: var(--hd-muted);
-        font-weight: 600;
-    }
+    .spf-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
 
-    .spf-title {
-        font-family: 'Poppins', sans-serif;
-        font-weight: 800;
-        font-size: 1.5rem;
-        color: var(--hd-text);
-        margin: 4px 0 24px;
-    }
-
+    /* ===== KHUNG FORM ===== */
     .spf-card {
-        background: var(--hd-card);
-        border: 1px solid var(--hd-border);
-        border-radius: 16px;
-        padding: 32px;
-        max-width: 600px;
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; overflow: hidden;
+        box-shadow: 0 3px 14px rgba(15,47,122,.06);
     }
-
-    .spf-preview {
-        margin-bottom: 20px;
+    .spf-card-head {
+        display: flex; align-items: center; gap: 12px; color: #fff; padding: 16px 20px;
+        background: linear-gradient(120deg, var(--es-navy), var(--es-blue));
     }
+    .spf-card-head > i { font-size: 1.4rem; }
+    .spf-card-head b { display: block; font-size: 1rem; font-weight: 800; }
+    .spf-card-head small { opacity: .8; font-size: .78rem; }
+    .spf-card-body { padding: 22px 20px; }
 
-        .spf-preview img {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 10px;
-            border: 1px solid var(--hd-border);
-            display: block;
-        }
+    .spf-summary { color: var(--es-red); font-size: .85rem; font-weight: 600; margin-bottom: 14px; }
+    .spf-group { margin-bottom: 18px; }
+    .spf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .spf-label { display: block; font-size: .8rem; font-weight: 800; color: var(--es-navy); margin-bottom: 6px; }
+    .spf-label .req { color: var(--es-red); }
 
-    .spf-group {
-        margin-bottom: 18px;
+    .spf-field {
+        display: flex; align-items: flex-start; gap: 10px; background: var(--es-bg);
+        border: 1.5px solid transparent; border-radius: 10px; padding: 0 14px; transition: all .15s ease;
     }
-
-    .spf-label {
-        display: block;
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: var(--hd-text);
-        margin-bottom: 6px;
+    .spf-field:focus-within { background: #fff; border-color: var(--es-blue); box-shadow: 0 0 0 3px rgba(30,79,191,.12); }
+    .spf-field > i { color: var(--es-muted); margin-top: 12px; }
+    .spf-field input, .spf-field select, .spf-field textarea {
+        flex: 1; min-width: 0; border: none; background: transparent; outline: none;
+        padding: 11px 0; font-size: .92rem; color: var(--es-text); font-family: inherit;
     }
+    .spf-field textarea { resize: vertical; min-height: 110px; }
+    .spf-field input[type=file] { padding: 9px 0; font-size: .85rem; }
 
-    .spf-input,
-    .spf-select {
-        width: 100%;
-        border: 1px solid var(--hd-border);
-        border-radius: 8px;
-        padding: 10px 12px;
-        font-size: 0.92rem;
-        color: var(--hd-text);
-        background: #fff;
-        transition: border-color .15s ease;
-    }
+    .spf-hint { font-size: .76rem; color: var(--es-muted); margin-top: 5px; display: block; }
+    .spf-err { color: var(--es-red); font-size: .78rem; font-weight: 600; margin-top: 4px; display: block; }
 
-        .spf-input:focus,
-        .spf-select:focus {
-            outline: none;
-            border-color: var(--hd-primary);
-        }
-
-    .spf-hint {
-        font-size: 0.78rem;
-        color: var(--hd-muted);
-        margin-top: 4px;
-        display: block;
-    }
-
-    .spf-err {
-        color: #C0524A;
-        font-size: 0.8rem;
-        margin-top: 4px;
-        display: block;
-    }
-
-    .spf-summary {
-        color: #C0524A;
-        font-size: 0.85rem;
-        margin-bottom: 16px;
-    }
-
-    .spf-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 24px;
-    }
-
+    .spf-divider { border: none; border-top: 1px solid var(--es-border); margin: 22px 0 18px; }
+    .spf-actions { display: flex; gap: 10px; }
     .spf-btn {
-        border: none;
-        border-radius: 8px;
-        padding: 10px 22px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-block;
-        transition: background .15s ease, color .15s ease, border-color .15s ease;
+        border: none; border-radius: 10px; padding: 13px 24px; font-size: .9rem; font-weight: 800; cursor: pointer;
+        text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        transition: all .15s ease;
     }
+    .spf-btn.save { flex: 1; background: var(--es-blue); color: #fff; }
+    .spf-btn.save:hover { background: var(--es-blue-dark); color: #fff; }
+    .spf-btn.cancel { background: #fff; border: 1.5px solid var(--es-border); color: var(--es-navy); }
+    .spf-btn.cancel:hover { border-color: var(--es-blue); color: var(--es-blue); }
 
-        .spf-btn.save {
-            background: var(--hd-primary);
-            color: #fff;
-        }
+    /* ===== XEM TRƯỚC ===== */
+    .spf-side-label {
+        font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+        color: var(--es-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+    }
+    .spf-preview {
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; overflow: hidden;
+        box-shadow: 0 3px 14px rgba(15,47,122,.06); margin-bottom: 16px;
+    }
+    .spf-preview-top { height: 64px; background: linear-gradient(120deg, var(--es-navy), var(--es-blue)); }
+    .spf-preview-body { text-align: center; padding: 0 18px 20px; }
+    .spf-preview-img {
+        width: 104px; height: 104px; object-fit: cover; border-radius: 16px; background: #fff;
+        border: 4px solid #fff; box-shadow: 0 4px 14px rgba(15,47,122,.18); margin-top: -40px;
+    }
+    .spf-preview-name { font-weight: 800; color: var(--es-navy); margin-top: 10px; word-break: break-word; }
+    .spf-preview-cat {
+        display: inline-block; margin-top: 6px; padding: 4px 12px; border-radius: 20px;
+        background: #E8EFFC; color: var(--es-blue); font-size: .74rem; font-weight: 800;
+    }
+    .spf-preview-price { font-weight: 800; color: var(--es-red); font-size: 1.1rem; margin-top: 10px; }
+    .spf-preview-stock { font-size: .78rem; color: var(--es-muted); margin-top: 2px; }
 
-            .spf-btn.save:hover {
-                background: var(--hd-primary-dark);
-            }
+    .spf-tip {
+        background: #E8EFFC; border-radius: 12px; padding: 14px 16px; font-size: .8rem; color: var(--es-muted);
+    }
+    .spf-tip b { color: var(--es-navy); display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+    .spf-tip b i { color: var(--es-blue); }
 
-        .spf-btn.cancel {
-            background: transparent;
-            border: 1.5px solid var(--hd-border);
-            color: var(--hd-text);
-        }
-
-            .spf-btn.cancel:hover {
-                border-color: var(--hd-primary);
-                color: var(--hd-primary);
-            }
+    @@media (max-width: 900px) { .spf-layout { grid-template-columns: 1fr; } }
+    @@media (max-width: 560px) { .spf-row { grid-template-columns: 1fr; } }
 </style>
+
 <div class="container spf-page">
-    <div class="spf-eyebrow">Vận hành</div>
+
+    <div class="spf-crumb">
+        <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Trang chủ</a>
+        &nbsp;/&nbsp; <a asp-action="Index">Sản phẩm</a> &nbsp;/&nbsp; <b>Sửa sản phẩm</b>
+    </div>
+
     <h1 class="spf-title">Sửa sản phẩm</h1>
+    <p class="spf-subtitle">Cập nhật thông tin, giá bán và tồn kho của sản phẩm.</p>
 
-    <div class="spf-card">
-        <form asp-action="Sua" asp-route-id="@Model.ProductID" method="post" enctype="multipart/form-data">
-            <input type="hidden" asp-for="ProductID" />
-            <input type="hidden" asp-for="ImageURL" />
-            <div asp-validation-summary="ModelOnly" class="spf-summary"></div>
+    <div class="spf-layout">
 
-            @if (!string.IsNullOrEmpty(Model.ImageURL))
-            {
-                <div class="spf-preview">
-                    <img src="~/images/@Model.ImageURL" onerror="this.src='/images/no-image.png'" />
+        <div class="spf-card">
+            <div class="spf-card-head">
+                <i class="bi bi-pencil-square"></i>
+                <div>
+                    <b>Thông tin sản phẩm</b>
+                    <small>Chỉnh sửa rồi bấm "Cập nhật"</small>
                 </div>
-            }
-
-            <div class="spf-group">
-                <label asp-for="ProductName" class="spf-label">Tên sản phẩm</label>
-                <input asp-for="ProductName" class="spf-input" />
-                <span asp-validation-for="ProductName" class="spf-err"></span>
             </div>
 
-            <div class="spf-group">
-                <label asp-for="CategoryID" class="spf-label">Danh mục</label>
-                <select asp-for="CategoryID" class="spf-select">
-                    @foreach (var dm in danhMucList ?? new())
-                    {
-                        <option value="@dm.CategoryID" selected="@(dm.CategoryID == Model.CategoryID)">@dm.CategoryName</option>
-                    }
-                </select>
-                <span asp-validation-for="CategoryID" class="spf-err"></span>
+            <div class="spf-card-body">
+                <form asp-action="Sua" asp-route-id="@Model.ProductID" method="post" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="ProductID" />
+                    <input type="hidden" asp-for="ImageURL" />
+                    <div asp-validation-summary="All" class="spf-summary"></div>
+
+                    <div class="spf-group">
+                        <label asp-for="ProductName" class="spf-label">Tên sản phẩm <span class="req">*</span></label>
+                        <div class="spf-field">
+                            <i class="bi bi-box-seam"></i>
+                            <input asp-for="ProductName" placeholder="Ví dụ: Laptop Dell XPS 13" />
+                        </div>
+                        <span asp-validation-for="ProductName" class="spf-err"></span>
+                    </div>
+
+                    <div class="spf-group">
+                        <label asp-for="CategoryID" class="spf-label">Danh mục <span class="req">*</span></label>
+                        <div class="spf-field">
+                            <i class="bi bi-grid"></i>
+                            <select asp-for="CategoryID">
+                                @foreach (var dm in danhMucList ?? new())
+                                {
+                                    <option value="@dm.CategoryID" selected="@(dm.CategoryID == Model.CategoryID)">@dm.CategoryName</option>
+                                }
+                            </select>
+                        </div>
+                        <span asp-validation-for="CategoryID" class="spf-err"></span>
+                    </div>
+
+                    <div class="spf-group">
+                        <label asp-for="Description" class="spf-label">Mô tả sản phẩm</label>
+                        <div class="spf-field">
+                            <i class="bi bi-text-paragraph"></i>
+                            <textarea asp-for="Description" rows="4" placeholder="Mô tả ngắn về sản phẩm này"></textarea>
+                        </div>
+                        <span asp-validation-for="Description" class="spf-err"></span>
+                    </div>
+
+                    <div class="spf-row spf-group">
+                        <div>
+                            <label asp-for="Price" class="spf-label">Giá bán (VNĐ) <span class="req">*</span></label>
+                            <div class="spf-field">
+                                <i class="bi bi-cash-coin"></i>
+                                <input asp-for="Price" type="number" step="1000" />
+                            </div>
+                            <span asp-validation-for="Price" class="spf-err"></span>
+                        </div>
+                        <div>
+                            <label asp-for="Stock" class="spf-label">Số lượng tồn <span class="req">*</span></label>
+                            <div class="spf-field">
+                                <i class="bi bi-archive"></i>
+                                <input asp-for="Stock" type="number" />
+                            </div>
+                            <span asp-validation-for="Stock" class="spf-err"></span>
+                        </div>
+                    </div>
+
+                    <div class="spf-group">
+                        <label class="spf-label">Đổi hình ảnh</label>
+                        <div class="spf-field">
+                            <i class="bi bi-image"></i>
+                            <input type="file" name="anhUpload" id="spfFile" accept="image/*" />
+                        </div>
+                        <span class="spf-hint">Bỏ trống nếu giữ ảnh cũ</span>
+                    </div>
+
+                    <hr class="spf-divider" />
+
+                    <div class="spf-actions">
+                        <button type="submit" class="spf-btn save"><i class="bi bi-check-circle"></i> Cập nhật</button>
+                        <a asp-action="Index" class="spf-btn cancel"><i class="bi bi-x-lg"></i> Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div>
+            <div class="spf-side-label"><i class="bi bi-eye"></i> Xem trước</div>
+            <div class="spf-preview">
+                <div class="spf-preview-top"></div>
+                <div class="spf-preview-body">
+                    <img id="pvImg" class="spf-preview-img" src="@anhHienTai" onerror="this.src='/images/no-image.png'" />
+                    <div class="spf-preview-name" id="pvName">@Model.ProductName</div>
+                    <span class="spf-preview-cat" id="pvCat"></span>
+                    <div class="spf-preview-price" id="pvPrice"></div>
+                    <div class="spf-preview-stock" id="pvStock"></div>
+                </div>
             </div>
 
-            <div class="spf-group">
-                <label asp-for="ColorVariant" class="spf-label">Mã màu</label>
-                <input asp-for="ColorVariant" class="spf-input" />
+            <div class="spf-tip">
+                <b><i class="bi bi-lightbulb"></i> Gợi ý</b>
+                Đặt tên sản phẩm rõ ràng, kèm dòng máy hoặc dung lượng. Ảnh vuông sẽ hiển thị đẹp nhất.
             </div>
-
-            <div class="spf-group">
-                <label asp-for="Price" class="spf-label">Giá bán (VNĐ)</label>
-                <input asp-for="Price" class="spf-input" type="number" step="1000" />
-                <span asp-validation-for="Price" class="spf-err"></span>
-            </div>
-
-            <div class="spf-group">
-                <label asp-for="Stock" class="spf-label">Số lượng tồn</label>
-                <input asp-for="Stock" class="spf-input" type="number" />
-                <span asp-validation-for="Stock" class="spf-err"></span>
-            </div>
-
-            <div class="spf-group">
-                <label class="spf-label">Đổi hình ảnh</label>
-                <input type="file" name="anhUpload" class="spf-input" accept="image/*" />
-                <span class="spf-hint">Bỏ trống nếu giữ ảnh cũ</span>
-            </div>
-
-            <div class="spf-actions">
-                <button type="submit" class="spf-btn save">Cập nhật</button>
-                <a asp-action="Index" class="spf-btn cancel">Hủy</a>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
@@ -211,4 +230,47 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        (function () {
+            var name = document.getElementById('ProductName');
+            var cat = document.getElementById('CategoryID');
+            var price = document.getElementById('Price');
+            var stock = document.getElementById('Stock');
+            var file = document.getElementById('spfFile');
+
+            var pvName = document.getElementById('pvName');
+            var pvCat = document.getElementById('pvCat');
+            var pvPrice = document.getElementById('pvPrice');
+            var pvStock = document.getElementById('pvStock');
+            var pvImg = document.getElementById('pvImg');
+
+            function capNhat() {
+                pvName.textContent = name.value.trim() || 'Tên sản phẩm';
+
+                var opt = cat && cat.options[cat.selectedIndex];
+                pvCat.textContent = opt ? opt.text : '';
+                pvCat.style.display = opt && opt.text ? 'inline-block' : 'none';
+
+                var p = parseFloat(price.value);
+                pvPrice.textContent = isNaN(p) ? '' : p.toLocaleString('vi-VN') + ' đ';
+
+                var s = parseInt(stock.value, 10);
+                pvStock.textContent = isNaN(s) ? '' : 'Tồn kho: ' + s;
+            }
+
+            [name, cat, price, stock].forEach(function (el) {
+                if (el) { el.addEventListener('input', capNhat); el.addEventListener('change', capNhat); }
+            });
+
+            if (file) {
+                file.addEventListener('change', function () {
+                    if (file.files && file.files[0]) {
+                        pvImg.src = URL.createObjectURL(file.files[0]);
+                    }
+                });
+            }
+
+            capNhat();
+        })();
+    </script>
 }

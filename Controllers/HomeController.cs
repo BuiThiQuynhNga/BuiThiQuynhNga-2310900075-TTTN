@@ -52,7 +52,11 @@ namespace ElectronicsShop.Controllers
 
             // Khách hàng / khách vãng lai -> trang chủ bán hàng như cũ
             var danhMucList = await _context.Categories.ToListAsync();
-            var sanPhamList = await _context.Products.Take(6).ToListAsync();
+            var sanPhamList = await _context.Products
+                .Include(p => p.Category)
+                .OrderBy(p => p.ProductID)
+                .Take(6)
+                .ToListAsync();
 
             ViewBag.DanhMucList = danhMucList;
             return View(sanPhamList);

@@ -2,309 +2,381 @@
 
 @{
     ViewData["Title"] = "Sửa mã giảm giá";
+    int phanTramDaDung = Model.TotalQuantity > 0
+        ? (int)Math.Min(100, Math.Round(Model.UsedQuantity * 100.0 / Model.TotalQuantity))
+        : 0;
 }
+
 <style>
     .tv-page {
-        --hd-primary: #2F5D62;
-        --hd-primary-dark: #22454A;
-        --hd-accent: #C97B4A;
-        --hd-bg: #F7F7F5;
-        --hd-card: #FFFFFF;
-        --hd-text: #24262B;
-        --hd-muted: #6B7076;
-        --hd-border: #E7E5E1;
-        max-width: 640px;
-        margin: 0 auto;
-        padding: 40px 16px 60px;
+        --es-blue: #1E4FBF;
+        --es-blue-dark: #0F2F7A;
+        --es-navy: #0B1F4B;
+        --es-red: #E0282E;
+        --es-green: #16A34A;
+        --es-bg: #F3F5F9;
+        --es-text: #1F2937;
+        --es-muted: #6B7280;
+        --es-border: #E5E7EB;
+        padding: 10px 0 50px;
     }
+    .tv-crumb { font-size: .8rem; color: var(--es-muted); margin-bottom: 14px; }
+    .tv-crumb a { color: var(--es-muted); text-decoration: none; }
+    .tv-crumb a:hover { color: var(--es-blue); }
+    .tv-crumb b { color: var(--es-blue); }
+    .tv-title { font-weight: 800; font-size: 1.7rem; color: var(--es-navy); margin: 0 0 4px; }
+    .tv-subtitle { color: var(--es-muted); font-size: .92rem; margin: 0 0 22px; }
 
-    .tv-header .tv-eyebrow {
-        font-size: 0.78rem;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: var(--hd-muted);
-        font-weight: 600;
-    }
+    .tv-layout { display: grid; grid-template-columns: 1fr 380px; gap: 22px; align-items: start; }
 
-    .tv-header h1 {
-        font-family: 'Poppins', sans-serif;
-        font-weight: 800;
-        font-size: 1.5rem;
-        color: var(--hd-text);
-        margin: 4px 0 24px;
-    }
-
-    .tv-preview {
-        position: relative;
-        display: flex;
-        background: linear-gradient(160deg, var(--hd-primary-dark) 0%, #16292C 100%);
-        border-radius: 14px;
-        overflow: hidden;
-        margin-bottom: 28px;
-        color: #fff;
-        box-shadow: 0 12px 28px rgba(34, 69, 74, 0.18);
-    }
-
-        .tv-preview.is-expired {
-            filter: grayscale(0.5);
-            opacity: 0.7;
-        }
-
-    .tv-preview-main {
-        flex: 1;
-        padding: 20px 18px;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .tv-preview-eyebrow {
-        font-size: 0.72rem;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: rgba(255, 255, 255, 0.55);
-        font-weight: 600;
-    }
-
-    .tv-preview-percent {
-        font-family: 'Poppins', sans-serif;
-        font-weight: 800;
-        font-size: 1.9rem;
-        color: var(--hd-accent);
-        line-height: 1;
-    }
-
-        .tv-preview-percent span {
-            font-size: 1rem;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.7);
-            margin-left: 4px;
-        }
-
-    .tv-preview-name {
-        font-weight: 700;
-        font-size: 1.05rem;
-        margin-top: 2px;
-    }
-
-    .tv-preview-used {
-        font-size: 0.78rem;
-        color: rgba(255, 255, 255, 0.6);
-        margin-top: auto;
-    }
-
-    .tv-preview-divider {
-        position: relative;
-        width: 0;
-        border-left: 2px dashed rgba(255, 255, 255, 0.25);
-        margin: 14px 0;
-    }
-
-        .tv-preview-divider::before,
-        .tv-preview-divider::after {
-            content: "";
-            position: absolute;
-            left: -9px;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--hd-bg);
-        }
-
-        .tv-preview-divider::before {
-            top: -14px;
-        }
-
-        .tv-preview-divider::after {
-            bottom: -14px;
-        }
-
-    .tv-preview-stub {
-        width: 84px;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 12px 6px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        writing-mode: vertical-rl;
-        transform: rotate(180deg);
-        color: rgba(255, 255, 255, 0.85);
-    }
-
+    /* ===== THẺ FORM ===== */
     .tv-card {
-        background: var(--hd-card);
-        border: 1px solid var(--hd-border);
-        border-radius: 16px;
-        padding: 28px 24px;
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; overflow: hidden;
+        box-shadow: 0 3px 14px rgba(15,47,122,.06);
     }
+    .tv-card-head {
+        display: flex; align-items: center; gap: 12px; padding: 16px 24px;
+        background: linear-gradient(120deg, var(--es-navy), var(--es-blue)); color: #fff;
+    }
+    .tv-card-head i { font-size: 1.2rem; }
+    .tv-card-head h5 { margin: 0; font-weight: 800; font-size: 1rem; }
+    .tv-card-head small { display: block; color: rgba(255,255,255,.75); font-size: .78rem; font-weight: 400; }
+    .tv-card-body { padding: 26px 24px; }
+
+    .tv-summary {
+        color: #B3261E; font-size: .88rem; margin-bottom: 16px;
+        background: #FDECEC; border: 1px solid #F6C7C7; border-radius: 10px; padding: 10px 16px;
+    }
+    .tv-summary.validation-summary-valid { display: none; }
+    .tv-summary ul { margin: 0; padding-left: 18px; }
+
+    .tv-section {
+        font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--es-muted);
+        margin: 4px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--es-border);
+    }
+    .tv-section:not(:first-of-type) { margin-top: 26px; }
+
+    .tv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 16px; }
+    .tv-group.full { grid-column: 1 / -1; }
+    .tv-label { display: block; font-size: .82rem; font-weight: 700; color: var(--es-text); margin-bottom: 6px; }
+    .tv-label span { color: var(--es-red); }
+    .tv-label small { color: var(--es-muted); font-weight: 600; }
 
     .tv-field {
-        position: relative;
-        margin-bottom: 18px;
+        display: flex; align-items: center; gap: 10px;
+        background: #F3F5F9; border: 1.5px solid transparent; border-radius: 10px;
+        padding: 0 14px; transition: all .15s ease;
     }
-
-        .tv-field label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--hd-text);
-            margin-bottom: 6px;
-        }
-
-    .tv-hint {
-        font-size: 0.78rem;
-        color: var(--hd-muted);
-        margin-top: 4px;
+    .tv-field:focus-within { background: #fff; border-color: var(--es-blue); box-shadow: 0 0 0 3px rgba(30,79,191,.12); }
+    .tv-field > i { color: var(--es-muted); }
+    .tv-field.locked { background: #EEF0F4; }
+    .tv-field.locked:focus-within { border-color: transparent; box-shadow: none; background: #EEF0F4; }
+    .tv-input {
+        flex: 1; border: none; background: transparent; outline: none;
+        padding: 13px 0; font-size: .95rem; color: var(--es-text); font-family: inherit; min-width: 0; width: 100%;
     }
+    .tv-input.code { font-family: Consolas, monospace; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--es-blue); }
+    .tv-input[readonly] { color: var(--es-muted); cursor: not-allowed; }
+    .tv-suffix { color: var(--es-muted); font-weight: 700; font-size: .9rem; }
+    .tv-hint { font-size: .76rem; color: var(--es-muted); margin-top: 5px; display: block; }
+    .tv-page .text-danger { font-size: .78rem; display: block; margin-top: 4px; color: #B3261E !important; }
 
-    .tv-field input[type="text"],
-    .tv-field input[type="number"],
-    .tv-field input[type="datetime-local"] {
-        width: 100%;
-        border: 1.5px solid var(--hd-border);
-        border-radius: 10px;
-        padding: 11px 14px;
-        font-size: 0.95rem;
-        color: var(--hd-text);
-        background: #fff;
-        transition: border-color .15s ease, box-shadow .15s ease;
+    /* ===== CÔNG TẮC ===== */
+    .tv-switch {
+        display: flex; align-items: center; justify-content: space-between; gap: 14px;
+        border: 1.5px solid var(--es-border); border-radius: 12px; padding: 14px 16px; cursor: pointer;
+        transition: all .15s ease;
     }
-
-    .tv-field input:focus {
-        outline: none;
-        border-color: var(--hd-primary);
-        box-shadow: 0 0 0 3px rgba(47, 93, 98, 0.12);
+    .tv-switch:hover { border-color: #C9D6F3; }
+    .tv-switch:has(input:checked) { border-color: var(--es-blue); background: #F1F5FF; }
+    .tv-switch-info { display: flex; align-items: center; gap: 12px; }
+    .tv-switch-icon {
+        width: 40px; height: 40px; border-radius: 10px; background: #E8EFFC; color: var(--es-blue);
+        display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0;
     }
-
-    .tv-field input[readonly] {
-        background: #F1F0EE;
-        color: var(--hd-muted);
-        cursor: not-allowed;
+    .tv-switch-info strong { display: block; color: var(--es-navy); font-size: .92rem; }
+    .tv-switch-info small { color: var(--es-muted); font-size: .78rem; }
+    .tv-switch input[type="checkbox"] {
+        appearance: none; -webkit-appearance: none; flex-shrink: 0;
+        width: 46px; height: 26px; border-radius: 26px; background: #CBD2DC; position: relative;
+        cursor: pointer; transition: background .2s ease; margin: 0;
     }
-
-    .tv-check {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 14px;
-        border: 1.5px solid var(--hd-border);
-        border-radius: 10px;
-        margin-bottom: 20px;
+    .tv-switch input[type="checkbox"]::after {
+        content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+        background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.25); transition: transform .2s ease;
     }
+    .tv-switch input[type="checkbox"]:checked { background: var(--es-blue); }
+    .tv-switch input[type="checkbox"]:checked::after { transform: translateX(20px); }
+    .tv-switch input[type="checkbox"]:focus-visible { outline: 3px solid rgba(30,79,191,.3); outline-offset: 2px; }
 
-        .tv-check input {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--hd-primary);
-        }
-
-        .tv-check label {
-            margin: 0;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--hd-text);
-        }
-
-    .tv-submit {
-        width: 100%;
-        border: none;
-        border-radius: 10px;
-        padding: 14px;
-        font-weight: 700;
-        font-size: 1rem;
-        color: #fff;
-        background: var(--hd-primary);
-        cursor: pointer;
-        transition: background .15s ease, transform .15s ease;
+    .tv-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--es-border); }
+    .tv-btn {
+        border: none; border-radius: 10px; padding: 13px 26px; font-size: .92rem; font-weight: 800; cursor: pointer;
+        text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        transition: all .15s ease;
     }
+    .tv-btn.save { background: var(--es-blue); color: #fff; flex: 1; min-width: 180px; }
+    .tv-btn.save:hover { background: var(--es-blue-dark); transform: translateY(-1px); }
+    .tv-btn.cancel { background: #fff; border: 1.5px solid var(--es-border); color: var(--es-text); }
+    .tv-btn.cancel:hover { border-color: var(--es-blue); color: var(--es-blue); }
 
-        .tv-submit:hover {
-            background: var(--hd-primary-dark);
-            transform: translateY(-1px);
-        }
+    /* ===== XEM TRƯỚC ===== */
+    .tv-side { position: sticky; top: 90px; }
+    .tv-side-title { font-size: .7rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--es-muted); margin: 0 0 10px; display: flex; align-items: center; gap: 6px; }
+    .tv-side-title i { color: var(--es-blue); }
 
-    .tv-cancel {
-        display: block;
-        text-align: center;
-        margin-top: 10px;
-        padding: 12px;
-        border-radius: 10px;
-        border: 1.5px solid var(--hd-border);
-        color: var(--hd-muted);
-        font-weight: 600;
-        text-decoration: none;
-        transition: border-color .15s ease, color .15s ease;
+    .tv-item { filter: drop-shadow(0 6px 16px rgba(15,47,122,.16)); margin-bottom: 16px; transition: opacity .2s ease; }
+    .tv-item.off { opacity: .6; }
+    .tv-ticket {
+        display: flex; background: #fff; border-radius: 14px; overflow: hidden; min-height: 160px;
+        -webkit-mask-image:
+            radial-gradient(circle at calc(100% - 96px) 0, transparent 9px, #000 9.5px),
+            radial-gradient(circle at calc(100% - 96px) 100%, transparent 9px, #000 9.5px);
+        -webkit-mask-composite: source-in;
+        mask-image:
+            radial-gradient(circle at calc(100% - 96px) 0, transparent 9px, #000 9.5px),
+            radial-gradient(circle at calc(100% - 96px) 100%, transparent 9px, #000 9.5px);
+        mask-composite: intersect;
     }
+    .tv-pbox {
+        width: 92px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: linear-gradient(160deg, var(--es-navy), var(--es-blue)); color: #fff; text-align: center; padding: 12px 6px;
+        transition: background .2s ease;
+    }
+    .tv-item.off .tv-pbox { background: linear-gradient(160deg, #6B7280, #9CA3AF); }
+    .tv-pbox i { font-size: 1.2rem; opacity: .85; margin-bottom: 4px; }
+    .tv-ppercent { font-weight: 800; font-size: 1.9rem; line-height: 1; }
+    .tv-ppercent span { font-size: 1rem; font-weight: 700; }
+    .tv-plabel { font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .85; margin-top: 4px; }
+    .tv-pmain { flex: 1; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .tv-pname { font-weight: 800; color: var(--es-navy); font-size: 1.05rem; word-break: break-all; }
+    .tv-pmeta { font-size: .8rem; color: var(--es-muted); margin: 0; display: flex; align-items: center; gap: 6px; }
+    .tv-pmeta i { color: var(--es-blue); }
+    .tv-pbar { height: 6px; background: #E5E7EB; border-radius: 6px; overflow: hidden; margin-top: 4px; }
+    .tv-pbar > div { height: 100%; background: var(--es-blue); border-radius: 6px; transition: width .2s ease; }
+    .tv-item.off .tv-pbar > div { background: #9CA3AF; }
+    .tv-pnote { font-size: .72rem; color: var(--es-muted); margin: 0; }
+    .tv-pdiv { width: 0; border-left: 2px dashed var(--es-border); margin: 14px 0; }
+    .tv-pstub { width: 96px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; padding: 10px 8px; }
+    .tv-pstatus {
+        display: inline-flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+        font-size: .74rem; font-weight: 800; padding: 10px; border-radius: 12px; line-height: 1.3;
+        color: var(--es-green); background: #E8F6EC;
+    }
+    .tv-pstatus i { font-size: 1.3rem; }
+    .tv-item.off .tv-pstatus { color: var(--es-muted); background: #EEF0F4; }
 
-        .tv-cancel:hover {
-            border-color: var(--hd-primary);
-            color: var(--hd-primary);
-        }
+    .tv-tips { background: #E8EFFC; border-radius: 12px; padding: 14px 16px; font-size: .8rem; color: var(--es-muted); line-height: 1.6; }
+    .tv-tips b { color: var(--es-navy); display: block; margin-bottom: 4px; }
+    .tv-tips i { color: var(--es-blue); }
 
-    .text-danger {
-        font-size: 0.8rem;
+    @@media (max-width: 1000px) {
+        .tv-layout { grid-template-columns: 1fr; }
+        .tv-side { position: static; order: -1; }
+    }
+    @@media (max-width: 576px) {
+        .tv-grid { grid-template-columns: 1fr; }
+        .tv-card-body { padding: 20px 16px; }
     }
 </style>
-<div class="tv-page">
-    <div class="tv-header">
-        <div class="tv-eyebrow">Quản lý ưu đãi</div>
-        <h1>Sửa mã giảm giá</h1>
+
+<div class="container tv-page">
+
+    <div class="tv-crumb">
+        <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Trang chủ</a>
+        &nbsp;/&nbsp;
+        <a asp-action="QuanLy">Mã giảm giá</a>
+        &nbsp;/&nbsp; <b>Sửa mã</b>
     </div>
 
-    <div class="tv-preview @(Model.IsActive ? "" : "is-expired")">
-        <div class="tv-preview-main">
-            <div class="tv-preview-eyebrow">ElectronicsShop</div>
-            <div class="tv-preview-percent">@Model.DiscountPercent<span>%</span></div>
-            <div class="tv-preview-name">@Model.CodeName</div>
-            <div class="tv-preview-used">Đã dùng: @Model.UsedQuantity / @Model.TotalQuantity</div>
+    <h1 class="tv-title">Sửa mã giảm giá</h1>
+    <p class="tv-subtitle">Cập nhật mức giảm, số lượng, thời hạn và trạng thái của mã <b>@Model.CodeName</b>.</p>
+
+    <div class="tv-layout">
+
+        <!-- ===== FORM ===== -->
+        <div class="tv-card">
+            <div class="tv-card-head">
+                <i class="bi bi-pencil-square"></i>
+                <div>
+                    <h5>Thông tin mã giảm giá</h5>
+                    <small>Mã voucher không thể thay đổi sau khi tạo</small>
+                </div>
+            </div>
+            <div class="tv-card-body">
+                <form asp-action="Edit" asp-route-id="@Model.DiscountCodeID" method="post">
+                    <input type="hidden" asp-for="DiscountCodeID" />
+                    <div asp-validation-summary="All" class="tv-summary"></div>
+
+                    <div class="tv-section">Nội dung ưu đãi</div>
+                    <div class="tv-grid">
+                        <div class="tv-group full">
+                            <label class="tv-label" for="CodeName">Mã voucher</label>
+                            <div class="tv-field locked">
+                                <i class="bi bi-upc-scan"></i>
+                                <input asp-for="CodeName" type="text" class="tv-input code" readonly />
+                                <i class="bi bi-lock-fill"></i>
+                            </div>
+                            <span class="tv-hint">Mã dùng để khách nhập nên không thể đổi.</span>
+                        </div>
+
+                        <div class="tv-group">
+                            <label class="tv-label" for="DiscountPercent">Phần trăm giảm <span>*</span></label>
+                            <div class="tv-field">
+                                <i class="bi bi-percent"></i>
+                                <input asp-for="DiscountPercent" type="number" step="1" min="0" max="100" class="tv-input" />
+                                <span class="tv-suffix">%</span>
+                            </div>
+                            <span asp-validation-for="DiscountPercent" class="text-danger"></span>
+                        </div>
+
+                        <div class="tv-group">
+                            <label class="tv-label" for="MaxDiscountAmount">Giá trị giảm tối đa</label>
+                            <div class="tv-field">
+                                <i class="bi bi-cash-coin"></i>
+                                <input asp-for="MaxDiscountAmount" type="number" step="0.01" min="0" class="tv-input" />
+                                <span class="tv-suffix">đ</span>
+                            </div>
+                            <span class="tv-hint">Để trống nếu không giới hạn.</span>
+                            <span asp-validation-for="MaxDiscountAmount" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="tv-section">Thời hạn &amp; số lượng</div>
+                    <div class="tv-grid">
+                        <div class="tv-group">
+                            <label class="tv-label" for="TotalQuantity">Số lượng mã <small>(đã dùng: @Model.UsedQuantity)</small> <span>*</span></label>
+                            <div class="tv-field">
+                                <i class="bi bi-stack"></i>
+                                <input asp-for="TotalQuantity" type="number" min="@Model.UsedQuantity" class="tv-input" />
+                                <span class="tv-suffix">lượt</span>
+                            </div>
+                            <span asp-validation-for="TotalQuantity" class="text-danger"></span>
+                        </div>
+
+                        <div class="tv-group">
+                            <label class="tv-label" for="ExpiryDate">Ngày kết thúc <span>*</span></label>
+                            <div class="tv-field">
+                                <i class="bi bi-calendar-event"></i>
+                                <input asp-for="ExpiryDate" type="datetime-local" class="tv-input" />
+                            </div>
+                            <span asp-validation-for="ExpiryDate" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="tv-section">Trạng thái</div>
+                    <label class="tv-switch" for="IsActive">
+                        <div class="tv-switch-info">
+                            <div class="tv-switch-icon"><i class="bi bi-lightning-charge"></i></div>
+                            <div>
+                                <strong>Đang hoạt động</strong>
+                                <small>Tắt để tạm khóa mã, khách sẽ không dùng được</small>
+                            </div>
+                        </div>
+                        <input asp-for="IsActive" type="checkbox" />
+                    </label>
+
+                    <div class="tv-actions">
+                        <button type="submit" class="tv-btn save"><i class="bi bi-check2-circle"></i> Lưu thay đổi</button>
+                        <a asp-action="QuanLy" class="tv-btn cancel"><i class="bi bi-x-lg"></i> Hủy</a>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="tv-preview-divider"></div>
-        <div class="tv-preview-stub">@(Model.IsActive ? "Hoạt động" : "Tạm khóa")</div>
-    </div>
 
-    <div class="tv-card">
-        <form asp-action="Sua" asp-route-id="@Model.DiscountCodeID" method="post">
-            <input type="hidden" asp-for="DiscountCodeID" />
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <!-- ===== XEM TRƯỚC ===== -->
+        <aside class="tv-side">
+            <h6 class="tv-side-title"><i class="bi bi-eye"></i> Xem trước</h6>
 
-            <div class="tv-field">
-                <label>Mã voucher</label>
-                <input asp-for="CodeName" type="text" readonly />
+            <div class="tv-item @(Model.IsActive ? "" : "off")" id="pvItem">
+                <div class="tv-ticket">
+                    <div class="tv-pbox">
+                        <i class="bi bi-tag-fill"></i>
+                        <div class="tv-ppercent"><span id="pvPercent">@Model.DiscountPercent</span><span>%</span></div>
+                        <div class="tv-plabel">Giảm giá</div>
+                    </div>
+                    <div class="tv-pmain">
+                        <div class="tv-pname">@Model.CodeName</div>
+                        <p class="tv-pmeta"><i class="bi bi-cash-coin"></i> <span id="pvMax">@(Model.MaxDiscountAmount.HasValue ? "Tối đa " + Model.MaxDiscountAmount.Value.ToString("N0") + " đ" : "Không giới hạn")</span></p>
+                        <p class="tv-pmeta"><i class="bi bi-calendar-event"></i> Hết hạn: <span id="pvExpiry">@Model.ExpiryDate.ToString("dd/MM/yyyy")</span></p>
+                        <div class="tv-pbar"><div id="pvBar" style="width:@(phanTramDaDung)%"></div></div>
+                        <p class="tv-pnote">Đã dùng <span id="pvUsed">@Model.UsedQuantity</span>/<span id="pvTotal">@Model.TotalQuantity</span> lượt</p>
+                    </div>
+                    <div class="tv-pdiv"></div>
+                    <div class="tv-pstub">
+                        <span class="tv-pstatus">
+                            <i class="bi @(Model.IsActive ? "bi-check-circle-fill" : "bi-pause-circle-fill")" id="pvIcon"></i>
+                            <span id="pvStatusText">@(Model.IsActive ? "Hoạt động" : "Tạm khóa")</span>
+                        </span>
+                    </div>
+                </div>
             </div>
 
-            <div class="tv-field">
-                <label>Phần trăm giảm (%)</label>
-                <input asp-for="DiscountPercent" type="number" step="1" min="0" max="100" />
-                <span asp-validation-for="DiscountPercent" class="text-danger"></span>
+            <div class="tv-tips">
+                <b><i class="bi bi-lightbulb"></i> Lưu ý</b>
+                Số lượng mã không được nhỏ hơn số lượt đã dùng (@Model.UsedQuantity). Thay đổi phần trăm giảm chỉ áp dụng cho các lượt dùng sau này.
             </div>
-
-            <div class="tv-field">
-                <label>Giá trị giảm tối đa</label>
-                <input asp-for="MaxDiscountAmount" type="number" step="0.01" min="0" />
-            </div>
-
-            <div class="tv-field">
-                <label>Số lượng mã (đã dùng: @Model.UsedQuantity)</label>
-                <input asp-for="TotalQuantity" type="number" min="@Model.UsedQuantity" />
-                <span asp-validation-for="TotalQuantity" class="text-danger"></span>
-            </div>
-
-            <div class="tv-field">
-                <label>Ngày kết thúc</label>
-                <input asp-for="ExpiryDate" type="datetime-local" />
-            </div>
-
-            <div class="tv-check">
-                <input asp-for="IsActive" type="checkbox" />
-                <label>Đang hoạt động</label>
-            </div>
-
-            <button type="submit" class="tv-submit">Lưu thay đổi</button>
-            <a asp-action="Index" class="tv-cancel">Hủy</a>
-        </form>
+        </aside>
     </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // Vé xem trước cập nhật theo dữ liệu đang sửa (chỉ hiển thị trên trang, không gửi gì lên server)
+        (function () {
+            var used = @Model.UsedQuantity;
+
+            var elPercent = document.getElementById('DiscountPercent');
+            var elMax = document.getElementById('MaxDiscountAmount');
+            var elExpiry = document.getElementById('ExpiryDate');
+            var elQty = document.getElementById('TotalQuantity');
+            var elActive = document.getElementById('IsActive');
+
+            var pvItem = document.getElementById('pvItem');
+            var pvPercent = document.getElementById('pvPercent');
+            var pvMax = document.getElementById('pvMax');
+            var pvExpiry = document.getElementById('pvExpiry');
+            var pvTotal = document.getElementById('pvTotal');
+            var pvBar = document.getElementById('pvBar');
+            var pvIcon = document.getElementById('pvIcon');
+            var pvStatusText = document.getElementById('pvStatusText');
+
+            function fmt(n) { return Number(n).toLocaleString('vi-VN'); }
+
+            function capNhat() {
+                var pt = parseInt(elPercent.value);
+                pvPercent.textContent = isNaN(pt) ? 0 : pt;
+
+                var max = parseFloat(elMax.value);
+                pvMax.textContent = (isNaN(max) || elMax.value === '') ? 'Không giới hạn' : 'Tối đa ' + fmt(max) + ' đ';
+
+                if (elExpiry.value) {
+                    var d = new Date(elExpiry.value);
+                    if (!isNaN(d)) {
+                        pvExpiry.textContent =
+                            String(d.getDate()).padStart(2, '0') + '/' +
+                            String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+                    }
+                }
+
+                var sl = parseInt(elQty.value);
+                if (isNaN(sl) || sl < 0) sl = 0;
+                pvTotal.textContent = sl;
+                pvBar.style.width = (sl > 0 ? Math.min(100, Math.round(used * 100 / sl)) : 0) + '%';
+
+                var on = elActive.checked;
+                pvItem.classList.toggle('off', !on);
+                pvIcon.className = on ? 'bi bi-check-circle-fill' : 'bi bi-pause-circle-fill';
+                pvStatusText.textContent = on ? 'Hoạt động' : 'Tạm khóa';
+            }
+
+            [elPercent, elMax, elExpiry, elQty].forEach(function (el) {
+                if (el) el.addEventListener('input', capNhat);
+            });
+            if (elActive) elActive.addEventListener('change', capNhat);
+        })();
+    </script>
+}

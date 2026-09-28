@@ -2,438 +2,197 @@
 @{
     ViewData["Title"] = "Trang chủ";
     var danhMucList = ViewBag.DanhMucList as List<ElectronicsShop.Models.Category>;
+
+    // Chuẩn hóa đường dẫn ảnh: chấp nhận tên trơn, "images/...", "/..." hoặc link http
+    string LayAnh(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return "/images/no-image.png";
+        url = url.Trim();
+        if (url.StartsWith("http") || url.StartsWith("/")) return url;
+        if (url.StartsWith("images/")) return "/" + url;
+        return "/images/" + url;
+    }
 }
 <style>
     :root {
-        --hd-primary: #1F4E5F;
-        --hd-primary-dark: #163B48;
-        --hd-accent: #D8895B;
-        --hd-bg: #F7F7F5;
-        --hd-card: #FFFFFF;
-        --hd-text: #252525;
-        --hd-muted: #777777;
-        --hd-border: #E5E5E5;
-        --hd-success: #2E7D6B;
-        --hd-danger: #C65A50;
+        --es-blue: #1E4FBF;
+        --es-blue-dark: #0F2F7A;
+        --es-navy: #0B1F4B;
+        --es-red: #E0282E;
+        --es-bg: #F3F5F9;
+        --es-card: #FFFFFF;
+        --es-text: #1F2937;
+        --es-muted: #6B7280;
+        --es-border: #E5E7EB;
     }
-    body {
-        background: var(--hd-bg);
-        color: var(--hd-text);
+    body { background: var(--es-bg); color: var(--es-text); }
+
+    /* Banner */
+    .es-hero { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .es-hero-main {
+        background: linear-gradient(120deg, var(--es-navy), var(--es-blue));
+        color: #fff; border-radius: 14px; padding: 56px 44px; position: relative; overflow: hidden;
     }
-    .hero-banner {
-        background: linear-gradient(120deg, rgba(22, 59, 72, .98), rgba(31, 78, 95, .94));
-        border-radius: 0;
-        padding: 80px 20px;
-        margin-bottom: 35px;
-        position: relative;
-        overflow: hidden;
+    .es-hero-main::after {
+        content: ""; position: absolute; width: 340px; height: 340px; right: -90px; bottom: -120px;
+        border: 1px solid rgba(255,255,255,.14); border-radius: 50%;
     }
-    .hero-banner::before {
-        content: "";
-        position: absolute;
-        width: 320px;
-        height: 320px;
-        border: 1px solid rgba(255,255,255,.08);
-        border-radius: 50%;
-        right: -100px;
-        top: -130px;
+    .es-hero-tag {
+        display: inline-block; background: var(--es-red); color: #fff; font-size: .72rem; font-weight: 700;
+        letter-spacing: .05em; padding: 6px 12px; border-radius: 4px; margin-bottom: 16px;
     }
-    .hero-banner::after {
-        content: "";
-        position: absolute;
-        width: 220px;
-        height: 220px;
-        border: 1px solid rgba(255,255,255,.06);
-        border-radius: 50%;
-        left: -90px;
-        bottom: -120px;
-    }
-    .hero-banner .container {
-        position: relative;
-        z-index: 2;
-    }
-    .hero-banner .badge {
-        background: var(--hd-accent) !important;
-        color: #fff !important;
-        font-size: 12px !important;
-        font-weight: 700;
-        letter-spacing: .4px;
-        padding: 9px 16px !important;
-        border-radius: 30px !important;
-    }
-    .hero-banner h1 {
-        font-size: clamp(32px, 5vw, 56px);
-        font-weight: 800;
-        letter-spacing: -.8px;
-        line-height: 1.1;
-    }
-    .hero-banner p {
-        color: rgba(255,255,255,.78);
-        font-size: 17px;
-    }
-    .hero-banner .btn-warning {
-        background: var(--hd-accent);
-        border-color: var(--hd-accent);
-        color: #fff;
-    }
-    .hero-banner .btn-warning:hover {
-        background: #bd7049;
-        border-color: #bd7049;
-        color: #fff;
-    }
-    .hero-banner .btn-outline-light {
-        border-width: 1px;
-    }
-    .feature-box {
-        background: var(--hd-card);
-        border: 1px solid var(--hd-border);
-        border-radius: 10px;
-        padding: 22px 15px !important;
-        transition: all .2s ease;
-    }
-    .feature-box:hover {
-        transform: translateY(-4px);
-        border-color: #D5D5D1;
-        box-shadow: 0 8px 24px rgba(0,0,0,.05);
-    }
-    .feature-box .fs-2 {
-        font-size: 28px !important;
-    }
-    .feature-box h6 {
-        color: var(--hd-text);
-        font-size: 14px;
-    }
-    .feature-box small {
-        color: var(--hd-muted) !important;
-        font-size: 12px;
-        line-height: 1.5;
-    }
-    .category-card {
-        background: var(--hd-card);
-        border: 1px solid var(--hd-border);
-        border-radius: 10px;
-        transition: all .2s ease;
-        min-height: 145px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-    .category-card:hover {
-        border-color: var(--hd-primary);
-        transform: translateY(-4px);
-        box-shadow: 0 8px 22px rgba(0,0,0,.05);
-    }
-    .category-card .fs-1 {
-        font-size: 34px !important;
-    }
-    .category-card h6 {
-        color: var(--hd-text) !important;
-        font-size: 14px;
-    }
-    .text-center h2 {
-        color: var(--hd-text) !important;
-        font-size: 25px;
-        font-weight: 800;
-        letter-spacing: -.2px;
-    }
-    .text-center hr {
-        width: 55px !important;
-        border-top: 3px solid var(--hd-accent) !important;
-        margin-top: 12px;
-    }
-    .product {
-        background: var(--hd-card);
-        border: 1px solid var(--hd-border) !important;
-        border-radius: 10px !important;
-        overflow: hidden;
-        box-shadow: 0 3px 14px rgba(0,0,0,.035) !important;
-        transition: all .2s ease;
-    }
-    .product:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 28px rgba(0,0,0,.08) !important;
-    }
-    .product .position-relative {
-        background: #F4F4F1;
-    }
-    .product .card-img-top {
-        height: 280px !important;
-        object-fit: cover;
-        transition: transform .3s ease;
-    }
-    .product:hover .card-img-top {
-        transform: scale(1.025);
-    }
-    .product .badge {
-        background: var(--hd-primary) !important;
-        color: #fff !important;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 700;
-        padding: 6px 10px;
-    }
-    .product .badge.bg-danger {
-        background: var(--hd-danger) !important;
-    }
-    .product .card-body {
-        padding: 20px 20px 10px;
-    }
-    .product .card-body h5 {
-        color: var(--hd-text) !important;
-        font-size: 17px;
-        line-height: 1.4;
-        margin-bottom: 8px;
-    }
-    .product .card-body p {
-        color: var(--hd-muted) !important;
-        font-size: 13px;
-        line-height: 1.6;
-    }
-    .product .card-body h4 {
-        color: var(--hd-accent) !important;
-        font-size: 19px;
-    }
-    .product .card-footer {
-        background: var(--hd-card) !important;
-        padding: 8px 20px 20px !important;
-    }
-    .product .card-footer .btn-outline-secondary {
-        border: 1px solid var(--hd-border);
-        color: var(--hd-text);
-        background: #fff;
-    }
-    .product .card-footer .btn-outline-secondary:hover {
-        background: #F3F3F1;
-        border-color: #D2D2CE;
-        color: var(--hd-primary);
-    }
-    .product .card-footer form .btn {
-        background: var(--hd-primary) !important;
-        border-color: var(--hd-primary) !important;
-        color: #fff !important;
-    }
-    .product .card-footer form .btn:hover {
-        background: var(--hd-primary-dark) !important;
-        border-color: var(--hd-primary-dark) !important;
-    }
-    .product .btn-secondary {
-        background: #A0A0A0 !important;
-        border-color: #A0A0A0 !important;
-    }
-    .newsletter-box {
-        background: linear-gradient(120deg, var(--hd-primary-dark), #1B3A42);
-        border-radius: 12px !important;
-        padding: 55px 25px !important;
-        position: relative;
-        overflow: hidden;
-    }
-    .newsletter-box h3 {
-        font-size: 25px;
-    }
-    .newsletter-box p {
-        color: rgba(255,255,255,.72);
-        font-size: 14px;
-    }
-    .newsletter-box input {
-        min-width: 280px;
-        border-radius: 5px !important;
-        padding: 12px 18px !important;
-        border: none !important;
-    }
-    .newsletter-box .btn-warning {
-        background: var(--hd-accent);
-        border-color: var(--hd-accent);
-        color: #fff;
-        border-radius: 5px;
-    }
-    .newsletter-box .btn-warning:hover {
-        background: #bd7049;
-        border-color: #bd7049;
-        color: #fff;
-    }
-    @@media (max-width: 768px) {
-        .hero-banner {
-            padding: 55px 18px;
-        }
-        .hero-banner h1 {
-            font-size: 34px;
-        }
-        .hero-banner p {
-            font-size: 15px;
-        }
-        .feature-box {
-            min-height: 135px;
-        }
-        .product .card-img-top {
-            height: 240px !important;
-        }
+    .es-hero-main h1 { font-size: clamp(28px, 4vw, 46px); font-weight: 800; line-height: 1.15; margin-bottom: 14px; }
+    .es-hero-main p { color: rgba(255,255,255,.8); max-width: 520px; margin-bottom: 24px; }
+    .es-btn { display: inline-block; border-radius: 8px; padding: 11px 24px; font-weight: 700; text-decoration: none; font-size: .92rem; transition: all .15s ease; }
+    .es-btn-red { background: var(--es-red); color: #fff; }
+    .es-btn-red:hover { background: #c41f25; color: #fff; }
+    .es-btn-line { border: 1px solid rgba(255,255,255,.6); color: #fff; margin-left: 8px; }
+    .es-btn-line:hover { background: rgba(255,255,255,.14); color: #fff; }
+
+    .es-hero-side { display: grid; grid-template-rows: 1fr 1fr; gap: 16px; }
+    .es-side-card { border-radius: 14px; padding: 24px; color: #fff; display: flex; flex-direction: column; justify-content: center; text-decoration: none; }
+    .es-side-card.a { background: linear-gradient(120deg, #123A93, #2B6CE0); }
+    .es-side-card.b { background: linear-gradient(120deg, #0B1F4B, #24408F); }
+    .es-side-card small { font-size: .7rem; font-weight: 700; letter-spacing: .06em; color: #FFD3D5; }
+    .es-side-card h5 { font-weight: 800; margin: 6px 0; }
+    .es-side-card span { font-size: .85rem; color: rgba(255,255,255,.85); }
+    .es-side-card:hover { color: #fff; filter: brightness(1.08); }
+
+    /* Cam kết */
+    .es-perks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 36px; }
+    .es-perk { background: var(--es-card); border: 1px solid var(--es-border); border-radius: 12px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; }
+    .es-perk i { font-size: 1.7rem; color: var(--es-blue); }
+    .es-perk strong { display: block; font-size: .9rem; }
+    .es-perk small { color: var(--es-muted); font-size: .78rem; }
+
+    /* Tiêu đề khu vực */
+    .es-section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .es-section-head h2 { font-size: 1.25rem; font-weight: 800; margin: 0; padding-left: 12px; border-left: 4px solid var(--es-red); }
+    .es-section-head a { font-size: .85rem; color: var(--es-blue); text-decoration: none; font-weight: 600; }
+
+    /* Danh mục */
+    .es-cats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 40px; }
+    .es-cat { background: var(--es-card); border: 1px solid var(--es-border); border-radius: 12px; padding: 22px 12px; text-align: center; text-decoration: none; color: var(--es-text); transition: all .2s ease; }
+    .es-cat:hover { border-color: var(--es-blue); transform: translateY(-3px); box-shadow: 0 8px 22px rgba(30,79,191,.12); color: var(--es-blue); }
+    .es-cat i { font-size: 1.9rem; color: var(--es-blue); display: block; margin-bottom: 8px; }
+    .es-cat h6 { font-weight: 700; font-size: .9rem; margin: 0; }
+
+    /* Sản phẩm */
+    .es-products { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .es-product { background: var(--es-card); border: 1px solid var(--es-border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all .2s ease; }
+    .es-product:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(15,47,122,.12); }
+    .es-product-img { background: #fff; padding: 12px; border-bottom: 1px solid var(--es-border); }
+    .es-product-img img { width: 100%; height: 240px; object-fit: contain; display: block; }
+    .es-product-body { padding: 16px; flex: 1; }
+    .es-product-cat { font-size: .68rem; font-weight: 700; color: var(--es-blue); text-transform: uppercase; letter-spacing: .05em; }
+    .es-product-name { font-size: .98rem; font-weight: 700; line-height: 1.4; margin: 6px 0 10px; color: var(--es-text); }
+    .es-product-price { color: var(--es-red); font-size: 1.2rem; font-weight: 800; margin: 0; }
+    .es-product-foot { padding: 0 16px 16px; }
+    .es-btn-detail { display: block; text-align: center; border: 1px solid var(--es-blue); color: var(--es-blue); border-radius: 8px; padding: 9px; font-weight: 700; font-size: .88rem; text-decoration: none; }
+    .es-btn-detail:hover { background: var(--es-blue); color: #fff; }
+
+    /* Đăng ký nhận tin */
+    .es-news { background: linear-gradient(120deg, var(--es-navy), var(--es-blue)); color: #fff; border-radius: 14px; padding: 44px 24px; text-align: center; margin-top: 44px; }
+    .es-news h3 { font-weight: 800; font-size: 1.4rem; margin-bottom: 6px; }
+    .es-news p { color: rgba(255,255,255,.8); font-size: .9rem; margin-bottom: 20px; }
+    .es-news form { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+    .es-news input { min-width: 280px; border: none; border-radius: 8px; padding: 12px 18px; }
+    .es-news button { background: var(--es-red); color: #fff; border: none; border-radius: 8px; padding: 12px 26px; font-weight: 700; }
+    .es-news button:hover { background: #c41f25; }
+
+    @@media (max-width: 992px) {
+        .es-hero { grid-template-columns: 1fr; }
+        .es-hero-side { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+        .es-perks, .es-cats { grid-template-columns: repeat(2, 1fr); }
+        .es-products { grid-template-columns: repeat(2, 1fr); }
     }
     @@media (max-width: 576px) {
-        .hero-banner {
-            border-radius: 0;
-            padding: 45px 15px;
-        }
-        .hero-banner h1 {
-            font-size: 29px;
-        }
-        .text-center h2 {
-            font-size: 21px;
-        }
-        .newsletter-box {
-            padding: 40px 18px !important;
-        }
-        .newsletter-box input {
-            width: 100% !important;
-            min-width: 0;
-        }
+        .es-hero-main { padding: 36px 22px; }
+        .es-hero-side { grid-template-columns: 1fr; }
+        .es-products { grid-template-columns: 1fr; }
+        .es-news input { width: 100%; min-width: 0; }
     }
 </style>
-<div class="hero-banner text-center text-white">
-    <div class="container">
-        <span class="badge bg-warning text-dark px-3 py-2 mb-3 fs-6 rounded-pill">
-            ⭐ Chính hãng 100% • Giao hàng toàn quốc
-        </span>
-        <h1 class="display-4 fw-bold mb-3">THIẾT BỊ ĐIỆN TỬ CAO CẤP</h1>
-        <p class="lead mb-4">
-            Smartphone • Laptop • Phụ kiện công nghệ chính hãng
-        </p>
-        <div class="d-flex justify-content-center gap-3 flex-wrap">
-            <a asp-controller="SanPham" asp-action="Index" class="btn btn-warning btn-lg px-4 fw-bold">
-                🛍️ Mua Sắm Ngay
-            </a>
-            <a asp-controller="DanhMuc" asp-action="Index" class="btn btn-outline-light btn-lg px-4">
-                Xem Danh Mục
-            </a>
-        </div>
+
+<div class="es-hero">
+    <div class="es-hero-main">
+        <span class="es-hero-tag">CHÍNH HÃNG 100% • GIAO HÀNG TOÀN QUỐC</span>
+        <h1>CÔNG NGHỆ DẪN LỐI<br />NÂNG TẦM HIỆU SUẤT</h1>
+        <p>Smartphone, laptop và phụ kiện công nghệ chính hãng với giá tốt, bảo hành 1 đổi 1 trong 30 ngày.</p>
+        <a asp-controller="SanPham" asp-action="Index" class="es-btn es-btn-red">MUA NGAY</a>
+        <a asp-controller="DanhMuc" asp-action="Index" class="es-btn es-btn-line">XEM DANH MỤC</a>
+    </div>
+    <div class="es-hero-side">
+        <a asp-controller="SanPham" asp-action="Index" class="es-side-card a">
+            <small>HOT DEAL</small>
+            <h5>LAPTOP &amp; MÁY TÍNH</h5>
+            <span>Xem cấu hình chi tiết →</span>
+        </a>
+        <a asp-controller="SanPham" asp-action="Index" class="es-side-card b">
+            <small>GIÁ TỐT MỖI NGÀY</small>
+            <h5>PHỤ KIỆN CÔNG NGHỆ</h5>
+            <span>Nâng cấp ngay hôm nay →</span>
+        </a>
     </div>
 </div>
-<div class="row text-center g-4 mb-5">
-    <div class="col-md-3 col-6">
-        <div class="feature-box p-3 h-100">
-            <div class="fs-2 mb-2">🚚</div>
-            <h6 class="fw-bold mb-1">Giao hàng siêu tốc</h6>
-            <small class="text-muted">Nội thành 2h, toàn quốc 2-4 ngày</small>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="feature-box p-3 h-100">
-            <div class="fs-2 mb-2">🛡️</div>
-            <h6 class="fw-bold mb-1">Chính hãng 100%</h6>
-            <small class="text-muted">Cam kết nguồn gốc rõ ràng</small>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="feature-box p-3 h-100">
-            <div class="fs-2 mb-2">🔄</div>
-            <h6 class="fw-bold mb-1">Bảo hành 1 đổi 1</h6>
-            <small class="text-muted">Áp dụng trong 30 ngày đầu</small>
-        </div>
-    </div>
-    <div class="col-md-3 col-6">
-        <div class="feature-box p-3 h-100">
-            <div class="fs-2 mb-2">💳</div>
-            <h6 class="fw-bold mb-1">Hỗ trợ trả góp 0%</h6>
-            <small class="text-muted">Thủ tục nhanh chóng, tiện lợi</small>
-        </div>
-    </div>
+
+<div class="es-perks">
+    <div class="es-perk"><i class="bi bi-truck"></i><div><strong>Giao hàng nhanh</strong><small>Nội thành 2h, toàn quốc 2-4 ngày</small></div></div>
+    <div class="es-perk"><i class="bi bi-patch-check"></i><div><strong>Sản phẩm chính hãng</strong><small>Cam kết nguồn gốc rõ ràng</small></div></div>
+    <div class="es-perk"><i class="bi bi-arrow-repeat"></i><div><strong>Bảo hành uy tín</strong><small>1 đổi 1 trong 30 ngày đầu</small></div></div>
+    <div class="es-perk"><i class="bi bi-headset"></i><div><strong>Hỗ trợ kỹ thuật</strong><small>Tư vấn nhiệt tình 24/7</small></div></div>
 </div>
+
 @if (danhMucList != null && danhMucList.Any())
 {
-    <div class="text-center mb-4">
-        <h2 class="fw-bold" style="color: var(--hd-text);">DANH MỤC SẢN PHẨM</h2>
-        <hr class="w-25 mx-auto" style="border-top: 3px solid var(--hd-accent); opacity: 1;">
+    <div class="es-section-head">
+        <h2>Danh mục nổi bật</h2>
+        <a asp-controller="DanhMuc" asp-action="Index">Xem tất cả danh mục →</a>
     </div>
-    <div class="row g-3 mb-5">
+    <div class="es-cats">
         @foreach (var dm in danhMucList)
         {
-            <div class="col-md-3 col-6">
-                <a asp-controller="SanPham" asp-action="Index" asp-route-danhMucId="@dm.CategoryID" class="text-decoration-none">
-                    <div class="category-card text-center p-4">
-                        <div class="fs-1 mb-2 text-dark">💻</div>
-                        <h6 class="fw-bold text-dark mb-0">@dm.CategoryName</h6>
-                    </div>
-                </a>
-            </div>
+            <a asp-controller="SanPham" asp-action="Index" asp-route-danhMucId="@dm.CategoryID" class="es-cat">
+                <i class="bi bi-laptop"></i>
+                <h6>@dm.CategoryName</h6>
+            </a>
         }
     </div>
 }
-<div class="text-center mb-5">
-    <h2 class="fw-bold" style="color: var(--hd-text);">SẢN PHẨM NỔI BẬT</h2>
-    <hr class="w-25 mx-auto" style="border-top: 3px solid var(--hd-accent); opacity: 1;">
+
+<div class="es-section-head">
+    <h2>Sản phẩm nổi bật</h2>
+    <a asp-controller="SanPham" asp-action="Index">Xem tất cả →</a>
 </div>
-<div class="row g-4">
+<div class="es-products">
     @foreach (var item in Model)
     {
-        <div class="col-lg-4 col-md-6">
-            <div class="card h-100 product shadow-sm border-0 rounded-4 overflow-hidden">
-                <div class="position-relative">
-                    <img src="~/images/@(string.IsNullOrEmpty(item.ImageURL) ? "no-image.png" : item.ImageURL)"
-                         class="card-img-top"
-                         style="height:280px;object-fit:cover;"
-                         onerror="this.src='/images/no-image.png'"
-                         alt="@item.ProductName" />
-                    @if (item.Stock <= 20)
-                    {
-                        <span class="badge bg-danger position-absolute top-0 end-0 m-3 fs-6">Sắp hết hàng</span>
-                    }
-                </div>
-                <div class="card-body">
-                    <span class="badge mb-2" style="background-color: var(--hd-primary); color: white;">@item.Category?.CategoryName</span>
-                    <h5 class="fw-bold" style="color: var(--hd-text);">
-                        @item.ProductName
-                    </h5>
-                    <p class="text-muted small mb-3">
-                        @if (!string.IsNullOrEmpty(item.Description))
-                        {
-                            @(item.Description.Length > 80
-                                ? item.Description.Substring(0, 80) + "..."
-                                : item.Description)
-                        }
-                        else
-                        {
-                            <span>Chưa có mô tả.</span>
-                        }
-                    </p>
-                    <h4 class="fw-bold mb-0" style="color: var(--hd-accent);">
-                        @item.Price.ToString("N0") VNĐ
-                    </h4>
-                </div>
-                <div class="card-footer bg-white border-0 pt-0 pb-3">
-                    <div class="d-grid gap-2">
-                        <a asp-controller="SanPham"
-                           asp-action="ChiTiet"
-                           asp-route-id="@item.ProductID"
-                           class="btn btn-outline-secondary rounded-3 fw-bold">
-                            Chi Tiết
-                        </a>
-                        @if (item.Stock > 0)
-                        {
-                            <form asp-controller="GioHang" asp-action="ThemVaoGio" method="post">
-                                <input type="hidden" name="id" value="@item.ProductID" />
-                                <input type="hidden" name="soLuong" value="1" />
-                                <button type="submit" class="btn w-100 rounded-3 fw-bold" style="background-color: var(--hd-primary); color: white;">
-                                    🛒 Thêm Giỏ Hàng
-                                </button>
-                            </form>
-                        }
-                        else
-                        {
-                            <button type="button" class="btn w-100 rounded-3 fw-bold btn-secondary" disabled>
-                                Hết hàng
-                            </button>
-                        }
-                    </div>
-                </div>
+        <div class="es-product">
+            <div class="es-product-img">
+                <img src="@LayAnh(item.ImageURL)"
+                     onerror="this.onerror=null;this.src='/images/no-image.png'"
+                     alt="@item.ProductName" />
+            </div>
+            <div class="es-product-body">
+                <span class="es-product-cat">@item.Category?.CategoryName</span>
+                <h5 class="es-product-name">@item.ProductName</h5>
+                <p class="es-product-price">@item.Price.ToString("N0") VNĐ</p>
+            </div>
+            <div class="es-product-foot">
+                <a asp-controller="SanPham"
+                   asp-action="ChiTiet"
+                   asp-route-id="@item.ProductID"
+                   class="es-btn-detail">Chi Tiết</a>
             </div>
         </div>
     }
 </div>
-<div class="newsletter-box text-center text-white mt-5 p-5 rounded-4">
-    <h3 class="fw-bold mb-2">Đăng ký nhận ưu đãi mới nhất</h3>
-    <p class="mb-4">Nhận mã giảm giá và thông tin sản phẩm công nghệ mới qua email</p>
-    <form class="d-flex justify-content-center gap-2 flex-wrap" onsubmit="return false;">
-        <input type="email" class="form-control w-auto border-0" placeholder="Nhập email của bạn" style="min-width:280px; padding: 12px 20px;">
-        <button class="btn btn-warning fw-bold px-4" style="padding: 12px 24px;">Đăng ký</button>
+
+<div class="es-news">
+    <h3>Đăng ký nhận ưu đãi mới nhất</h3>
+    <p>Nhận mã giảm giá và thông tin sản phẩm công nghệ mới qua email</p>
+    <form onsubmit="return false;">
+        <input type="email" placeholder="Nhập email của bạn" />
+        <button type="submit">Đăng ký</button>
     </form>
 </div>

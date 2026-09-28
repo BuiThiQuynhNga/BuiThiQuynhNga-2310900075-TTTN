@@ -5,283 +5,223 @@
 }
 <style>
     .dn-page {
-        --hd-primary: #2F5D62;
-        --hd-primary-dark: #22454A;
-        --hd-accent: #C97B4A;
-        --hd-bg: #F7F7F5;
-        --hd-card: #FFFFFF;
-        --hd-text: #24262B;
-        --hd-muted: #6B7076;
-        --hd-border: #E7E5E1;
+        --es-blue: #1E4FBF;
+        --es-blue-dark: #0F2F7A;
+        --es-navy: #0B1F4B;
+        --es-red: #E0282E;
+        --es-bg: #F3F5F9;
+        --es-text: #1F2937;
+        --es-muted: #6B7280;
+        --es-border: #E5E7EB;
         display: flex;
         justify-content: center;
         align-items: center;
-        min-height: calc(100vh - 120px);
-        padding: 48px 16px;
-        background: var(--hd-bg);
+        padding: 24px 16px 48px;
     }
+
+    .dn-crumb {
+        max-width: 980px;
+        margin: 0 auto 14px;
+        font-size: .8rem;
+        color: var(--es-muted);
+    }
+    .dn-crumb a { color: var(--es-muted); text-decoration: none; }
+    .dn-crumb a:hover { color: var(--es-blue); }
+    .dn-crumb b { color: var(--es-blue); }
 
     .dn-card {
         display: grid;
-        grid-template-columns: 0.85fr 1.15fr;
-        max-width: 860px;
+        grid-template-columns: 0.9fr 1.1fr;
+        max-width: 980px;
         width: 100%;
-        background: var(--hd-card);
-        border-radius: 20px;
+        background: #fff;
+        border-radius: 18px;
         overflow: hidden;
-        border: 1px solid var(--hd-border);
-        box-shadow: 0 20px 50px rgba(34, 69, 74, 0.12);
+        border: 1px solid var(--es-border);
+        box-shadow: 0 20px 50px rgba(15, 47, 122, 0.14);
     }
 
+    /* Cột trái */
     .dn-brand {
-        background: linear-gradient(160deg, var(--hd-primary-dark) 0%, #16292C 100%);
-        padding: 40px 32px;
+        background: linear-gradient(160deg, var(--es-blue) 0%, var(--es-navy) 100%);
+        padding: 40px 34px;
         color: #fff;
         display: flex;
         flex-direction: column;
-        gap: 28px;
+        gap: 22px;
     }
-
-    .dn-brand-eyebrow {
-        font-size: 0.75rem;
-        letter-spacing: 0.14em;
+    .dn-badge {
+        align-self: flex-start;
+        background: rgba(255,255,255,.14);
+        border: 1px solid rgba(255,255,255,.22);
+        border-radius: 20px;
+        padding: 6px 14px;
+        font-size: .68rem;
+        font-weight: 700;
+        letter-spacing: .08em;
         text-transform: uppercase;
-        color: rgba(255, 255, 255, 0.55);
-        font-weight: 600;
     }
-
     .dn-brand h3 {
-        font-family: 'Poppins', sans-serif;
         font-weight: 800;
-        font-size: 1.5rem;
+        font-size: 1.55rem;
         line-height: 1.3;
-        margin: 8px 0 0;
+        margin: 0;
+        text-transform: uppercase;
     }
-
-    .dn-brand p {
-        color: rgba(255, 255, 255, 0.72);
-        font-size: 0.92rem;
-        max-width: 26ch;
-        margin: 12px 0 0;
-    }
-
-    .dn-shades {
-        margin-top: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .dn-shade {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        opacity: 0;
-        transform: translateX(-8px);
-        animation: dn-fade .5s ease forwards;
-    }
-
-        .dn-shade:nth-child(1) {
-            animation-delay: .05s;
-        }
-
-        .dn-shade:nth-child(2) {
-            animation-delay: .12s;
-        }
-
-        .dn-shade:nth-child(3) {
-            animation-delay: .19s;
-        }
-
-        .dn-shade:nth-child(4) {
-            animation-delay: .26s;
-        }
-
-    @@keyframes dn-fade {
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-
-    .dn-swatch {
-        width: 28px;
-        height: 28px;
-        border-radius: 8px;
+    .dn-brand p { color: rgba(255,255,255,.8); font-size: .9rem; margin: 0; }
+    .dn-points { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px; }
+    .dn-points li { display: flex; gap: 12px; align-items: flex-start; font-size: .88rem; color: rgba(255,255,255,.92); line-height: 1.5; }
+    .dn-points i {
         flex-shrink: 0;
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.2);
+        display: flex; align-items: center; justify-content: center;
+        font-size: .8rem;
+        margin-top: 1px;
     }
-
-    .dn-shade span {
-        font-size: 0.82rem;
-        color: rgba(255, 255, 255, 0.8);
+    .dn-ssl {
+        margin-top: auto;
+        padding-top: 14px;
+        border-top: 1px solid rgba(255,255,255,.18);
+        font-size: .78rem;
+        color: rgba(255,255,255,.75);
     }
+    .dn-ssl i { margin-right: 6px; }
 
-    @@media (prefers-reduced-motion: reduce) {
-        .dn-shade {
-            animation: none;
-            opacity: 1;
-            transform: none;
-        }
+    /* Cột phải */
+    .dn-form-panel { padding: 40px 44px; }
+    .dn-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+    .dn-logo-icon {
+        width: 38px; height: 38px; border-radius: 10px;
+        background: linear-gradient(135deg, var(--es-blue), var(--es-blue-dark));
+        color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;
     }
+    .dn-logo-text { font-weight: 800; color: var(--es-navy); line-height: 1.1; }
+    .dn-logo-text small { display: block; font-size: .6rem; color: var(--es-red); letter-spacing: .14em; text-transform: uppercase; }
 
-    .dn-form-panel {
-        padding: 44px 40px;
-    }
-
-        .dn-form-panel h1 {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: var(--hd-text);
-            margin: 0 0 4px;
-        }
-
-    .dn-sub {
-        color: var(--hd-muted);
-        font-size: 0.92rem;
-        margin: 0 0 24px;
-    }
+    .dn-form-panel h1 { font-weight: 800; font-size: 1.7rem; color: var(--es-navy); margin: 0 0 4px; }
+    .dn-sub { color: var(--es-muted); font-size: .9rem; margin: 0 0 22px; }
 
     .dn-alert {
-        background: #E7F0EF;
-        color: var(--hd-primary-dark);
+        background: #E8EFFC;
+        color: var(--es-blue-dark);
         border-radius: 10px;
         padding: 12px 14px;
-        font-size: 0.88rem;
+        font-size: .88rem;
         font-weight: 500;
-        margin-bottom: 20px;
-    }
-
-    .dn-field {
-        position: relative;
         margin-bottom: 18px;
     }
+    .dn-errors { font-size: .85rem; color: #B3261E; margin-bottom: 12px; }
 
-        .dn-field input {
-            width: 100%;
-            border: 1.5px solid var(--hd-border);
-            border-radius: 10px;
-            padding: 18px 14px 8px;
-            font-size: 0.95rem;
-            color: var(--hd-text);
-            background: #fff;
-            transition: border-color .15s ease, box-shadow .15s ease;
-        }
+    .dn-group { margin-bottom: 16px; }
+    .dn-label { display: block; font-size: .82rem; font-weight: 700; color: var(--es-text); margin-bottom: 6px; }
+    .dn-label span { color: var(--es-red); }
+    .dn-input {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #F3F5F9;
+        border: 1.5px solid transparent;
+        border-radius: 10px;
+        padding: 0 14px;
+        transition: all .15s ease;
+    }
+    .dn-input:focus-within { background: #fff; border-color: var(--es-blue); box-shadow: 0 0 0 3px rgba(30,79,191,.12); }
+    .dn-input > i { color: var(--es-muted); font-size: 1rem; }
+    .dn-input input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 13px 0;
+        font-size: .95rem;
+        color: var(--es-text);
+        outline: none;
+        min-width: 0;
+    }
+    .dn-eye { border: none; background: transparent; color: var(--es-muted); padding: 0; cursor: pointer; }
+    .dn-eye:hover { color: var(--es-blue); }
 
-            .dn-field input:focus {
-                outline: none;
-                border-color: var(--hd-primary);
-                box-shadow: 0 0 0 3px rgba(47, 93, 98, 0.12);
-            }
+    .dn-row { display: flex; justify-content: space-between; align-items: center; margin: 4px 0 14px; font-size: .86rem; }
+    .dn-remember { display: flex; align-items: center; gap: 8px; color: var(--es-text); cursor: pointer; }
+    .dn-remember input { width: 16px; height: 16px; accent-color: var(--es-blue); }
+    .dn-forgot { color: var(--es-blue); font-weight: 700; text-decoration: none; }
+    .dn-forgot:hover { text-decoration: underline; }
 
-        .dn-field label {
-            position: absolute;
-            left: 14px;
-            top: 14px;
-            font-size: 0.95rem;
-            color: var(--hd-muted);
-            pointer-events: none;
-            transition: all .15s ease;
-        }
-
-        .dn-field input:focus + label,
-        .dn-field input:not(:placeholder-shown) + label {
-            top: 5px;
-            font-size: 0.7rem;
-            color: var(--hd-primary);
-            font-weight: 600;
-        }
+    .dn-note {
+        display: flex; gap: 8px; align-items: center;
+        background: #F3F5F9; border-radius: 8px;
+        padding: 10px 12px; font-size: .78rem; color: var(--es-muted);
+        margin-bottom: 16px;
+    }
+    .dn-note i { color: var(--es-blue); }
 
     .dn-submit {
-        margin-top: 6px;
         width: 100%;
         border: none;
         border-radius: 10px;
         padding: 14px;
-        font-weight: 700;
+        font-weight: 800;
         font-size: 1rem;
+        letter-spacing: .04em;
+        text-transform: uppercase;
         color: #fff;
-        background: var(--hd-primary);
+        background: var(--es-blue);
         cursor: pointer;
-        transition: background .15s ease, transform .15s ease;
+        transition: all .15s ease;
+    }
+    .dn-submit:hover { background: var(--es-blue-dark); transform: translateY(-1px); }
+
+    .dn-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0 14px; color: var(--es-muted); font-size: .78rem; }
+    .dn-divider::before, .dn-divider::after { content: ""; flex: 1; height: 1px; background: var(--es-border); }
+    .dn-social { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .dn-social button {
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        background: #F3F5F9; border: 1px solid var(--es-border); border-radius: 10px;
+        padding: 11px; font-weight: 600; font-size: .88rem; color: var(--es-text);
     }
 
-        .dn-submit:hover {
-            background: var(--hd-primary-dark);
-            transform: translateY(-1px);
-        }
+    .dn-register { text-align: center; margin-top: 20px; font-size: .9rem; color: var(--es-muted); }
+    .dn-register a { color: var(--es-blue); font-weight: 800; text-decoration: none; }
+    .dn-register a:hover { text-decoration: underline; }
 
-        .dn-submit:focus-visible {
-            box-shadow: 0 0 0 3px rgba(47, 93, 98, 0.3);
-        }
-
-    .dn-register {
-        text-align: center;
-        margin-top: 18px;
-        font-size: 0.9rem;
-        color: var(--hd-muted);
-    }
-
-        .dn-register a {
-            color: var(--hd-primary);
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-            .dn-register a:hover {
-                text-decoration: underline;
-            }
-
-    .dn-errors {
-        font-size: 0.85rem;
-        color: #B3261E;
-        margin-bottom: 14px;
-    }
-
-    @@media (max-width: 820px) {
-        .dn-card {
-            grid-template-columns: 1fr;
-        }
-
-        .dn-brand {
-            padding: 28px 24px;
-        }
-
-        .dn-shades {
-            flex-direction: row;
-            margin-top: 20px;
-            gap: 8px;
-        }
-
-        .dn-shade span {
-            display: none;
-        }
-
-        .dn-form-panel {
-            padding: 32px 24px;
-        }
+    @@media (max-width: 860px) {
+        .dn-card { grid-template-columns: 1fr; }
+        .dn-brand { padding: 28px 24px; }
+        .dn-form-panel { padding: 30px 22px; }
     }
 </style>
+
+<div class="dn-crumb">
+    <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Trang chủ</a>
+    &nbsp;/&nbsp; <b>Đăng nhập</b>
+</div>
+
 <div class="dn-page">
     <div class="dn-card">
         <div class="dn-brand">
+            <span class="dn-badge"><i class="bi bi-shield-check"></i> Bảo mật hệ thống chuẩn quốc tế</span>
             <div>
-                <div class="dn-brand-eyebrow">ElectronicsShop</div>
-                <h3>Chào mừng trở lại.</h3>
-                <p>Đăng nhập để tiếp tục hành trình khám phá công nghệ của bạn.</p>
+                <h3>Chào mừng trở lại ElectronicsShop</h3>
             </div>
-            <div class="dn-shades">
-                <div class="dn-shade"><div class="dn-swatch" style="background:#24262B"></div><span>Đen Titan</span></div>
-                <div class="dn-shade"><div class="dn-swatch" style="background:#E3E5E3"></div><span>Bạc Silver</span></div>
-                <div class="dn-shade"><div class="dn-swatch" style="background:#A7C1D9"></div><span>Xanh Sierra</span></div>
-                <div class="dn-shade"><div class="dn-swatch" style="background:#C97B4A"></div><span>Đồng Ánh Kim</span></div>
-            </div>
+            <p>Đăng nhập để mua sắm và trải nghiệm các sản phẩm công nghệ chất lượng cùng ưu đãi dành riêng cho thành viên.</p>
+            <ul class="dn-points">
+                <li><i class="bi bi-check"></i>Theo dõi trạng thái đơn hàng và lịch sử mua sắm 24/7</li>
+                <li><i class="bi bi-check"></i>Tích điểm thưởng, đổi voucher giảm giá hấp dẫn</li>
+                <li><i class="bi bi-check"></i>Hỗ trợ kỹ thuật ưu tiên và tra cứu bảo hành nhanh chóng</li>
+                <li><i class="bi bi-check"></i>Báo giá chiết khấu đặc quyền cho khách hàng thân thiết</li>
+            </ul>
+            <div class="dn-ssl"><i class="bi bi-shield-lock"></i>Mã hóa SSL 256-bit an toàn tuyệt đối</div>
         </div>
 
         <div class="dn-form-panel">
-            <h1>Đăng nhập hệ thống</h1>
-            <p class="dn-sub">Nhập thông tin tài khoản của bạn.</p>
+            <div class="dn-logo">
+                <span class="dn-logo-icon"><i class="bi bi-laptop"></i></span>
+                <span class="dn-logo-text">ElectronicsShop<small>Công nghệ chính hãng</small></span>
+            </div>
+
+            <h1>Đăng nhập tài khoản</h1>
+            <p class="dn-sub">Nhập thông tin để truy cập hệ thống ElectronicsShop</p>
 
             @if (TempData["SuccessMessage"] != null)
             {
@@ -291,20 +231,50 @@
             <form asp-action="DangNhap" method="post">
                 <div asp-validation-summary="All" class="dn-errors"></div>
 
-                <div class="dn-field">
-                    <input type="email" name="email" placeholder=" " maxlength="100" required />
-                    <label>Email</label>
+                <div class="dn-group">
+                    <label class="dn-label">Email <span>*</span></label>
+                    <div class="dn-input">
+                        <i class="bi bi-at"></i>
+                        <input type="email" name="email" placeholder="Nhập địa chỉ email" maxlength="100" required />
+                    </div>
                 </div>
 
-                <div class="dn-field">
-                    <input type="password" name="matKhau" placeholder=" " required />
-                    <label>Mật khẩu</label>
+                <div class="dn-group">
+                    <label class="dn-label">Mật khẩu <span>*</span></label>
+                    <div class="dn-input">
+                        <i class="bi bi-lock"></i>
+                        <input type="password" name="matKhau" id="dnMatKhau" placeholder="Nhập mật khẩu" required />
+                        <button type="button" class="dn-eye" id="dnToggle" aria-label="Hiện mật khẩu"><i class="bi bi-eye"></i></button>
+                    </div>
                 </div>
 
-                <button type="submit" class="dn-submit">Đăng nhập</button>
+                <div class="dn-row">
+                    <label class="dn-remember"><input type="checkbox" /> Ghi nhớ đăng nhập</label>
+                    <a href="#" class="dn-forgot">Quên mật khẩu?</a>
+                </div>
+
+                <div class="dn-note"><i class="bi bi-shield-check"></i>Thông tin đăng nhập được bảo mật theo tiêu chuẩn an toàn dữ liệu.</div>
+
+                <button type="submit" class="dn-submit">Đăng nhập <i class="bi bi-arrow-right"></i></button>
             </form>
 
-            <p class="dn-register">Chưa có tài khoản? <a asp-action="DangKy">Đăng ký ngay</a></p>
+            <div class="dn-divider">Hoặc đăng nhập nhanh bằng</div>
+            <div class="dn-social">
+                <button type="button"><i class="bi bi-google"></i> Google</button>
+                <button type="button"><i class="bi bi-microsoft"></i> Office 365</button>
+            </div>
+
+            <p class="dn-register">Bạn chưa có tài khoản? <a asp-action="DangKy">Đăng ký tài khoản ngay</a></p>
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('dnToggle').addEventListener('click', function () {
+        var input = document.getElementById('dnMatKhau');
+        var icon = this.querySelector('i');
+        var hien = input.type === 'password';
+        input.type = hien ? 'text' : 'password';
+        icon.className = hien ? 'bi bi-eye-slash' : 'bi bi-eye';
+    });
+</script>

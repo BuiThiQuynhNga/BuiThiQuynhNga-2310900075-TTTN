@@ -1,0 +1,506 @@
+﻿@model ElectronicsShop.Models.Order
+
+@{
+    ViewData["Title"] = "Thanh toán";
+    bool coSanPhamThieuHang = Model.OrderDetails.Any(od => od.Quantity > od.Product.Stock);
+
+    string phuongThuc = (ViewBag.PhuongThuc as string) ?? "COD";
+    string diaChi = (ViewBag.DiaChi as string) ?? Model.ShippingAddress ?? "";
+    string soDienThoai = (ViewBag.Sdt as string) ?? Model.ReceiverPhone ?? "";
+
+    decimal tongTruocGiam = Model.OrderDetails.Sum(od => od.Quantity * od.UnitPrice);
+    decimal soTienGiam = tongTruocGiam - (Model.TotalAmount - Model.ShippingFee);
+    int tongSoLuong = Model.OrderDetails.Sum(od => od.Quantity);
+
+    string LayAnh(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return "/images/no-image.png";
+        url = url.Trim();
+        if (url.StartsWith("http") || url.StartsWith("/")) return url;
+        if (url.StartsWith("images/")) return "/" + url;
+        return "/images/" + url;
+    }
+}
+
+<style>
+    .tt-page {
+        --es-blue: #1E4FBF;
+        --es-blue-dark: #0F2F7A;
+        --es-navy: #0B1F4B;
+        --es-red: #E0282E;
+        --es-green: #16A34A;
+        --es-bg: #F3F5F9;
+        --es-text: #1F2937;
+        --es-muted: #6B7280;
+        --es-border: #E5E7EB;
+        padding: 10px 0 50px;
+    }
+    .tt-crumb { font-size: .8rem; color: var(--es-muted); margin-bottom: 14px; }
+    .tt-crumb a { color: var(--es-muted); text-decoration: none; }
+    .tt-crumb a:hover { color: var(--es-blue); }
+    .tt-crumb b { color: var(--es-blue); }
+    .tt-title { font-weight: 800; font-size: 1.7rem; color: var(--es-navy); margin: 0 0 4px; }
+    .tt-subtitle { color: var(--es-muted); font-size: .92rem; margin: 0 0 20px; }
+
+    .tt-steps {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; padding: 14px 18px;
+        box-shadow: 0 3px 14px rgba(15,47,122,.05); margin-bottom: 22px;
+    }
+    .tt-step { display: flex; align-items: center; gap: 12px; font-size: .78rem; color: var(--es-muted); }
+    .tt-step b { display: block; color: var(--es-text); font-size: .9rem; }
+    .tt-step-num {
+        width: 34px; height: 34px; border-radius: 50%; background: #EEF0F4; color: var(--es-muted);
+        display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0;
+    }
+    .tt-step.done .tt-step-num { background: #E8EFFC; color: var(--es-blue); }
+    .tt-step.now .tt-step-num { background: var(--es-blue); color: #fff; }
+    .tt-step.now { color: var(--es-blue); }
+    .tt-step.now b { color: var(--es-navy); }
+
+    .tt-alert {
+        display: flex; align-items: flex-start; gap: 10px;
+        background: #FDECEC; color: #B3261E; border: 1px solid #F6C7C7;
+        border-radius: 10px; padding: 12px 16px; font-size: .88rem; font-weight: 600; margin-bottom: 16px;
+    }
+    .tt-alert ul { margin: 0; padding-left: 18px; }
+
+    .tt-layout { display: grid; grid-template-columns: 1fr 420px; gap: 22px; align-items: start; }
+
+    .tt-card {
+        background: #fff; border: 1px solid var(--es-border); border-radius: 14px; overflow: hidden;
+        box-shadow: 0 3px 14px rgba(15,47,122,.06); margin-bottom: 18px;
+    }
+    .tt-card-head {
+        display: flex; align-items: center; gap: 12px;
+        padding: 16px 24px; border-bottom: 1px solid var(--es-border);
+        background: linear-gradient(120deg, var(--es-navy), var(--es-blue)); color: #fff;
+    }
+    .tt-card-head i { font-size: 1.2rem; }
+    .tt-card-head h5 { margin: 0; font-weight: 800; font-size: 1rem; }
+    .tt-card-head small { display: block; color: rgba(255,255,255,.75); font-size: .78rem; font-weight: 400; }
+    .tt-card-body { padding: 24px; }
+
+    .tt-group { margin-bottom: 18px; }
+    .tt-group:last-child { margin-bottom: 0; }
+    .tt-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+    .tt-row2 .tt-group { margin-bottom: 0; }
+    .tt-label { display: block; font-size: .82rem; font-weight: 700; color: var(--es-text); margin-bottom: 6px; }
+    .tt-label span { color: var(--es-red); }
+    .tt-field {
+        display: flex; align-items: center; gap: 10px;
+        background: #F3F5F9; border: 1.5px solid transparent; border-radius: 10px;
+        padding: 0 14px; transition: all .15s ease;
+    }
+    .tt-field:focus-within { background: #fff; border-color: var(--es-blue); box-shadow: 0 0 0 3px rgba(30,79,191,.12); }
+    .tt-field > i { color: var(--es-muted); }
+    .tt-input {
+        flex: 1; border: none; background: transparent; outline: none;
+        padding: 13px 0; font-size: .95rem; color: var(--es-text); font-family: inherit; min-width: 0;
+    }
+    .tt-field.invalid { background: #FFF5F5; border-color: var(--es-red); box-shadow: 0 0 0 3px rgba(224,40,46,.10); }
+    .tt-field.invalid > i { color: var(--es-red); }
+    .tt-fielderr { display: none; color: var(--es-red); font-size: .78rem; font-weight: 600; margin-top: 5px; }
+    .tt-fielderr.show { display: block; }
+    .tt-hint { font-size: .76rem; color: var(--es-muted); margin-top: 5px; }
+
+    .tt-fulladdr {
+        display: flex; align-items: flex-start; gap: 10px; margin-top: 16px;
+        background: #E8EFFC; border-radius: 10px; padding: 12px 14px; font-size: .84rem; color: var(--es-muted);
+    }
+    .tt-fulladdr i { color: var(--es-blue); margin-top: 2px; }
+    .tt-fulladdr b { color: var(--es-navy); display: block; margin-bottom: 2px; }
+    .tt-fulladdr span { color: var(--es-text); font-weight: 600; word-break: break-word; }
+
+    .tt-pay {
+        display: flex; align-items: center; gap: 14px;
+        border: 1.5px solid var(--es-border); background: #fff;
+        padding: 16px; border-radius: 12px; cursor: pointer; margin-bottom: 12px;
+        transition: all .15s ease;
+    }
+    .tt-pay:last-child { margin-bottom: 0; }
+    .tt-pay:hover { border-color: #C9D6F3; }
+    .tt-pay:has(input:checked) { border-color: var(--es-blue); background: #F1F5FF; box-shadow: 0 0 0 3px rgba(30,79,191,.08); }
+    .tt-pay input[type="radio"] { width: 18px; height: 18px; accent-color: var(--es-blue); margin: 0; flex-shrink: 0; }
+    .tt-pay-icon {
+        width: 44px; height: 44px; border-radius: 10px; background: #E8EFFC; color: var(--es-blue);
+        display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+    }
+    .tt-pay-info strong { display: block; color: var(--es-navy); font-weight: 700; font-size: .95rem; margin-bottom: 2px; }
+    .tt-pay-info p { margin: 0; font-size: .82rem; color: var(--es-muted); line-height: 1.5; }
+
+    .tt-summary { position: sticky; top: 90px; }
+    .tt-list { list-style: none; padding: 0; margin: 0 0 14px; }
+    .tt-list-item { display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid #EEF0F4; }
+    .tt-list-item:first-child { padding-top: 0; }
+    .tt-thumb { width: 56px; height: 46px; border-radius: 8px; background: var(--es-bg); overflow: hidden; }
+    .tt-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .tt-item-name { font-size: .85rem; font-weight: 600; color: var(--es-navy); line-height: 1.35; }
+    .tt-item-qty { font-size: .74rem; color: var(--es-muted); margin-top: 2px; }
+    .tt-item-price { font-weight: 800; font-size: .88rem; color: var(--es-text); white-space: nowrap; }
+    .tt-item-err { grid-column: 2 / -1; color: var(--es-red); font-size: .76rem; font-weight: 700; margin-top: -4px; }
+
+    .tt-warn {
+        display: flex; gap: 10px; background: #FDECEC; color: #9A3E33; border: 1px solid #F6C7C7;
+        border-radius: 10px; padding: 12px 14px; font-size: .82rem; font-weight: 600; margin-bottom: 14px; line-height: 1.5;
+    }
+
+    .tt-row { display: flex; justify-content: space-between; gap: 12px; font-size: .9rem; margin-bottom: 10px; }
+    .tt-row span:first-child { color: var(--es-muted); }
+    .tt-row.discount span:last-child { color: var(--es-green); font-weight: 700; }
+    .tt-free { color: var(--es-green); font-weight: 700; }
+    .tt-total { display: flex; justify-content: space-between; align-items: baseline; margin: 14px 0 4px; padding-top: 14px; border-top: 1px dashed var(--es-border); }
+    .tt-total span { font-weight: 800; color: var(--es-navy); }
+    .tt-total strong { font-weight: 800; font-size: 1.6rem; color: var(--es-red); }
+    .tt-vat { font-size: .76rem; color: var(--es-muted); text-align: right; margin-bottom: 16px; }
+
+    .tt-btn {
+        display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+        border: none; border-radius: 10px; padding: 15px; font-weight: 800; font-size: .95rem; color: #fff;
+        background: var(--es-blue); cursor: pointer; text-transform: uppercase;
+        transition: all .15s ease;
+    }
+    .tt-btn:hover:not(:disabled) { background: var(--es-blue-dark); transform: translateY(-1px); }
+    .tt-btn:disabled { background: #9CA3AF; cursor: not-allowed; opacity: .8; }
+    .tt-back { display: block; text-align: center; margin-top: 12px; color: var(--es-blue); font-weight: 700; font-size: .85rem; text-decoration: none; }
+    .tt-back:hover { text-decoration: underline; }
+
+    .tt-trust { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; font-size: .76rem; color: var(--es-muted); }
+    .tt-trust div { display: flex; align-items: center; gap: 6px; }
+    .tt-trust i { color: var(--es-blue); }
+
+    @@media (max-width: 1000px) {
+        .tt-layout { grid-template-columns: 1fr; }
+        .tt-summary { position: static; }
+    }
+    @@media (max-width: 640px) {
+        .tt-steps { grid-template-columns: 1fr; }
+        .tt-row2 { grid-template-columns: 1fr; gap: 18px; }
+        .tt-card-body { padding: 20px 16px; }
+    }
+</style>
+
+<div class="container tt-page">
+
+    <div class="tt-crumb">
+        <a asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Trang chủ</a>
+        &nbsp;/&nbsp;
+        <a asp-controller="GioHang" asp-action="Index">Giỏ hàng</a>
+        &nbsp;/&nbsp; <b>Thanh toán</b>
+    </div>
+
+    <h1 class="tt-title">Thông tin đặt hàng &amp; Thanh toán</h1>
+    <p class="tt-subtitle">Vui lòng kiểm tra kỹ thông tin người nhận và phương thức thanh toán an toàn.</p>
+
+    <div class="tt-steps">
+        <div class="tt-step done">
+            <div class="tt-step-num"><i class="bi bi-check-lg"></i></div>
+            <div><small>Bước 1</small><b>Giỏ hàng (@tongSoLuong sản phẩm)</b></div>
+        </div>
+        <div class="tt-step now">
+            <div class="tt-step-num">2</div>
+            <div><small>Bước 2 (hiện tại)</small><b>Thông tin đặt hàng</b></div>
+        </div>
+        <div class="tt-step">
+            <div class="tt-step-num">3</div>
+            <div><small>Bước 3</small><b>Hoàn tất đơn hàng</b></div>
+        </div>
+    </div>
+
+    <div asp-validation-summary="All" class="tt-alert" style="@(ViewData.ModelState.IsValid ? "display:none" : "")"></div>
+
+    <form asp-action="ThanhToan" method="post" id="formThanhToan" novalidate>
+        <div class="tt-layout">
+
+            <!-- ===== CỘT TRÁI ===== -->
+            <div>
+                <div class="tt-card">
+                    <div class="tt-card-head">
+                        <i class="bi bi-person-lines-fill"></i>
+                        <div>
+                            <h5>1. Thông tin nhận hàng</h5>
+                            <small>Địa chỉ cụ thể và số điện thoại nhận hàng</small>
+                        </div>
+                    </div>
+                    <div class="tt-card-body">
+
+                        <!-- Địa chỉ ghép từ 4 ô bên dưới, gửi lên server với tên diaChiGiaoHang -->
+                        <input type="hidden" name="diaChiGiaoHang" id="diaChiGiaoHang" value="@diaChi" />
+
+                        <div class="tt-group">
+                            <label class="tt-label" for="dcSoNha">Số nhà, tên đường <span>*</span></label>
+                            <div class="tt-field" data-field="dcSoNha">
+                                <i class="bi bi-house-door"></i>
+                                <input id="dcSoNha" class="tt-input" placeholder="Ví dụ: Số 12, ngõ 34, đường Nguyễn Trãi" autocomplete="street-address" />
+                            </div>
+                            <div class="tt-fielderr" id="err_dcSoNha">Vui lòng nhập số nhà và tên đường (ít nhất 5 ký tự).</div>
+                            <div class="tt-hint">Nếu ở thôn/xóm/khu phố, hãy ghi rõ tên thôn, số nhà hoặc mốc dễ tìm.</div>
+                        </div>
+
+                        <div class="tt-row2">
+                            <div class="tt-group">
+                                <label class="tt-label" for="dcPhuongXa">Phường / Xã <span>*</span></label>
+                                <div class="tt-field" data-field="dcPhuongXa">
+                                    <i class="bi bi-signpost-2"></i>
+                                    <input id="dcPhuongXa" class="tt-input" placeholder="Ví dụ: Phường Thanh Xuân Trung" />
+                                </div>
+                                <div class="tt-fielderr" id="err_dcPhuongXa">Vui lòng nhập phường / xã.</div>
+                            </div>
+                            <div class="tt-group">
+                                <label class="tt-label" for="dcQuanHuyen">Quận / Huyện <span>*</span></label>
+                                <div class="tt-field" data-field="dcQuanHuyen">
+                                    <i class="bi bi-map"></i>
+                                    <input id="dcQuanHuyen" class="tt-input" placeholder="Ví dụ: Quận Thanh Xuân" />
+                                </div>
+                                <div class="tt-fielderr" id="err_dcQuanHuyen">Vui lòng nhập quận / huyện.</div>
+                            </div>
+                        </div>
+
+                        <div class="tt-group">
+                            <label class="tt-label" for="dcTinhTP">Tỉnh / Thành phố <span>*</span></label>
+                            <div class="tt-field" data-field="dcTinhTP">
+                                <i class="bi bi-geo-alt"></i>
+                                <input id="dcTinhTP" class="tt-input" placeholder="Ví dụ: Hà Nội" />
+                            </div>
+                            <div class="tt-fielderr" id="err_dcTinhTP">Vui lòng nhập tỉnh / thành phố.</div>
+                        </div>
+
+                        <div class="tt-fulladdr">
+                            <i class="bi bi-pin-map"></i>
+                            <div>
+                                <b>Địa chỉ giao hàng đầy đủ</b>
+                                <span id="dcPreview">Chưa nhập địa chỉ</span>
+                            </div>
+                        </div>
+
+                        <div class="tt-group" style="margin-top:18px">
+                            <label class="tt-label" for="soDienThoaiNhan">Số điện thoại nhận hàng <span>*</span></label>
+                            <div class="tt-field" data-field="soDienThoaiNhan">
+                                <i class="bi bi-telephone"></i>
+                                <input name="soDienThoaiNhan" id="soDienThoaiNhan" value="@soDienThoai" class="tt-input" placeholder="Nhập số điện thoại liên hệ" />
+                            </div>
+                            <div class="tt-fielderr" id="err_soDienThoaiNhan">Vui lòng nhập số điện thoại nhận hàng.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tt-card">
+                    <div class="tt-card-head">
+                        <i class="bi bi-credit-card-2-front"></i>
+                        <div>
+                            <h5>2. Hình thức thanh toán</h5>
+                            <small>Chọn cách thanh toán phù hợp với bạn</small>
+                        </div>
+                    </div>
+                    <div class="tt-card-body">
+                        <label class="tt-pay">
+                            <input type="radio" name="phuongThuc" value="COD" checked="@(phuongThuc == "COD")" />
+                            <div class="tt-pay-icon"><i class="bi bi-cash-coin"></i></div>
+                            <div class="tt-pay-info">
+                                <strong>Thanh toán khi nhận hàng (COD)</strong>
+                                <p>Bạn thanh toán tiền mặt trực tiếp cho nhân viên giao hàng khi nhận sản phẩm.</p>
+                            </div>
+                        </label>
+
+                        <label class="tt-pay">
+                            <input type="radio" name="phuongThuc" value="QR" checked="@(phuongThuc == "QR")" />
+                            <div class="tt-pay-icon"><i class="bi bi-qr-code-scan"></i></div>
+                            <div class="tt-pay-info">
+                                <strong>Chuyển khoản QR</strong>
+                                <p>Quét mã QR bằng ứng dụng ngân hàng. Mã có hiệu lực trong 10 phút.</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== CỘT PHẢI ===== -->
+            <div class="tt-summary">
+                <div class="tt-card">
+                    <div class="tt-card-head">
+                        <i class="bi bi-bag-check"></i>
+                        <div>
+                            <h5>Đơn hàng của bạn</h5>
+                            <small>@tongSoLuong sản phẩm</small>
+                        </div>
+                    </div>
+                    <div class="tt-card-body">
+
+                        <ul class="tt-list">
+                            @foreach (var od in Model.OrderDetails)
+                            {
+                                bool khongDu = od.Quantity > od.Product.Stock;
+                                <li class="tt-list-item">
+                                    <div class="tt-thumb">
+                                        <img src="@LayAnh(od.Product.ImageURL)"
+                                             onerror="this.onerror=null;this.src='/images/no-image.png'"
+                                             alt="@od.Product.ProductName" />
+                                    </div>
+                                    <div>
+                                        <div class="tt-item-name">@od.Product.ProductName</div>
+                                        <div class="tt-item-qty">Số lượng: x@(od.Quantity)</div>
+                                    </div>
+                                    <div class="tt-item-price">@((od.UnitPrice * od.Quantity).ToString("N0")) đ</div>
+                                    @if (khongDu)
+                                    {
+                                        <div class="tt-item-err">⚠️ Chỉ còn @od.Product.Stock sản phẩm trong kho</div>
+                                    }
+                                </li>
+                            }
+                        </ul>
+
+                        @if (coSanPhamThieuHang)
+                        {
+                            <div class="tt-warn">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <span>Một số sản phẩm trong đơn không đủ hàng trong kho. Vui lòng quay lại giỏ hàng để cập nhật số lượng trước khi đặt hàng.</span>
+                            </div>
+                        }
+
+                        <div class="tt-row">
+                            <span>Tạm tính (@tongSoLuong sản phẩm):</span>
+                            <span>@tongTruocGiam.ToString("N0") đ</span>
+                        </div>
+                        @if (soTienGiam > 0)
+                        {
+                            <div class="tt-row discount">
+                                <span>Giảm giá voucher:</span>
+                                <span>-@soTienGiam.ToString("N0") đ</span>
+                            </div>
+                        }
+                        <div class="tt-row">
+                            <span>Phí vận chuyển:</span>
+                            @if (Model.ShippingFee > 0)
+                            {
+                                <span>@Model.ShippingFee.ToString("N0") đ</span>
+                            }
+                            else
+                            {
+                                <span class="tt-free">Miễn phí</span>
+                            }
+                        </div>
+
+                        <div class="tt-total">
+                            <span>Tổng thanh toán:</span>
+                            <strong>@Model.TotalAmount.ToString("N0") đ</strong>
+                        </div>
+                        <div class="tt-vat">Đã bao gồm thuế và phí giao hàng</div>
+
+                        <button type="submit" id="btnDatHang" class="tt-btn" disabled="@(coSanPhamThieuHang ? "disabled" : null)">
+                            <i class="bi bi-lock"></i> <span id="btnDatHangText">Xác nhận đặt hàng</span>
+                        </button>
+                        <a asp-controller="GioHang" asp-action="Index" class="tt-back"><i class="bi bi-arrow-left"></i> Quay lại giỏ hàng</a>
+
+                        <div class="tt-trust">
+                            <div><i class="bi bi-patch-check"></i> 100% Chính hãng</div>
+                            <div><i class="bi bi-arrow-repeat"></i> Đổi trả dễ dàng</div>
+                            <div><i class="bi bi-receipt-cutoff"></i> Đầy đủ hóa đơn</div>
+                            <div><i class="bi bi-headset"></i> Hỗ trợ tận tình</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var form = document.getElementById('formThanhToan');
+            var hidden = document.getElementById('diaChiGiaoHang');
+            var preview = document.getElementById('dcPreview');
+
+            var soNha = document.getElementById('dcSoNha');
+            var phuongXa = document.getElementById('dcPhuongXa');
+            var quanHuyen = document.getElementById('dcQuanHuyen');
+            var tinhTP = document.getElementById('dcTinhTP');
+            var sdt = document.getElementById('soDienThoaiNhan');
+
+            // ===== Tách địa chỉ cũ (nếu có) vào 4 ô =====
+            (function tachDiaChiCu() {
+                var raw = (hidden.value || '').trim();
+                if (!raw) return;
+                var parts = raw.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+                if (parts.length >= 4) {
+                    tinhTP.value = parts[parts.length - 1];
+                    quanHuyen.value = parts[parts.length - 2];
+                    phuongXa.value = parts[parts.length - 3];
+                    soNha.value = parts.slice(0, parts.length - 3).join(', ');
+                } else {
+                    soNha.value = raw;
+                }
+            })();
+
+            function ghepDiaChi() {
+                return [soNha.value, phuongXa.value, quanHuyen.value, tinhTP.value]
+                    .map(function (s) { return s.trim(); })
+                    .filter(Boolean)
+                    .join(', ');
+            }
+
+            function capNhatXemTruoc() {
+                var full = ghepDiaChi();
+                hidden.value = full;
+                preview.textContent = full || 'Chưa nhập địa chỉ';
+            }
+
+            // ===== Kiểm tra từng ô =====
+            function datLoi(id, coLoi) {
+                var wrap = document.querySelector('.tt-field[data-field="' + id + '"]');
+                var err = document.getElementById('err_' + id);
+                if (wrap) wrap.classList.toggle('invalid', coLoi);
+                if (err) err.classList.toggle('show', coLoi);
+            }
+
+            var quyTac = [
+                { el: soNha, id: 'dcSoNha', ok: function (v) { return v.trim().length >= 5; } },
+                { el: phuongXa, id: 'dcPhuongXa', ok: function (v) { return v.trim().length >= 2; } },
+                { el: quanHuyen, id: 'dcQuanHuyen', ok: function (v) { return v.trim().length >= 2; } },
+                { el: tinhTP, id: 'dcTinhTP', ok: function (v) { return v.trim().length >= 2; } },
+                { el: sdt, id: 'soDienThoaiNhan', ok: function (v) { return v.trim().length > 0; } }
+            ];
+
+            quyTac.forEach(function (r) {
+                r.el.addEventListener('input', function () {
+                    capNhatXemTruoc();
+                    if (r.ok(r.el.value)) datLoi(r.id, false);
+                });
+                r.el.addEventListener('blur', function () {
+                    datLoi(r.id, !r.ok(r.el.value));
+                });
+            });
+
+            form.addEventListener('submit', function (e) {
+                capNhatXemTruoc();
+                var oDauTienLoi = null;
+                quyTac.forEach(function (r) {
+                    var loi = !r.ok(r.el.value);
+                    datLoi(r.id, loi);
+                    if (loi && !oDauTienLoi) oDauTienLoi = r.el;
+                });
+                if (oDauTienLoi) {
+                    e.preventDefault();
+                    oDauTienLoi.focus();
+                    oDauTienLoi.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+
+            capNhatXemTruoc();
+
+            // ===== Nút đặt hàng theo phương thức =====
+            var txt = document.getElementById('btnDatHangText');
+            var radios = document.querySelectorAll('input[name="phuongThuc"]');
+
+            function capNhatNut() {
+                var chon = document.querySelector('input[name="phuongThuc"]:checked');
+                if (txt) {
+                    txt.textContent = (chon && chon.value === 'QR') ? 'Tiếp tục thanh toán QR' : 'Xác nhận đặt hàng';
+                }
+            }
+
+            radios.forEach(function (r) { r.addEventListener('change', capNhatNut); });
+            capNhatNut();
+        })();
+    </script>
+}
